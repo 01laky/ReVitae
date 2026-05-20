@@ -122,6 +122,64 @@ public static class TranslationKeys
     public const string ValidationWorkExperienceCompanyUrlFormat = "validation.workExperience.companyUrl.format";
     public const string ValidationWorkExperienceStartAfterEnd = "validation.workExperience.dateRange.startAfterEnd";
 
+    public const string Education = "form.education";
+    public const string EducationEmptyHint = "education.emptyHint";
+    public const string EducationAdd = "education.add";
+    public const string EducationDuplicate = "education.duplicate";
+    public const string EducationRemove = "education.remove";
+    public const string EducationSortByDate = "education.sortByDate";
+    public const string EducationInstitution = "education.field.institution";
+    public const string EducationDegree = "education.field.degree";
+    public const string EducationFieldOfStudy = "education.field.fieldOfStudy";
+    public const string EducationLocation = "education.field.location";
+    public const string EducationDegreeType = "education.field.degreeType";
+    public const string EducationStartDate = "education.field.startDate";
+    public const string EducationEndDate = "education.field.endDate";
+    public const string EducationStartMonth = "education.field.startMonth";
+    public const string EducationStartYear = "education.field.startYear";
+    public const string EducationEndMonth = "education.field.endMonth";
+    public const string EducationEndYear = "education.field.endYear";
+    public const string EducationCurrentlyStudying = "education.field.currentlyStudying";
+    public const string EducationGrade = "education.field.grade";
+    public const string EducationDescription = "education.field.description";
+    public const string EducationInstitutionUrl = "education.field.institutionUrl";
+    public const string EducationPresent = "education.present";
+    public const string EducationDragToReorder = "education.dragToReorder";
+    public const string EducationExpand = "education.expand";
+    public const string EducationCollapse = "education.collapse";
+    public const string EducationValidationErrors = "education.validationErrors";
+    public const string DegreeTypeHighSchool = "education.degreeType.highSchool";
+    public const string DegreeTypeAssociate = "education.degreeType.associate";
+    public const string DegreeTypeBachelor = "education.degreeType.bachelor";
+    public const string DegreeTypeMaster = "education.degreeType.master";
+    public const string DegreeTypeDoctorate = "education.degreeType.doctorate";
+    public const string DegreeTypeCertificate = "education.degreeType.certificate";
+    public const string DegreeTypeOther = "education.degreeType.other";
+    public const string PreviewEducation = "preview.education";
+    public const string PreviewGrade = "preview.grade";
+    public const string PreviewFieldOfStudy = "preview.fieldOfStudy";
+    public const string ValidationEducationInstitutionRequired = "validation.education.institution.required";
+    public const string ValidationEducationInstitutionMax = "validation.education.institution.max";
+    public const string ValidationEducationDegreeRequired = "validation.education.degree.required";
+    public const string ValidationEducationDegreeMax = "validation.education.degree.max";
+    public const string ValidationEducationFieldOfStudyMax = "validation.education.fieldOfStudy.max";
+    public const string ValidationEducationLocationMax = "validation.education.location.max";
+    public const string ValidationEducationDegreeTypeRequired = "validation.education.degreeType.required";
+    public const string ValidationEducationDegreeTypeInvalid = "validation.education.degreeType.invalid";
+    public const string ValidationEducationStartMonthRequired = "validation.education.startMonth.required";
+    public const string ValidationEducationStartMonthInvalid = "validation.education.startMonth.invalid";
+    public const string ValidationEducationStartYearRequired = "validation.education.startYear.required";
+    public const string ValidationEducationStartYearInvalid = "validation.education.startYear.invalid";
+    public const string ValidationEducationEndMonthRequired = "validation.education.endMonth.required";
+    public const string ValidationEducationEndMonthInvalid = "validation.education.endMonth.invalid";
+    public const string ValidationEducationEndYearRequired = "validation.education.endYear.required";
+    public const string ValidationEducationEndYearInvalid = "validation.education.endYear.invalid";
+    public const string ValidationEducationGradeMax = "validation.education.grade.max";
+    public const string ValidationEducationDescriptionMax = "validation.education.description.max";
+    public const string ValidationEducationInstitutionUrlMax = "validation.education.institutionUrl.max";
+    public const string ValidationEducationInstitutionUrlFormat = "validation.education.institutionUrl.format";
+    public const string ValidationEducationStartAfterEnd = "validation.education.dateRange.startAfterEnd";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -241,6 +299,63 @@ public static class TranslationKeys
         ValidationWorkExperienceTechnologiesMax,
         ValidationWorkExperienceCompanyUrlMax,
         ValidationWorkExperienceCompanyUrlFormat,
-        ValidationWorkExperienceStartAfterEnd
+        ValidationWorkExperienceStartAfterEnd,
+        Education,
+        EducationEmptyHint,
+        EducationAdd,
+        EducationDuplicate,
+        EducationRemove,
+        EducationSortByDate,
+        EducationInstitution,
+        EducationDegree,
+        EducationFieldOfStudy,
+        EducationLocation,
+        EducationDegreeType,
+        EducationStartDate,
+        EducationEndDate,
+        EducationStartMonth,
+        EducationStartYear,
+        EducationEndMonth,
+        EducationEndYear,
+        EducationCurrentlyStudying,
+        EducationGrade,
+        EducationDescription,
+        EducationInstitutionUrl,
+        EducationPresent,
+        EducationDragToReorder,
+        EducationExpand,
+        EducationCollapse,
+        EducationValidationErrors,
+        DegreeTypeHighSchool,
+        DegreeTypeAssociate,
+        DegreeTypeBachelor,
+        DegreeTypeMaster,
+        DegreeTypeDoctorate,
+        DegreeTypeCertificate,
+        DegreeTypeOther,
+        PreviewEducation,
+        PreviewGrade,
+        PreviewFieldOfStudy,
+        ValidationEducationInstitutionRequired,
+        ValidationEducationInstitutionMax,
+        ValidationEducationDegreeRequired,
+        ValidationEducationDegreeMax,
+        ValidationEducationFieldOfStudyMax,
+        ValidationEducationLocationMax,
+        ValidationEducationDegreeTypeRequired,
+        ValidationEducationDegreeTypeInvalid,
+        ValidationEducationStartMonthRequired,
+        ValidationEducationStartMonthInvalid,
+        ValidationEducationStartYearRequired,
+        ValidationEducationStartYearInvalid,
+        ValidationEducationEndMonthRequired,
+        ValidationEducationEndMonthInvalid,
+        ValidationEducationEndYearRequired,
+        ValidationEducationEndYearInvalid,
+        ValidationEducationGradeMax,
+        ValidationEducationDescriptionMax,
+        ValidationEducationInstitutionUrlMax,
+        ValidationEducationInstitutionUrlFormat,
+        ValidationEducationStartAfterEnd
     ];
 }

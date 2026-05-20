@@ -7,5 +7,6 @@ public enum FieldFormat
     Url,
     Month,
     Year,
-    EmploymentType
+    EmploymentType,
+    DegreeType
 }

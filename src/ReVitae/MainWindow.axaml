@@ -5,6 +5,7 @@
         xmlns:loc="clr-namespace:ReVitae.Core.Localization;assembly=ReVitae.Core"
         xmlns:controls="clr-namespace:ReVitae.Controls"
         xmlns:workExperience="clr-namespace:ReVitae.WorkExperience"
+        xmlns:education="clr-namespace:ReVitae.Education"
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="ReVitae.MainWindow"
         mc:Ignorable="d"
@@ -165,6 +166,8 @@
                         </controls:ExpandableSection>
 
                         <workExperience:WorkExperienceSectionView x:Name="WorkExperienceSection" />
+
+                        <education:EducationSectionView x:Name="EducationSection" />
 
                         <TextBlock x:Name="ValidationSummaryTextBlock"
                                    Classes="re-vitae-error" />
