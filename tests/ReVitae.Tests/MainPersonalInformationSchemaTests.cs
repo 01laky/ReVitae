@@ -213,6 +213,162 @@ public sealed class MainPersonalInformationSchemaTests
         Assert.Contains(result.Errors, error => error.FieldKey == MainPersonalInformationFieldKeys.ShortSummary);
     }
 
+    [Fact]
+    public void Validate_AcceptsFullyValidPersonalInformation()
+    {
+        var result = Validator.Validate(CreateValidValues());
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void Validate_TreatsNullDictionaryValuesAsEmpty()
+    {
+        var values = CreateValidValues();
+        values[MainPersonalInformationFieldKeys.FirstName] = null;
+
+        var result = Validator.Validate(values);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.FieldKey == MainPersonalInformationFieldKeys.FirstName);
+    }
+
+    [Theory]
+    [MemberData(nameof(RequiredFieldKeys))]
+    public void RequiredFields_AcceptValuesWithSurroundingWhitespace(string fieldKey)
+    {
+        var value = fieldKey switch
+        {
+            MainPersonalInformationFieldKeys.Email => "  john.doe@example.com  ",
+            _ => "  valid-value  "
+        };
+
+        var result = Validator.ValidateField(fieldKey, value);
+
+        Assert.True(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData(MainPersonalInformationFieldKeys.FirstName, true, FieldFormat.Text)]
+    [InlineData(MainPersonalInformationFieldKeys.LastName, true, FieldFormat.Text)]
+    [InlineData(MainPersonalInformationFieldKeys.ProfessionalTitle, false, FieldFormat.Text)]
+    [InlineData(MainPersonalInformationFieldKeys.Email, true, FieldFormat.Email)]
+    [InlineData(MainPersonalInformationFieldKeys.Phone, false, FieldFormat.Text)]
+    [InlineData(MainPersonalInformationFieldKeys.Location, false, FieldFormat.Text)]
+    [InlineData(MainPersonalInformationFieldKeys.LinkedInUrl, false, FieldFormat.Url)]
+    [InlineData(MainPersonalInformationFieldKeys.PortfolioUrl, false, FieldFormat.Url)]
+    [InlineData(MainPersonalInformationFieldKeys.GitHubUrl, false, FieldFormat.Url)]
+    [InlineData(MainPersonalInformationFieldKeys.ShortSummary, false, FieldFormat.Text)]
+    public void SchemaFields_HaveExpectedRequiredAndFormatMetadata(string fieldKey, bool isRequired, FieldFormat format)
+    {
+        var field = MainPersonalInformationSchema.Fields.Single(schema => schema.Key == fieldKey);
+
+        Assert.Equal(isRequired, field.IsRequired);
+        Assert.Equal(format, field.Format);
+    }
+
+    [Fact]
+    public void SchemaFields_UseTranslationKeysForValidationMessages()
+    {
+        foreach (var field in MainPersonalInformationSchema.Fields)
+        {
+            if (field.IsRequired)
+            {
+                Assert.StartsWith("validation.", field.RequiredMessage);
+            }
+
+            Assert.StartsWith("validation.", field.MaximumLengthMessage);
+
+            if (field.Format is FieldFormat.Email or FieldFormat.Url)
+            {
+                Assert.NotNull(field.FormatMessage);
+                Assert.StartsWith("validation.", field.FormatMessage);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("john.doe@EXAMPLE.COM")]
+    [InlineData("john.doe+jobs@mail.example.org")]
+    public void Email_AcceptsAdditionalValidFormats(string email)
+    {
+        var result = Validator.ValidateField(MainPersonalInformationFieldKeys.Email, email);
+
+        Assert.True(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData("@example.com")]
+    [InlineData("john@")]
+    [InlineData("john@example")]
+    public void Email_RejectsAdditionalInvalidFormats(string email)
+    {
+        var result = Validator.ValidateField(MainPersonalInformationFieldKeys.Email, email);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.FieldKey == MainPersonalInformationFieldKeys.Email);
+    }
+
+    [Fact]
+    public void Email_ReportsBothMaxLengthAndFormatErrorsWhenBothFail()
+    {
+        var invalidLongEmail = new string('a', 157) + "@bad";
+
+        var result = Validator.ValidateField(MainPersonalInformationFieldKeys.Email, invalidLongEmail);
+
+        Assert.False(result.IsValid);
+        Assert.Equal(2, result.Errors.Count);
+        Assert.All(result.Errors, error => Assert.Equal(MainPersonalInformationFieldKeys.Email, error.FieldKey));
+    }
+
+    [Theory]
+    [MemberData(nameof(UrlFieldKeys))]
+    public void UrlFields_AcceptSubdomainsPathsQueryStringsAndPorts(string fieldKey)
+    {
+        var result = Validator.ValidateField(fieldKey, "https://profile.example.com:8443/cv?id=1");
+
+        Assert.True(result.IsValid);
+    }
+
+    [Theory]
+    [MemberData(nameof(UrlFieldKeys))]
+    public void UrlFields_RejectRelativeAndUnsafeSchemes(string fieldKey)
+    {
+        var relativeResult = Validator.ValidateField(fieldKey, "/profile/john");
+        var javascriptResult = Validator.ValidateField(fieldKey, "javascript:alert(1)");
+        var fileResult = Validator.ValidateField(fieldKey, "file:///tmp/cv.pdf");
+
+        Assert.False(relativeResult.IsValid);
+        Assert.False(javascriptResult.IsValid);
+        Assert.False(fileResult.IsValid);
+    }
+
+    [Fact]
+    public void ValidateField_ThrowsForUnknownFieldKey()
+    {
+        var exception = Assert.Throws<ArgumentException>(() => Validator.ValidateField("unknown.field", "value"));
+
+        Assert.Equal("fieldKey", exception.ParamName);
+    }
+
+    private static Dictionary<string, string?> CreateValidValues()
+    {
+        return new Dictionary<string, string?>
+        {
+            [MainPersonalInformationFieldKeys.FirstName] = "John",
+            [MainPersonalInformationFieldKeys.LastName] = "Doe",
+            [MainPersonalInformationFieldKeys.ProfessionalTitle] = "Software Engineer",
+            [MainPersonalInformationFieldKeys.Email] = "john.doe@example.com",
+            [MainPersonalInformationFieldKeys.Phone] = "+421 900 000 000",
+            [MainPersonalInformationFieldKeys.Location] = "Bratislava, Slovakia",
+            [MainPersonalInformationFieldKeys.LinkedInUrl] = "https://linkedin.com/in/johndoe",
+            [MainPersonalInformationFieldKeys.PortfolioUrl] = "https://example.com",
+            [MainPersonalInformationFieldKeys.GitHubUrl] = "https://github.com/johndoe",
+            [MainPersonalInformationFieldKeys.ShortSummary] = "Experienced engineer building cross-platform desktop apps."
+        };
+    }
+
     private static string BuildValidValueAtLength(string fieldKey, int length)
     {
         return fieldKey switch
