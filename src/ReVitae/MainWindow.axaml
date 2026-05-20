@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        x:Class="ReVitae.MainWindow"
+        mc:Ignorable="d"
+        d:DesignWidth="900"
+        d:DesignHeight="600"
+        Width="900"
+        Height="600"
+        MinWidth="720"
+        MinHeight="480"
+        Title="ReVitae">
+    <Grid RowDefinitions="Auto,*" Margin="24">
+        <StackPanel Grid.Row="0" Spacing="8">
+            <TextBlock Text="ReVitae"
+                       FontSize="28"
+                       FontWeight="Bold" />
+            <TextBlock Text="Create a simple CV preview and export a plain PDF."
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <Grid Grid.Row="1"
+              Margin="0,24,0,0"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="24">
+            <Border Grid.Column="0"
+                    Padding="20"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    CornerRadius="8">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Basic Information"
+                               FontSize="18"
+                               FontWeight="SemiBold" />
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="First name" />
+                        <TextBox x:Name="FirstNameTextBox"
+                                 PlaceholderText="John"
+                                 TextChanged="OnFormTextChanged" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Last name" />
+                        <TextBox x:Name="LastNameTextBox"
+                                 PlaceholderText="Doe"
+                                 TextChanged="OnFormTextChanged" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Email" />
+                        <TextBox x:Name="EmailTextBox"
+                                 PlaceholderText="john.doe@example.com"
+                                 TextChanged="OnFormTextChanged" />
+                    </StackPanel>
+
+                    <Button Content="Export PDF"
+                            HorizontalAlignment="Left"
+                            Click="OnExportPdfClicked" />
+
+                    <TextBlock x:Name="ExportStatusTextBlock"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Padding="20"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    CornerRadius="8">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Preview"
+                               FontSize="18"
+                               FontWeight="SemiBold" />
+                    <Border Padding="16"
+                            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                            CornerRadius="6">
+                        <TextBlock x:Name="PreviewTextBlock"
+                                   FontFamily="Consolas, Menlo, monospace"
+                                   TextWrapping="Wrap" />
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

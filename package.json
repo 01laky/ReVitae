@@ -1,0 +1,29 @@
+{
+  "name": "revitae",
+  "version": "1.0.0",
+  "description": "ReVitae is a cross-platform desktop application for creating and exporting CVs.",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "lint": "npm run lint:md && npm run lint:cs",
+    "lint:cs": "./scripts/lint-cs.sh",
+    "lint:md": "./scripts/lint-md.sh",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/01laky/ReVitae.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/01laky/ReVitae/issues"
+  },
+  "homepage": "https://github.com/01laky/ReVitae#readme",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
