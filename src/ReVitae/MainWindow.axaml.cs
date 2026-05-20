@@ -67,12 +67,52 @@ public partial class MainWindow : Window
 
     private string[] BuildPreviewLines()
     {
-        return
-        [
-            $"First name: {NormalizeValue(FirstNameTextBox.Text)}",
-            $"Last name: {NormalizeValue(LastNameTextBox.Text)}",
-            $"Email: {NormalizeValue(EmailTextBox.Text)}"
-        ];
+        var lines = new List<string>
+        {
+            BuildFullName(),
+            NormalizeValue(ProfessionalTitleTextBox.Text),
+            string.Empty,
+            $"Email: {NormalizeValue(EmailTextBox.Text)}",
+            $"Phone: {NormalizeValue(PhoneTextBox.Text)}",
+            $"Location: {NormalizeValue(LocationTextBox.Text)}",
+            $"LinkedIn: {NormalizeValue(LinkedInUrlTextBox.Text)}",
+            $"Portfolio: {NormalizeValue(PortfolioUrlTextBox.Text)}",
+            $"GitHub: {NormalizeValue(GitHubUrlTextBox.Text)}",
+            string.Empty,
+            "Summary:"
+        };
+
+        lines.AddRange(BuildSummaryLines());
+
+        return lines.ToArray();
+    }
+
+    private string BuildFullName()
+    {
+        var nameParts = new[]
+        {
+            FirstNameTextBox.Text?.Trim(),
+            LastNameTextBox.Text?.Trim()
+        };
+
+        var fullName = string.Join(
+            " ",
+            Array.FindAll(nameParts, part => !string.IsNullOrWhiteSpace(part)));
+
+        return string.IsNullOrWhiteSpace(fullName) ? "-" : fullName;
+    }
+
+    private string[] BuildSummaryLines()
+    {
+        var summary = ShortSummaryTextBox.Text;
+        if (string.IsNullOrWhiteSpace(summary))
+        {
+            return new[] { "-" };
+        }
+
+        return summary
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n', StringSplitOptions.None);
     }
 
     private static string NormalizeValue(string? value)

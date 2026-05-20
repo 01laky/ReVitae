@@ -7,7 +7,7 @@
         d:DesignWidth="900"
         d:DesignHeight="600"
         Width="900"
-        Height="600"
+        Height="720"
         MinWidth="720"
         MinHeight="480"
         Title="ReVitae">
@@ -24,46 +24,99 @@
               Margin="0,24,0,0"
               ColumnDefinitions="*,*"
               ColumnSpacing="24">
-            <Border Grid.Column="0"
-                    Padding="20"
-                    BorderThickness="1"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    CornerRadius="8">
-                <StackPanel Spacing="14">
-                    <TextBlock Text="Basic Information"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
+            <ScrollViewer Grid.Column="0">
+                <Border Padding="20"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                        CornerRadius="8">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Main / Personal information"
+                                   FontSize="18"
+                                   FontWeight="SemiBold" />
 
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="First name" />
-                        <TextBox x:Name="FirstNameTextBox"
-                                 PlaceholderText="John"
-                                 TextChanged="OnFormTextChanged" />
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="First name" />
+                            <TextBox x:Name="FirstNameTextBox"
+                                     PlaceholderText="John"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Last name" />
+                            <TextBox x:Name="LastNameTextBox"
+                                     PlaceholderText="Doe"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Professional title" />
+                            <TextBox x:Name="ProfessionalTitleTextBox"
+                                     PlaceholderText="Frontend Developer"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Email" />
+                            <TextBox x:Name="EmailTextBox"
+                                     PlaceholderText="john.doe@example.com"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Phone" />
+                            <TextBox x:Name="PhoneTextBox"
+                                     PlaceholderText="+421 900 000 000"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Location" />
+                            <TextBox x:Name="LocationTextBox"
+                                     PlaceholderText="Bratislava, Slovakia"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="LinkedIn URL" />
+                            <TextBox x:Name="LinkedInUrlTextBox"
+                                     PlaceholderText="https://www.linkedin.com/in/johndoe"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Portfolio / website URL" />
+                            <TextBox x:Name="PortfolioUrlTextBox"
+                                     PlaceholderText="https://johndoe.dev"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="GitHub URL" />
+                            <TextBox x:Name="GitHubUrlTextBox"
+                                     PlaceholderText="https://github.com/johndoe"
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Short summary" />
+                            <TextBox x:Name="ShortSummaryTextBox"
+                                     AcceptsReturn="True"
+                                     MinHeight="96"
+                                     TextWrapping="Wrap"
+                                     PlaceholderText="Write two to four sentences about your professional profile."
+                                     TextChanged="OnFormTextChanged" />
+                        </StackPanel>
+
+                        <Button Content="Export PDF"
+                                HorizontalAlignment="Left"
+                                Click="OnExportPdfClicked" />
+
+                        <TextBlock x:Name="ExportStatusTextBlock"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
-
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="Last name" />
-                        <TextBox x:Name="LastNameTextBox"
-                                 PlaceholderText="Doe"
-                                 TextChanged="OnFormTextChanged" />
-                    </StackPanel>
-
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="Email" />
-                        <TextBox x:Name="EmailTextBox"
-                                 PlaceholderText="john.doe@example.com"
-                                 TextChanged="OnFormTextChanged" />
-                    </StackPanel>
-
-                    <Button Content="Export PDF"
-                            HorizontalAlignment="Left"
-                            Click="OnExportPdfClicked" />
-
-                    <TextBlock x:Name="ExportStatusTextBlock"
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
-            </Border>
+                </Border>
+            </ScrollViewer>
 
             <Border Grid.Column="1"
                     Padding="20"
