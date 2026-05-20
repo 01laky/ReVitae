@@ -213,9 +213,9 @@
                     <Border Padding="16"
                             Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                             CornerRadius="6">
-                        <TextBlock x:Name="PreviewTextBlock"
-                                   FontFamily="Consolas, Menlo, monospace"
-                                   TextWrapping="Wrap" />
+                        <ScrollViewer>
+                            <ContentControl x:Name="PreviewContentControl" />
+                        </ScrollViewer>
                     </Border>
                 </StackPanel>
             </Border>
@@ -293,11 +293,124 @@
                                 Click="OnCloseTemplatesClicked" />
                     </Grid>
 
-                    <TextBlock Grid.Row="1"
-                               Margin="0,24,0,0"
-                               Text="Template selection will be added in a future step."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <ScrollViewer Grid.Row="1"
+                                  Margin="0,24,0,0">
+                        <WrapPanel>
+                            <Button x:Name="ClassicSidebarTemplateButton"
+                                    Width="220"
+                                    MinHeight="190"
+                                    Margin="0,0,16,16"
+                                    Padding="12"
+                                    HorizontalContentAlignment="Stretch"
+                                    Click="OnSelectClassicSidebarTemplateClicked">
+                                <StackPanel Spacing="10">
+                                    <Grid Height="86"
+                                          ColumnDefinitions="72,*">
+                                        <Border Grid.Column="0"
+                                                Background="#D0D0D0" />
+                                        <Border Grid.Column="1"
+                                                Background="White" />
+                                    </Grid>
+                                    <TextBlock Text="Classic Sidebar"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Light sidebar with contact details and a clean content area."
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Name="ClassicSidebarSelectedTextBlock"
+                                               Text="Selected"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button x:Name="ModernSidebarTemplateButton"
+                                    Width="220"
+                                    MinHeight="190"
+                                    Margin="0,0,16,16"
+                                    Padding="12"
+                                    HorizontalContentAlignment="Stretch"
+                                    Click="OnSelectModernSidebarTemplateClicked">
+                                <StackPanel Spacing="10">
+                                    <Grid Height="86"
+                                          RowDefinitions="28,*"
+                                          ColumnDefinitions="72,*">
+                                        <Border Grid.RowSpan="2"
+                                                Background="#D7D7D7" />
+                                        <Border Grid.Column="1"
+                                                Background="#444444" />
+                                        <Border Grid.Row="1"
+                                                Grid.Column="1"
+                                                Background="White" />
+                                    </Grid>
+                                    <TextBlock Text="Modern Sidebar"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Compact sidebar with a dark name band and focused content."
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Name="ModernSidebarSelectedTextBlock"
+                                               Text="Selected"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button x:Name="CleanTopHeaderTemplateButton"
+                                    Width="220"
+                                    MinHeight="190"
+                                    Margin="0,0,16,16"
+                                    Padding="12"
+                                    HorizontalContentAlignment="Stretch"
+                                    Click="OnSelectCleanTopHeaderTemplateClicked">
+                                <StackPanel Spacing="10">
+                                    <Grid Height="86"
+                                          RowDefinitions="34,*">
+                                        <Border Background="#5A9BD5" />
+                                        <Border Grid.Row="1"
+                                                Background="White" />
+                                    </Grid>
+                                    <TextBlock Text="Clean Top Header"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Safe default with a full-width color header and simple sections."
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Name="CleanTopHeaderSelectedTextBlock"
+                                               Text="Selected"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button x:Name="DarkSidebarTemplateButton"
+                                    Width="220"
+                                    MinHeight="190"
+                                    Margin="0,0,16,16"
+                                    Padding="12"
+                                    HorizontalContentAlignment="Stretch"
+                                    Click="OnSelectDarkSidebarTemplateClicked">
+                                <StackPanel Spacing="10">
+                                    <Grid Height="86"
+                                          ColumnDefinitions="72,*">
+                                        <Border Background="#2F3A45" />
+                                        <Grid Grid.Column="1"
+                                              RowDefinitions="28,*">
+                                            <Border Background="#5B9BB0" />
+                                            <Border Grid.Row="1"
+                                                    Background="#F2F2F2" />
+                                        </Grid>
+                                    </Grid>
+                                    <TextBlock Text="Dark Sidebar Accent"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Dark sidebar, colored header, and stronger visual personality."
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Name="DarkSidebarSelectedTextBlock"
+                                               Text="Selected"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </ScrollViewer>
 
                     <Button Grid.Row="2"
                             Content="Close"

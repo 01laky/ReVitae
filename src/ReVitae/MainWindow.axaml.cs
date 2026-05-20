@@ -1,7 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Platform.Storage;
+using Avalonia.Media;
 using ReVitae.Core.Cv;
 using ReVitae.Core.Validation;
 using System;
@@ -16,10 +19,36 @@ namespace ReVitae;
 public partial class MainWindow : Window
 {
     private readonly FieldValidator _validator = MainPersonalInformationSchema.CreateValidator();
+    private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
+
+    private enum CvTemplateId
+    {
+        ClassicSidebar,
+        ModernSidebar,
+        CleanTopHeader,
+        DarkSidebarAccent
+    }
+
+    private sealed record CvTemplateData(
+        string FirstName,
+        string LastName,
+        string ProfessionalTitle,
+        string Email,
+        string Phone,
+        string Location,
+        string LinkedInUrl,
+        string PortfolioUrl,
+        string GitHubUrl,
+        string? ShortSummary,
+        string? PhotoPath)
+    {
+        public string FullName => $"{FirstName} {LastName}".Trim();
+    }
 
     public MainWindow()
     {
         InitializeComponent();
+        UpdateTemplateSelectionState();
         UpdatePreview();
         UpdateValidationState();
     }
@@ -38,6 +67,7 @@ public partial class MainWindow : Window
 
     private void OnOpenTemplatesClicked(object? sender, RoutedEventArgs e)
     {
+        UpdateTemplateSelectionState();
         SetTemplatesModalVisible(true);
     }
 
@@ -49,6 +79,26 @@ public partial class MainWindow : Window
     private void OnCloseTemplatesClicked(object? sender, RoutedEventArgs e)
     {
         SetTemplatesModalVisible(false);
+    }
+
+    private void OnSelectClassicSidebarTemplateClicked(object? sender, RoutedEventArgs e)
+    {
+        SelectTemplate(CvTemplateId.ClassicSidebar);
+    }
+
+    private void OnSelectModernSidebarTemplateClicked(object? sender, RoutedEventArgs e)
+    {
+        SelectTemplate(CvTemplateId.ModernSidebar);
+    }
+
+    private void OnSelectCleanTopHeaderTemplateClicked(object? sender, RoutedEventArgs e)
+    {
+        SelectTemplate(CvTemplateId.CleanTopHeader);
+    }
+
+    private void OnSelectDarkSidebarTemplateClicked(object? sender, RoutedEventArgs e)
+    {
+        SelectTemplate(CvTemplateId.DarkSidebarAccent);
     }
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
@@ -126,7 +176,23 @@ public partial class MainWindow : Window
 
     private void UpdatePreview()
     {
-        PreviewTextBlock.Text = string.Join(Environment.NewLine, BuildPreviewLines());
+        PreviewContentControl.Content = BuildTemplatePreview();
+    }
+
+    private void SelectTemplate(CvTemplateId templateId)
+    {
+        _selectedTemplate = templateId;
+        UpdateTemplateSelectionState();
+        UpdatePreview();
+        SetTemplatesModalVisible(false);
+    }
+
+    private void UpdateTemplateSelectionState()
+    {
+        ClassicSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.ClassicSidebar;
+        ModernSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.ModernSidebar;
+        CleanTopHeaderSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.CleanTopHeader;
+        DarkSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.DarkSidebarAccent;
     }
 
     private void SetSetupModalVisible(bool isVisible)
@@ -266,6 +332,264 @@ public partial class MainWindow : Window
         return summary
             .Replace("\r\n", "\n", StringComparison.Ordinal)
             .Split('\n', StringSplitOptions.None);
+    }
+
+    private Control BuildTemplatePreview()
+    {
+        var data = BuildTemplateData();
+
+        return _selectedTemplate switch
+        {
+            CvTemplateId.ClassicSidebar => BuildClassicSidebarTemplate(data),
+            CvTemplateId.ModernSidebar => BuildModernSidebarTemplate(data),
+            CvTemplateId.CleanTopHeader => BuildCleanTopHeaderTemplate(data),
+            CvTemplateId.DarkSidebarAccent => BuildDarkSidebarAccentTemplate(data),
+            _ => throw new ArgumentOutOfRangeException(nameof(_selectedTemplate))
+        };
+    }
+
+    private CvTemplateData BuildTemplateData()
+    {
+        return new CvTemplateData(
+            NormalizeValue(FirstNameTextBox.Text),
+            NormalizeValue(LastNameTextBox.Text),
+            NormalizeValue(ProfessionalTitleTextBox.Text),
+            NormalizeValue(EmailTextBox.Text),
+            NormalizeValue(PhoneTextBox.Text),
+            NormalizeValue(LocationTextBox.Text),
+            NormalizeValue(LinkedInUrlTextBox.Text),
+            NormalizeValue(PortfolioUrlTextBox.Text),
+            NormalizeValue(GitHubUrlTextBox.Text),
+            ShortSummaryTextBox.Text?.Trim(),
+            PhotoPath: null);
+    }
+
+    private static Control BuildClassicSidebarTemplate(CvTemplateData data)
+    {
+        var root = CreatePreviewRoot();
+        root.ColumnDefinitions = new ColumnDefinitions("0.36*,0.64*");
+
+        var sidebar = new StackPanel
+        {
+            Spacing = 14,
+            Background = Brush.Parse("#D8D8D8"),
+            Margin = new Thickness(18)
+        };
+        sidebar.Children.Add(CreateNameBlock(data.FirstName, data.LastName, "#F47C2C", stacked: true));
+        sidebar.Children.Add(CreateContactSection(data));
+
+        var content = CreateContentPanel();
+        content.Children.Add(CreateSection("Summary", GetSummary(data)));
+        content.Children.Add(CreateSection("Contact Links", BuildLines("LinkedIn", data.LinkedInUrl, "Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+
+        root.Children.Add(sidebar);
+        Grid.SetColumn(content, 1);
+        root.Children.Add(content);
+
+        return root;
+    }
+
+    private static Control BuildModernSidebarTemplate(CvTemplateData data)
+    {
+        var root = CreatePreviewRoot();
+        root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
+
+        var sidebar = new StackPanel
+        {
+            Spacing = 14,
+            Background = Brush.Parse("#D7D7D7"),
+            Margin = new Thickness(18)
+        };
+        sidebar.Children.Add(CreateSection("Contact", BuildLines("Phone", data.Phone, "Email", data.Email, "LinkedIn", data.LinkedInUrl)));
+
+        var content = new Grid
+        {
+            RowDefinitions = new RowDefinitions("Auto,*"),
+            Background = Brushes.White
+        };
+        content.Children.Add(
+            new Border
+            {
+                Background = Brush.Parse("#4A4A4A"),
+                Padding = new Thickness(18, 12),
+                Child = CreateText(data.FullName, 26, Brushes.White, FontWeight.Bold)
+            });
+
+        var body = CreateContentPanel();
+        body.Children.Add(CreateSection("Profile", GetSummary(data)));
+        body.Children.Add(CreateSection("Digital", BuildLines("Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+        Grid.SetRow(body, 1);
+        content.Children.Add(body);
+
+        root.Children.Add(sidebar);
+        Grid.SetColumn(content, 1);
+        root.Children.Add(content);
+
+        return root;
+    }
+
+    private static Control BuildCleanTopHeaderTemplate(CvTemplateData data)
+    {
+        var root = new StackPanel
+        {
+            Background = Brushes.White,
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+
+        var header = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("0.55*,0.45*")
+        };
+
+        var namePanel = new StackPanel { Spacing = 6 };
+        namePanel.Children.Add(CreateText(data.FullName, 30, Brushes.White, FontWeight.Bold));
+        namePanel.Children.Add(CreateText(data.ProfessionalTitle, 14, Brushes.White, FontWeight.SemiBold));
+        header.Children.Add(namePanel);
+
+        var contact = new StackPanel { Spacing = 3 };
+        contact.Children.Add(CreateText($"Email: {data.Email}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"Phone: {data.Phone}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"Location: {data.Location}", 11, Brushes.White, FontWeight.SemiBold));
+        Grid.SetColumn(contact, 1);
+        header.Children.Add(contact);
+
+        root.Children.Add(
+            new Border
+            {
+                Background = Brush.Parse("#5A9BD5"),
+                Padding = new Thickness(28),
+                Child = header
+            });
+
+        var body = CreateContentPanel();
+        body.Children.Add(CreateSection("Summary", GetSummary(data)));
+        body.Children.Add(CreateSection("Links", BuildLines("LinkedIn", data.LinkedInUrl, "Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+        root.Children.Add(body);
+
+        return root;
+    }
+
+    private static Control BuildDarkSidebarAccentTemplate(CvTemplateData data)
+    {
+        var root = CreatePreviewRoot();
+        root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
+
+        var sidebar = new StackPanel
+        {
+            Spacing = 16,
+            Background = Brush.Parse("#2F3A45"),
+            Margin = new Thickness(18)
+        };
+        sidebar.Children.Add(CreateText("CONTACT", 16, Brushes.White, FontWeight.Bold));
+        sidebar.Children.Add(CreateText(BuildLines("Email", data.Email, "Phone", data.Phone, "Location", data.Location), 11, Brushes.White, FontWeight.Normal));
+
+        var content = new StackPanel { Background = Brush.Parse("#F2F2F2") };
+        content.Children.Add(
+            new Border
+            {
+                Background = Brush.Parse("#5B9BB0"),
+                Padding = new Thickness(20),
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        CreateText(data.FullName.ToUpperInvariant(), 28, Brushes.White, FontWeight.Bold),
+                        CreateText(data.ProfessionalTitle.ToUpperInvariant(), 14, Brushes.White, FontWeight.SemiBold)
+                    }
+                }
+            });
+
+        var body = CreateContentPanel();
+        body.Background = Brush.Parse("#F2F2F2");
+        body.Children.Add(CreateSection("Objective", GetSummary(data)));
+        body.Children.Add(CreateSection("Online", BuildLines("LinkedIn", data.LinkedInUrl, "Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+        content.Children.Add(body);
+
+        root.Children.Add(sidebar);
+        Grid.SetColumn(content, 1);
+        root.Children.Add(content);
+
+        return root;
+    }
+
+    private static Grid CreatePreviewRoot()
+    {
+        return new Grid
+        {
+            Background = Brushes.White,
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+    }
+
+    private static StackPanel CreateContentPanel()
+    {
+        return new StackPanel
+        {
+            Spacing = 18,
+            Background = Brushes.White,
+            Margin = new Thickness(18)
+        };
+    }
+
+    private static Control CreateNameBlock(string firstName, string lastName, string accentColor, bool stacked)
+    {
+        var panel = new StackPanel { Spacing = 4 };
+        panel.Children.Add(CreateText(firstName, 24, Brushes.Black, FontWeight.Bold));
+        panel.Children.Add(CreateText(lastName, 24, Brush.Parse(accentColor), FontWeight.Bold));
+        return panel;
+    }
+
+    private static Control CreateContactSection(CvTemplateData data)
+    {
+        return CreateSection("Contact", BuildLines("Email", data.Email, "Phone", data.Phone, "Location", data.Location));
+    }
+
+    private static Control CreateSection(string title, string content)
+    {
+        var panel = new StackPanel { Spacing = 6 };
+        panel.Children.Add(CreateText(title, 18, Brushes.Black, FontWeight.Bold));
+        panel.Children.Add(
+            new Border
+            {
+                Height = 1,
+                Background = Brush.Parse("#B8B8B8")
+            });
+        panel.Children.Add(CreateText(content, 12, Brushes.Black, FontWeight.Normal));
+        return panel;
+    }
+
+    private static TextBlock CreateText(string text, double fontSize, IBrush foreground, FontWeight fontWeight)
+    {
+        return new TextBlock
+        {
+            Text = text,
+            FontSize = fontSize,
+            Foreground = foreground,
+            FontWeight = fontWeight,
+            TextWrapping = TextWrapping.Wrap,
+            TextTrimming = TextTrimming.None
+        };
+    }
+
+    private static string BuildLines(params string[] labelValuePairs)
+    {
+        var lines = new List<string>();
+        for (var index = 0; index < labelValuePairs.Length; index += 2)
+        {
+            var label = labelValuePairs[index];
+            var value = labelValuePairs[index + 1];
+            if (!string.IsNullOrWhiteSpace(value) && value != "-")
+            {
+                lines.Add($"{label}: {value}");
+            }
+        }
+
+        return lines.Count == 0 ? "-" : string.Join(Environment.NewLine, lines);
+    }
+
+    private static string GetSummary(CvTemplateData data)
+    {
+        return string.IsNullOrWhiteSpace(data.ShortSummary) ? "-" : data.ShortSummary;
     }
 
     private static string NormalizeValue(string? value)
