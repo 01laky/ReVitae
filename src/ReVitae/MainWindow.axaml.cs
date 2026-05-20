@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using ReVitae.Core.Cv;
 using ReVitae.Core.Validation;
@@ -28,6 +29,30 @@ public partial class MainWindow : Window
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
+    }
+
+    private void OnOpenSetupClicked(object? sender, RoutedEventArgs e)
+    {
+        SetSetupModalVisible(true);
+    }
+
+    private void OnCloseSetupClicked(object? sender, RoutedEventArgs e)
+    {
+        SetSetupModalVisible(false);
+    }
+
+    private void OnWindowKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && SetupModalOverlay.IsVisible)
+        {
+            SetSetupModalVisible(false);
+            e.Handled = true;
+        }
+    }
+
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        UpdateSetupModalSize();
     }
 
     private async void OnExportPdfClicked(object? sender, RoutedEventArgs e)
@@ -78,6 +103,18 @@ public partial class MainWindow : Window
     private void UpdatePreview()
     {
         PreviewTextBlock.Text = string.Join(Environment.NewLine, BuildPreviewLines());
+    }
+
+    private void SetSetupModalVisible(bool isVisible)
+    {
+        SetupModalOverlay.IsVisible = isVisible;
+        UpdateSetupModalSize();
+    }
+
+    private void UpdateSetupModalSize()
+    {
+        SetupModalPanel.Width = Math.Max(SetupModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
+        SetupModalPanel.Height = Math.Max(SetupModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
     }
 
     private void UpdateValidationState(FieldValidationResult? validationResult = null)

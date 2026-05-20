@@ -10,15 +10,44 @@
         Height="720"
         MinWidth="720"
         MinHeight="480"
-        Title="ReVitae">
-    <Grid RowDefinitions="Auto,*" Margin="24">
-        <StackPanel Grid.Row="0" Spacing="8">
-            <TextBlock Text="ReVitae"
-                       FontSize="28"
-                       FontWeight="Bold" />
-            <TextBlock Text="Create a simple CV preview and export a plain PDF."
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-        </StackPanel>
+        Title="ReVitae"
+        KeyDown="OnWindowKeyDown"
+        SizeChanged="OnWindowSizeChanged">
+    <Grid x:Name="RootGrid"
+          RowDefinitions="Auto,*"
+          Margin="24">
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="16">
+            <StackPanel Grid.Column="0" Spacing="8">
+                <TextBlock Text="ReVitae"
+                           FontSize="28"
+                           FontWeight="Bold" />
+                <TextBlock Text="Create a simple CV preview and export a plain PDF."
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top">
+                <Button x:Name="OpenSetupButton"
+                        Width="64"
+                        Height="50"
+                        Padding="0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Click="OnOpenSetupClicked"
+                        ToolTip.Tip="Open setup"
+                        AutomationProperties.Name="Open setup">
+                    <TextBlock Text="⚙"
+                               FontSize="48"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Button>
+            </StackPanel>
+        </Grid>
 
         <Grid Grid.Row="1"
               Margin="0,24,0,0"
@@ -170,6 +199,49 @@
                                    TextWrapping="Wrap" />
                     </Border>
                 </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="SetupModalOverlay"
+              Grid.RowSpan="2"
+              Background="#99000000"
+              IsVisible="False">
+            <Border x:Name="SetupModalPanel"
+                    MaxWidth="1100"
+                    MaxHeight="800"
+                    MinWidth="360"
+                    MinHeight="280"
+                    Padding="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <TextBlock Text="Setup"
+                                   FontSize="24"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Content="Close"
+                                Click="OnCloseSetupClicked" />
+                    </Grid>
+
+                    <TextBlock Grid.Row="1"
+                               Margin="0,24,0,0"
+                               Text="Setup options will be added in a future step."
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+                    <Button Grid.Row="2"
+                            Content="Close"
+                            HorizontalAlignment="Right"
+                            Click="OnCloseSetupClicked" />
+                </Grid>
             </Border>
         </Grid>
     </Grid>
