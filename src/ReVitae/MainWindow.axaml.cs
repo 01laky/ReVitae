@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -21,6 +22,8 @@ namespace ReVitae;
 
 public partial class MainWindow : Window
 {
+    private const double TemplateContentPadding = 18;
+
     private readonly FieldValidator _validator = MainPersonalInformationSchema.CreateValidator();
     private readonly WorkExperienceCollectionValidator _workExperienceValidator = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
@@ -108,6 +111,12 @@ public partial class MainWindow : Window
         SetTemplatesModalVisible(true);
     }
 
+    private void OnOpenPreviewExpandClicked(object? sender, RoutedEventArgs e)
+    {
+        UpdatePreview();
+        SetPreviewExpandModalVisible(true);
+    }
+
     private void OnCloseSetupClicked(object? sender, RoutedEventArgs e)
     {
         SetSetupModalVisible(false);
@@ -116,6 +125,11 @@ public partial class MainWindow : Window
     private void OnCloseTemplatesClicked(object? sender, RoutedEventArgs e)
     {
         SetTemplatesModalVisible(false);
+    }
+
+    private void OnClosePreviewExpandClicked(object? sender, RoutedEventArgs e)
+    {
+        SetPreviewExpandModalVisible(false);
     }
 
     private void OnLanguageSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -165,6 +179,10 @@ public partial class MainWindow : Window
         else if (SetupModalOverlay.IsVisible)
         {
             SetSetupModalVisible(false);
+        }
+        else if (PreviewExpandModalOverlay.IsVisible)
+        {
+            SetPreviewExpandModalVisible(false);
         }
         else
         {
@@ -229,6 +247,8 @@ public partial class MainWindow : Window
         HeaderSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.HeaderSubtitle);
         ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
         ToolTip.SetTip(OpenTemplatesButton, _localizer.Get(TranslationKeys.OpenTemplates));
+        ToolTip.SetTip(OpenPreviewExpandButton, _localizer.Get(TranslationKeys.OpenExpandPreview));
+        AutomationProperties.SetName(OpenPreviewExpandButton, _localizer.Get(TranslationKeys.OpenExpandPreview));
 
         PersonalInformationSection.Title = _localizer.Get(TranslationKeys.MainPersonalInformation);
         PersonalInformationSection.ExpandToolTip = _localizer.Get(TranslationKeys.ExpandSection);
@@ -247,6 +267,9 @@ public partial class MainWindow : Window
         ShortSummaryTextBox.PlaceholderText = _localizer.Get(TranslationKeys.ShortSummaryPlaceholder);
         ExportPdfButton.Content = _localizer.Get(TranslationKeys.ExportPdf);
         PreviewTitleTextBlock.Text = _localizer.Get(TranslationKeys.Preview);
+        PreviewExpandTitleTextBlock.Text = _localizer.Get(TranslationKeys.PreviewExpandTitle);
+        PreviewExpandTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
+        PreviewExpandBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
 
         SetupTitleTextBlock.Text = _localizer.Get(TranslationKeys.Setup);
         SetupPlaceholderTextBlock.Text = _localizer.Get(TranslationKeys.SetupPlaceholder);
@@ -274,6 +297,7 @@ public partial class MainWindow : Window
     private void UpdatePreview()
     {
         PreviewContentControl.Content = BuildTemplatePreview();
+        PreviewExpandContentControl.Content = BuildTemplatePreview();
     }
 
     private void SelectTemplate(CvTemplateId templateId)
@@ -302,7 +326,8 @@ public partial class MainWindow : Window
         SetupModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
-            SetTemplatesModalVisible(false);
+            TemplatesModalOverlay.IsVisible = false;
+            PreviewExpandModalOverlay.IsVisible = false;
         }
 
         UpdateModalSizes();
@@ -313,7 +338,20 @@ public partial class MainWindow : Window
         TemplatesModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
-            SetSetupModalVisible(false);
+            SetupModalOverlay.IsVisible = false;
+            PreviewExpandModalOverlay.IsVisible = false;
+        }
+
+        UpdateModalSizes();
+    }
+
+    private void SetPreviewExpandModalVisible(bool isVisible)
+    {
+        PreviewExpandModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            SetupModalOverlay.IsVisible = false;
+            TemplatesModalOverlay.IsVisible = false;
         }
 
         UpdateModalSizes();
@@ -325,6 +363,8 @@ public partial class MainWindow : Window
         SetupModalPanel.Height = Math.Max(SetupModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
         TemplatesModalPanel.Width = Math.Max(TemplatesModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
         TemplatesModalPanel.Height = Math.Max(TemplatesModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
+        PreviewExpandModalPanel.Width = Math.Max(PreviewExpandModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
+        PreviewExpandModalPanel.Height = Math.Max(PreviewExpandModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
     }
 
     private void UpdateValidationState(FieldValidationResult? validationResult = null)
@@ -569,23 +609,19 @@ public partial class MainWindow : Window
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.36*,0.64*");
 
-        var sidebar = new StackPanel
-        {
-            Spacing = 14,
-            Background = Brush.Parse("#D8D8D8"),
-            Margin = new Thickness(18)
-        };
-        sidebar.Children.Add(CreateNameBlock(data.FirstName, data.LastName, "#F47C2C", stacked: true));
-        sidebar.Children.Add(CreateContactSection(data));
+        var sidebarContent = new StackPanel { Spacing = 14 };
+        sidebarContent.Children.Add(CreateNameBlock(data.FirstName, data.LastName, "#F47C2C", stacked: true));
+        sidebarContent.Children.Add(CreateContactSection(data));
 
-        var content = CreateContentPanel();
+        var content = CreateContentStack();
         content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
         AddWorkExperienceSection(content, data);
         content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.ContactLinks), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
 
-        root.Children.Add(sidebar);
-        Grid.SetColumn(content, 1);
-        root.Children.Add(content);
+        root.Children.Add(CreateSidebarPanel(Brush.Parse("#D8D8D8"), sidebarContent));
+        var contentPanel = WrapContentPanel(content);
+        Grid.SetColumn(contentPanel, 1);
+        root.Children.Add(contentPanel);
 
         return root;
     }
@@ -595,35 +631,32 @@ public partial class MainWindow : Window
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
 
-        var sidebar = new StackPanel
-        {
-            Spacing = 14,
-            Background = Brush.Parse("#D7D7D7"),
-            Margin = new Thickness(18)
-        };
-        sidebar.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Contact), BuildLines(_localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl)));
+        var sidebarContent = new StackPanel { Spacing = 14 };
+        sidebarContent.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Contact), BuildLines(_localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl)));
 
         var content = new Grid
         {
             RowDefinitions = new RowDefinitions("Auto,*"),
-            Background = Brushes.White
+            Background = Brushes.White,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch
         };
         content.Children.Add(
             new Border
             {
                 Background = Brush.Parse("#4A4A4A"),
-                Padding = new Thickness(18, 12),
+                Padding = new Thickness(TemplateContentPadding, 12),
                 Child = CreateText(data.FullName, 26, Brushes.White, FontWeight.Bold)
             });
 
-        var body = CreateContentPanel();
+        var body = CreateContentStack();
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Profile), GetSummary(data)));
         AddWorkExperienceSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Digital), BuildLines(_localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
-        Grid.SetRow(body, 1);
-        content.Children.Add(body);
+        Grid.SetRow(WrapContentPanel(body), 1);
+        content.Children.Add(WrapContentPanel(body));
 
-        root.Children.Add(sidebar);
+        root.Children.Add(CreateSidebarPanel(Brush.Parse("#D7D7D7"), sidebarContent));
         Grid.SetColumn(content, 1);
         root.Children.Add(content);
 
@@ -663,11 +696,11 @@ public partial class MainWindow : Window
                 Child = header
             });
 
-        var body = CreateContentPanel();
+        var body = CreateContentStack();
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
         AddWorkExperienceSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Links), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
-        root.Children.Add(body);
+        root.Children.Add(WrapContentPanel(body));
 
         return root;
     }
@@ -677,16 +710,16 @@ public partial class MainWindow : Window
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
 
-        var sidebar = new StackPanel
-        {
-            Spacing = 16,
-            Background = Brush.Parse("#2F3A45"),
-            Margin = new Thickness(18)
-        };
-        sidebar.Children.Add(CreateText(_localizer.Get(TranslationKeys.Contact).ToUpperInvariant(), 16, Brushes.White, FontWeight.Bold));
-        sidebar.Children.Add(CreateText(BuildLines(_localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Location), data.Location), 11, Brushes.White, FontWeight.Normal));
+        var sidebarContent = new StackPanel { Spacing = 16 };
+        sidebarContent.Children.Add(CreateText(_localizer.Get(TranslationKeys.Contact).ToUpperInvariant(), 16, Brushes.White, FontWeight.Bold));
+        sidebarContent.Children.Add(CreateText(BuildLines(_localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Location), data.Location), 11, Brushes.White, FontWeight.Normal));
 
-        var content = new StackPanel { Background = Brush.Parse("#F2F2F2") };
+        var content = new StackPanel
+        {
+            Background = Brush.Parse("#F2F2F2"),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch
+        };
         content.Children.Add(
             new Border
             {
@@ -702,14 +735,14 @@ public partial class MainWindow : Window
                 }
             });
 
-        var body = CreateContentPanel();
+        var body = CreateContentStack();
         body.Background = Brush.Parse("#F2F2F2");
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Objective), GetSummary(data)));
         AddWorkExperienceSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Online), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
-        content.Children.Add(body);
+        content.Children.Add(WrapContentPanel(body, Brush.Parse("#F2F2F2")));
 
-        root.Children.Add(sidebar);
+        root.Children.Add(CreateSidebarPanel(Brush.Parse("#2F3A45"), sidebarContent));
         Grid.SetColumn(content, 1);
         root.Children.Add(content);
 
@@ -721,17 +754,41 @@ public partial class MainWindow : Window
         return new Grid
         {
             Background = Brushes.White,
-            HorizontalAlignment = HorizontalAlignment.Stretch
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch
         };
     }
 
-    private static StackPanel CreateContentPanel()
+    private static StackPanel CreateContentStack()
     {
         return new StackPanel
         {
             Spacing = 18,
-            Background = Brushes.White,
-            Margin = new Thickness(18)
+            Background = Brushes.White
+        };
+    }
+
+    private static Border CreateSidebarPanel(IBrush background, Control content)
+    {
+        return new Border
+        {
+            Background = background,
+            Padding = new Thickness(TemplateContentPadding),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Child = content
+        };
+    }
+
+    private static Border WrapContentPanel(StackPanel content, IBrush? background = null)
+    {
+        return new Border
+        {
+            Background = background ?? Brushes.White,
+            Padding = new Thickness(TemplateContentPadding),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Child = content
         };
     }
 

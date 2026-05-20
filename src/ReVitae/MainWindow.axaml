@@ -52,7 +52,7 @@
                         Click="OnOpenTemplatesClicked"
                         ToolTip.Tip="Open templates"
                         AutomationProperties.Name="Open templates">
-                    <materialIcons:MaterialIcon Kind="ViewGrid"
+                    <materialIcons:MaterialIcon Kind="Palette"
                                                 Width="24"
                                                 Height="24" />
                 </Button>
@@ -182,12 +182,29 @@
 
             <Border Grid.Column="1"
                     Classes="re-vitae-app-card">
-                <StackPanel Classes="re-vitae-section-body">
-                    <TextBlock x:Name="PreviewTitleTextBlock"
-                               Classes="re-vitae-section-title"
-                               Text="Preview" />
+                <StackPanel Classes="re-vitae-preview-chrome">
+                    <Grid Classes="re-vitae-section-header"
+                          ColumnDefinitions="Auto,*,Auto">
+                        <Border Grid.Column="0"
+                                Classes="re-vitae-section-header-spacer" />
+                        <TextBlock x:Name="PreviewTitleTextBlock"
+                                   Grid.Column="1"
+                                   Classes="re-vitae-section-title"
+                                   VerticalAlignment="Center"
+                                   Text="Preview" />
+                        <Button x:Name="OpenPreviewExpandButton"
+                                Grid.Column="2"
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnOpenPreviewExpandClicked"
+                                ToolTip.Tip="Expand preview"
+                                AutomationProperties.Name="Expand preview">
+                            <materialIcons:MaterialIcon Kind="ArrowExpand"
+                                                        Width="22"
+                                                        Height="22" />
+                        </Button>
+                    </Grid>
                     <Border Classes="re-vitae-preview-surface">
-                        <ScrollViewer>
+                        <ScrollViewer Classes="re-vitae-preview-scroll">
                             <ContentControl x:Name="PreviewContentControl" />
                         </ScrollViewer>
                     </Border>
@@ -223,7 +240,7 @@
                     </Grid>
 
                     <StackPanel Grid.Row="1"
-                                Margin="0,24,0,0"
+                                Margin="0,14,0,0"
                                 Classes="re-vitae-section-body">
                         <TextBlock x:Name="SetupPlaceholderTextBlock"
                                    Classes="re-vitae-secondary"
@@ -288,19 +305,20 @@
                     </Grid>
 
                     <ScrollViewer Grid.Row="1"
-                                  Margin="0,24,0,0">
+                                  Margin="0,14,0,0">
                         <WrapPanel>
                             <Button x:Name="ClassicSidebarTemplateButton"
                                     Classes="re-vitae-template-card"
                                     Click="OnSelectClassicSidebarTemplateClicked">
                                 <StackPanel Spacing="10">
-                                    <Grid Height="86"
-                                          ColumnDefinitions="72,*">
-                                        <Border Grid.Column="0"
-                                                Background="#D0D0D0" />
-                                        <Border Grid.Column="1"
-                                                Background="White" />
-                                    </Grid>
+                                    <Border Classes="re-vitae-template-thumbnail">
+                                        <Grid ColumnDefinitions="36*,64*">
+                                            <Border Grid.Column="0"
+                                                    Background="#D8D8D8" />
+                                            <Border Grid.Column="1"
+                                                    Background="White" />
+                                        </Grid>
+                                    </Border>
                                     <TextBlock x:Name="ClassicSidebarNameTextBlock"
                                                Text="Classic Sidebar"
                                                FontWeight="SemiBold" />
@@ -317,17 +335,19 @@
                                     Classes="re-vitae-template-card"
                                     Click="OnSelectModernSidebarTemplateClicked">
                                 <StackPanel Spacing="10">
-                                    <Grid Height="86"
-                                          RowDefinitions="28,*"
-                                          ColumnDefinitions="72,*">
-                                        <Border Grid.RowSpan="2"
-                                                Background="#D7D7D7" />
-                                        <Border Grid.Column="1"
-                                                Background="#444444" />
-                                        <Border Grid.Row="1"
-                                                Grid.Column="1"
-                                                Background="White" />
-                                    </Grid>
+                                    <Border Classes="re-vitae-template-thumbnail">
+                                        <Grid ColumnDefinitions="34*,66*"
+                                              RowDefinitions="32*,68*">
+                                            <Border Grid.RowSpan="2"
+                                                    Background="#D7D7D7" />
+                                            <Border Grid.Column="1"
+                                                    Grid.Row="0"
+                                                    Background="#444444" />
+                                            <Border Grid.Column="1"
+                                                    Grid.Row="1"
+                                                    Background="White" />
+                                        </Grid>
+                                    </Border>
                                     <TextBlock x:Name="ModernSidebarNameTextBlock"
                                                Text="Modern Sidebar"
                                                FontWeight="SemiBold" />
@@ -344,12 +364,13 @@
                                     Classes="re-vitae-template-card"
                                     Click="OnSelectCleanTopHeaderTemplateClicked">
                                 <StackPanel Spacing="10">
-                                    <Grid Height="86"
-                                          RowDefinitions="34,*">
-                                        <Border Background="#5A9BD5" />
-                                        <Border Grid.Row="1"
-                                                Background="White" />
-                                    </Grid>
+                                    <Border Classes="re-vitae-template-thumbnail">
+                                        <Grid RowDefinitions="39*,61*">
+                                            <Border Background="#5A9BD5" />
+                                            <Border Grid.Row="1"
+                                                    Background="White" />
+                                        </Grid>
+                                    </Border>
                                     <TextBlock x:Name="CleanTopHeaderNameTextBlock"
                                                Text="Clean Top Header"
                                                FontWeight="SemiBold" />
@@ -366,16 +387,17 @@
                                     Classes="re-vitae-template-card"
                                     Click="OnSelectDarkSidebarTemplateClicked">
                                 <StackPanel Spacing="10">
-                                    <Grid Height="86"
-                                          ColumnDefinitions="72,*">
-                                        <Border Background="#2F3A45" />
-                                        <Grid Grid.Column="1"
-                                              RowDefinitions="28,*">
-                                            <Border Background="#5B9BB0" />
-                                            <Border Grid.Row="1"
-                                                    Background="#F2F2F2" />
+                                    <Border Classes="re-vitae-template-thumbnail">
+                                        <Grid ColumnDefinitions="34*,66*">
+                                            <Border Background="#2F3A45" />
+                                            <Grid Grid.Column="1"
+                                                  RowDefinitions="32*,68*">
+                                                <Border Background="#5B9BB0" />
+                                                <Border Grid.Row="1"
+                                                        Background="#F2F2F2" />
+                                            </Grid>
                                         </Grid>
-                                    </Grid>
+                                    </Border>
                                     <TextBlock x:Name="DarkSidebarAccentNameTextBlock"
                                                Text="Dark Sidebar Accent"
                                                FontWeight="SemiBold" />
@@ -395,6 +417,52 @@
                             Content="Close"
                             HorizontalAlignment="Right"
                             Click="OnCloseTemplatesClicked" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="PreviewExpandModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="PreviewExpandModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="1100"
+                    MaxHeight="800"
+                    MinWidth="360"
+                    MinHeight="280"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <TextBlock x:Name="PreviewExpandTitleTextBlock"
+                                   Classes="re-vitae-app-title"
+                                   FontSize="24"
+                                   Text="Expanded preview"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="PreviewExpandTopCloseButton"
+                                Grid.Column="1"
+                                Content="Close"
+                                Click="OnClosePreviewExpandClicked" />
+                    </Grid>
+
+                    <StackPanel Grid.Row="1"
+                                VerticalAlignment="Stretch"
+                                Classes="re-vitae-preview-chrome">
+                        <Border Classes="re-vitae-preview-surface">
+                            <ScrollViewer Classes="re-vitae-preview-scroll">
+                                <ContentControl x:Name="PreviewExpandContentControl" />
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+
+                    <Button x:Name="PreviewExpandBottomCloseButton"
+                            Grid.Row="2"
+                            Content="Close"
+                            HorizontalAlignment="Right"
+                            Click="OnClosePreviewExpandClicked" />
                 </Grid>
             </Border>
         </Grid>

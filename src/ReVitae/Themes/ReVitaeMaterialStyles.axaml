@@ -80,7 +80,7 @@
     </Style>
 
     <Style Selector="Border.re-vitae-modal-panel">
-        <Setter Property="Padding" Value="24" />
+        <Setter Property="Padding" Value="20" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
@@ -116,6 +116,60 @@
         <Setter Property="CornerRadius" Value="18" />
     </Style>
 
+    <Style Selector="Grid.re-vitae-section-header">
+        <Setter Property="ColumnSpacing" Value="8" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-section-header-spacer">
+        <Setter Property="Width" Value="36" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-template-thumbnail">
+        <Setter Property="Height" Value="86" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+    <Style Selector="StackPanel.re-vitae-preview-chrome">
+        <Setter Property="Spacing" Value="14" />
+    </Style>
+
+    <Style Selector="ScrollViewer.re-vitae-preview-scroll">
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-preview-surface > ScrollViewer.re-vitae-preview-scroll ContentControl">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-template-card">
+        <Setter Property="Width" Value="220" />
+        <Setter Property="MinHeight" Value="190" />
+        <Setter Property="Margin" Value="0,0,16,16" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-template-card > StackPanel">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-template-card.selected">
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Padding" Value="11" />
+    </Style>
+
     <Style Selector="Button.re-vitae-primary">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="Padding" Value="16,10" />
@@ -124,20 +178,6 @@
     <Style Selector="Button.re-vitae-secondary">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="Padding" Value="14,8" />
-    </Style>
-
-    <Style Selector="Button.re-vitae-template-card">
-        <Setter Property="Width" Value="220" />
-        <Setter Property="MinHeight" Value="190" />
-        <Setter Property="Margin" Value="0,0,16,16" />
-        <Setter Property="Padding" Value="12" />
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="CornerRadius" Value="12" />
-    </Style>
-
-    <Style Selector="Button.re-vitae-template-card.selected">
-        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
-        <Setter Property="BorderThickness" Value="2" />
     </Style>
 
     <Style Selector="StackPanel.re-vitae-form-field">

@@ -27,6 +27,7 @@ public sealed class AppLocalizer
         [TranslationKeys.HeaderSubtitle] = "Create a simple CV preview and export a plain PDF.",
         [TranslationKeys.OpenSetup] = "Open setup",
         [TranslationKeys.OpenTemplates] = "Open templates",
+        [TranslationKeys.OpenExpandPreview] = "Expand preview",
         [TranslationKeys.MainPersonalInformation] = "Main / Personal information",
         [TranslationKeys.FirstName] = "First name",
         [TranslationKeys.LastName] = "Last name",
@@ -41,6 +42,7 @@ public sealed class AppLocalizer
         [TranslationKeys.ShortSummaryPlaceholder] = "Write two to four sentences about your professional profile.",
         [TranslationKeys.ExportPdf] = "Export PDF",
         [TranslationKeys.Preview] = "Preview",
+        [TranslationKeys.PreviewExpandTitle] = "Expanded preview",
         [TranslationKeys.Setup] = "Setup",
         [TranslationKeys.SetupPlaceholder] = "Setup options will be added in a future step.",
         [TranslationKeys.Templates] = "Templates",
@@ -145,17 +147,17 @@ public sealed class AppLocalizer
     private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> TranslationOverlays =
         new Dictionary<string, IReadOnlyDictionary<string, string>>
         {
-            ["sk"] = Overlay("Vytvorte jednoduchý náhľad CV a exportujte plain PDF.", "Nastavenia", "Šablóny", "Jazyk", "Zavrieť", "Meno", "Priezvisko", "Profesijný titul", "Telefón", "Lokalita", "Krátke zhrnutie", "Náhľad", "Vybrané", "Pracovné skúsenosti", "Pridajte najprv poslednú pozíciu. Poradie môžete zmeniť neskôr."),
-            ["cs"] = Overlay("Vytvořte jednoduchý náhled CV a exportujte plain PDF.", "Nastavení", "Šablony", "Jazyk", "Zavřít", "Jméno", "Příjmení", "Profesní titul", "Telefon", "Lokalita", "Krátké shrnutí", "Náhled", "Vybráno", "Pracovní zkušenosti", "Nejprve přidejte poslední roli. Pořadí můžete změnit později."),
-            ["es"] = Overlay("Crea una vista previa simple del CV y exporta un PDF básico.", "Configuración", "Plantillas", "Idioma", "Cerrar", "Nombre", "Apellido", "Título profesional", "Teléfono", "Ubicación", "Resumen breve", "Vista previa", "Seleccionado", "Experiencia laboral", "Agrega tu rol más reciente primero. Puedes reordenar después."),
-            ["fr"] = Overlay("Créez un aperçu simple du CV et exportez un PDF léger.", "Configuration", "Modèles", "Langue", "Fermer", "Prénom", "Nom", "Titre professionnel", "Téléphone", "Lieu", "Résumé court", "Aperçu", "Sélectionné", "Expérience professionnelle", "Ajoutez d'abord votre poste le plus récent. Vous pourrez réorganiser ensuite."),
-            ["de"] = Overlay("Erstellen Sie eine einfache CV-Vorschau und exportieren Sie ein schlichtes PDF.", "Einrichtung", "Vorlagen", "Sprache", "Schließen", "Vorname", "Nachname", "Berufsbezeichnung", "Telefon", "Standort", "Kurzprofil", "Vorschau", "Ausgewählt", "Berufserfahrung", "Fügen Sie zuerst Ihre aktuelle Rolle hinzu. Die Reihenfolge können Sie später ändern."),
-            ["pt"] = Overlay("Crie uma pré-visualização simples do CV e exporte um PDF básico.", "Configuração", "Modelos", "Idioma", "Fechar", "Nome", "Sobrenome", "Título profissional", "Telefone", "Localização", "Resumo curto", "Pré-visualização", "Selecionado", "Experiência profissional", "Adicione primeiro a função mais recente. Você pode reordenar depois."),
-            ["it"] = Overlay("Crea un'anteprima semplice del CV ed esporta un PDF leggero.", "Configurazione", "Modelli", "Lingua", "Chiudi", "Nome", "Cognome", "Titolo professionale", "Telefono", "Località", "Breve riepilogo", "Anteprima", "Selezionato", "Esperienza lavorativa", "Aggiungi prima il ruolo più recente. Potrai riordinare in seguito."),
-            ["nl"] = Overlay("Maak een eenvoudige cv-preview en exporteer een eenvoudige PDF.", "Instellingen", "Sjablonen", "Taal", "Sluiten", "Voornaam", "Achternaam", "Functietitel", "Telefoon", "Locatie", "Korte samenvatting", "Voorbeeld", "Geselecteerd", "Werkervaring", "Voeg eerst je meest recente rol toe. Je kunt later herschikken."),
-            ["pl"] = Overlay("Utwórz prosty podgląd CV i wyeksportuj lekki PDF.", "Ustawienia", "Szablony", "Język", "Zamknij", "Imię", "Nazwisko", "Tytuł zawodowy", "Telefon", "Lokalizacja", "Krótkie podsumowanie", "Podgląd", "Wybrano", "Doświadczenie zawodowe", "Najpierw dodaj ostatnie stanowisko. Kolejność możesz zmienić później."),
-            ["uk"] = Overlay("Створіть простий попередній перегляд CV та експортуйте простий PDF.", "Налаштування", "Шаблони", "Мова", "Закрити", "Ім'я", "Прізвище", "Професійний заголовок", "Телефон", "Місцезнаходження", "Короткий опис", "Перегляд", "Вибрано", "Досвід роботи", "Спочатку додайте останню роль. Порядок можна змінити пізніше."),
-            ["zh-Hans"] = Overlay("创建简单的简历预览并导出基础 PDF。", "设置", "模板", "语言", "关闭", "名", "姓", "职业标题", "电话", "位置", "简短摘要", "预览", "已选择", "工作经历", "请先添加最近的工作。之后可以重新排序。")
+            ["sk"] = Overlay("Vytvorte jednoduchý náhľad CV a exportujte plain PDF.", "Nastavenia", "Šablóny", "Jazyk", "Zavrieť", "Meno", "Priezvisko", "Profesijný titul", "Telefón", "Lokalita", "Krátke zhrnutie", "Náhľad", "Vybrané", "Pracovné skúsenosti", "Pridajte najprv poslednú pozíciu. Poradie môžete zmeniť neskôr.", "Rozbaliť náhľad", "Rozšírený náhľad"),
+            ["cs"] = Overlay("Vytvořte jednoduchý náhled CV a exportujte plain PDF.", "Nastavení", "Šablony", "Jazyk", "Zavřít", "Jméno", "Příjmení", "Profesní titul", "Telefon", "Lokalita", "Krátké shrnutí", "Náhled", "Vybráno", "Pracovní zkušenosti", "Nejprve přidejte poslední roli. Pořadí můžete změnit později.", "Rozbalit náhled", "Rozšířený náhled"),
+            ["es"] = Overlay("Crea una vista previa simple del CV y exporta un PDF básico.", "Configuración", "Plantillas", "Idioma", "Cerrar", "Nombre", "Apellido", "Título profesional", "Teléfono", "Ubicación", "Resumen breve", "Vista previa", "Seleccionado", "Experiencia laboral", "Agrega tu rol más reciente primero. Puedes reordenar después.", "Expandir vista previa", "Vista previa ampliada"),
+            ["fr"] = Overlay("Créez un aperçu simple du CV et exportez un PDF léger.", "Configuration", "Modèles", "Langue", "Fermer", "Prénom", "Nom", "Titre professionnel", "Téléphone", "Lieu", "Résumé court", "Aperçu", "Sélectionné", "Expérience professionnelle", "Ajoutez d'abord votre poste le plus récent. Vous pourrez réorganiser ensuite.", "Agrandir l'aperçu", "Aperçu agrandi"),
+            ["de"] = Overlay("Erstellen Sie eine einfache CV-Vorschau und exportieren Sie ein schlichtes PDF.", "Einrichtung", "Vorlagen", "Sprache", "Schließen", "Vorname", "Nachname", "Berufsbezeichnung", "Telefon", "Standort", "Kurzprofil", "Vorschau", "Ausgewählt", "Berufserfahrung", "Fügen Sie zuerst Ihre aktuelle Rolle hinzu. Die Reihenfolge können Sie später ändern.", "Vorschau vergrößern", "Erweiterte Vorschau"),
+            ["pt"] = Overlay("Crie uma pré-visualização simples do CV e exporte um PDF básico.", "Configuração", "Modelos", "Idioma", "Fechar", "Nome", "Sobrenome", "Título profissional", "Telefone", "Localização", "Resumo curto", "Pré-visualização", "Selecionado", "Experiência profissional", "Adicione primeiro a função mais recente. Você pode reordenar depois.", "Expandir pré-visualização", "Pré-visualização ampliada"),
+            ["it"] = Overlay("Crea un'anteprima semplice del CV ed esporta un PDF leggero.", "Configurazione", "Modelli", "Lingua", "Chiudi", "Nome", "Cognome", "Titolo professionale", "Telefono", "Località", "Breve riepilogo", "Anteprima", "Selezionato", "Esperienza lavorativa", "Aggiungi prima il ruolo più recente. Potrai riordinare in seguito.", "Espandi anteprima", "Anteprima ingrandita"),
+            ["nl"] = Overlay("Maak een eenvoudige cv-preview en exporteer een eenvoudige PDF.", "Instellingen", "Sjablonen", "Taal", "Sluiten", "Voornaam", "Achternaam", "Functietitel", "Telefoon", "Locatie", "Korte samenvatting", "Voorbeeld", "Geselecteerd", "Werkervaring", "Voeg eerst je meest recente rol toe. Je kunt later herschikken.", "Voorbeeld vergroten", "Uitgevouwen voorbeeld"),
+            ["pl"] = Overlay("Utwórz prosty podgląd CV i wyeksportuj lekki PDF.", "Ustawienia", "Szablony", "Język", "Zamknij", "Imię", "Nazwisko", "Tytuł zawodowy", "Telefon", "Lokalizacja", "Krótkie podsumowanie", "Podgląd", "Wybrano", "Doświadczenie zawodowe", "Najpierw dodaj ostatnie stanowisko. Kolejność możesz zmienić później.", "Powiększ podgląd", "Powiększony podgląd"),
+            ["uk"] = Overlay("Створіть простий попередній перегляд CV та експортуйте простий PDF.", "Налаштування", "Шаблони", "Мова", "Закрити", "Ім'я", "Прізвище", "Професійний заголовок", "Телефон", "Місцезнаходження", "Короткий опис", "Перегляд", "Вибрано", "Досвід роботи", "Спочатку додайте останню роль. Порядок можна змінити пізніше.", "Розгорнути перегляд", "Розширений перегляд"),
+            ["zh-Hans"] = Overlay("创建简单的简历预览并导出基础 PDF。", "设置", "模板", "语言", "关闭", "名", "姓", "职业标题", "电话", "位置", "简短摘要", "预览", "已选择", "工作经历", "请先添加最近的工作。之后可以重新排序。", "展开预览", "展开的预览")
         };
 
     private readonly IReadOnlyDictionary<string, string> _translations;
@@ -248,13 +250,16 @@ public sealed class AppLocalizer
         string preview,
         string selected,
         string workExperience,
-        string workExperienceEmptyHint)
+        string workExperienceEmptyHint,
+        string openExpandPreview,
+        string previewExpandTitle)
     {
         return new Dictionary<string, string>
         {
             [TranslationKeys.HeaderSubtitle] = subtitle,
             [TranslationKeys.OpenSetup] = setup,
             [TranslationKeys.OpenTemplates] = templates,
+            [TranslationKeys.OpenExpandPreview] = openExpandPreview,
             [TranslationKeys.Setup] = setup,
             [TranslationKeys.Templates] = templates,
             [TranslationKeys.Language] = language,
@@ -266,6 +271,7 @@ public sealed class AppLocalizer
             [TranslationKeys.Location] = location,
             [TranslationKeys.ShortSummary] = shortSummary,
             [TranslationKeys.Preview] = preview,
+            [TranslationKeys.PreviewExpandTitle] = previewExpandTitle,
             [TranslationKeys.Selected] = selected,
             [TranslationKeys.WorkExperience] = workExperience,
             [TranslationKeys.WorkExperienceEmptyHint] = workExperienceEmptyHint

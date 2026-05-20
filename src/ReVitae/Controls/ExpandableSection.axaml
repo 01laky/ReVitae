@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ReVitae.Controls.ExpandableSection">
     <StackPanel Spacing="10">
-        <Grid ColumnDefinitions="Auto,*,Auto"
-              ColumnSpacing="8">
+        <Grid Classes="re-vitae-section-header"
+              ColumnDefinitions="Auto,*,Auto">
             <Button x:Name="ToggleButton"
                     Grid.Column="0"
                     Classes="re-vitae-expand-toggle"

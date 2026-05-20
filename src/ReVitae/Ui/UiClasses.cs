@@ -17,6 +17,10 @@ public static class UiClasses
     public const string FormField = "re-vitae-form-field";
     public const string Page = "re-vitae-page";
     public const string SectionBody = "re-vitae-section-body";
+    public const string SectionHeader = "re-vitae-section-header";
+    public const string SectionHeaderSpacer = "re-vitae-section-header-spacer";
+    public const string TemplateThumbnail = "re-vitae-template-thumbnail";
+    public const string PreviewChrome = "re-vitae-preview-chrome";
     public const string MultilineTextBox = "re-vitae-multiline";
     public const string AppTitle = "re-vitae-app-title";
     public const string SectionTitle = "re-vitae-section-title";

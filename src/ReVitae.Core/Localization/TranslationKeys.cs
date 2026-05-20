@@ -5,6 +5,7 @@ public static class TranslationKeys
     public const string HeaderSubtitle = "header.subtitle";
     public const string OpenSetup = "action.openSetup";
     public const string OpenTemplates = "action.openTemplates";
+    public const string OpenExpandPreview = "action.openExpandPreview";
     public const string MainPersonalInformation = "form.mainPersonalInformation";
     public const string FirstName = "field.firstName";
     public const string LastName = "field.lastName";
@@ -19,6 +20,7 @@ public static class TranslationKeys
     public const string ShortSummaryPlaceholder = "placeholder.shortSummary";
     public const string ExportPdf = "action.exportPdf";
     public const string Preview = "preview.title";
+    public const string PreviewExpandTitle = "modal.previewExpand.title";
     public const string Setup = "modal.setup.title";
     public const string SetupPlaceholder = "modal.setup.placeholder";
     public const string Templates = "modal.templates.title";
@@ -125,6 +127,7 @@ public static class TranslationKeys
         HeaderSubtitle,
         OpenSetup,
         OpenTemplates,
+        OpenExpandPreview,
         MainPersonalInformation,
         FirstName,
         LastName,
@@ -139,6 +142,7 @@ public static class TranslationKeys
         ShortSummaryPlaceholder,
         ExportPdf,
         Preview,
+        PreviewExpandTitle,
         Setup,
         SetupPlaceholder,
         Templates,
