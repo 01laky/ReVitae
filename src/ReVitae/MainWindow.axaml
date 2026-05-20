@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="clr-namespace:ReVitae.Core.Localization;assembly=ReVitae.Core"
         x:Class="ReVitae.MainWindow"
         mc:Ignorable="d"
         d:DesignWidth="900"
@@ -23,7 +24,8 @@
                 <TextBlock Text="ReVitae"
                            FontSize="28"
                            FontWeight="Bold" />
-                <TextBlock Text="Create a simple CV preview and export a plain PDF."
+                <TextBlock x:Name="HeaderSubtitleTextBlock"
+                           Text="Create a simple CV preview and export a plain PDF."
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
@@ -33,7 +35,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center">
                 <Button x:Name="OpenSetupButton"
-                        Width="56"
+                        Width="48"
                         Height="48"
                         Padding="0"
                         HorizontalContentAlignment="Center"
@@ -41,16 +43,18 @@
                         Click="OnOpenSetupClicked"
                         ToolTip.Tip="Open setup"
                         AutomationProperties.Name="Open setup">
-                    <TextBlock Text="⚙"
-                               FontSize="32"
-                               LineHeight="32"
-                               Margin="0,4,0,0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
+                    <Viewbox Width="26"
+                             Height="26"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center">
+                        <TextBlock Text="⚙"
+                                   FontSize="26"
+                                   TextAlignment="Center" />
+                    </Viewbox>
                 </Button>
 
                 <Button x:Name="OpenTemplatesButton"
-                        Width="56"
+                        Width="48"
                         Height="48"
                         Padding="0"
                         HorizontalContentAlignment="Center"
@@ -58,12 +62,14 @@
                         Click="OnOpenTemplatesClicked"
                         ToolTip.Tip="Open templates"
                         AutomationProperties.Name="Open templates">
-                    <TextBlock Text="🎨"
-                               FontSize="28"
-                               LineHeight="28"
-                               Margin="0,4,0,0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
+                    <Viewbox Width="26"
+                             Height="26"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center">
+                        <TextBlock Text="🎨"
+                                   FontSize="26"
+                                   TextAlignment="Center" />
+                    </Viewbox>
                 </Button>
             </StackPanel>
         </Grid>
@@ -78,12 +84,13 @@
                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                         CornerRadius="8">
                     <StackPanel Spacing="14">
-                        <TextBlock Text="Main / Personal information"
+                        <TextBlock x:Name="MainPersonalInformationTitleTextBlock"
+                                   Text="Main / Personal information"
                                    FontSize="18"
                                    FontWeight="SemiBold" />
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="First name" />
+                            <TextBlock x:Name="FirstNameLabelTextBlock" Text="First name" />
                             <TextBox x:Name="FirstNameTextBox"
                                      PlaceholderText="John"
                                      TextChanged="OnFormTextChanged" />
@@ -93,7 +100,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Last name" />
+                            <TextBlock x:Name="LastNameLabelTextBlock" Text="Last name" />
                             <TextBox x:Name="LastNameTextBox"
                                      PlaceholderText="Doe"
                                      TextChanged="OnFormTextChanged" />
@@ -103,7 +110,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Professional title" />
+                            <TextBlock x:Name="ProfessionalTitleLabelTextBlock" Text="Professional title" />
                             <TextBox x:Name="ProfessionalTitleTextBox"
                                      PlaceholderText="Frontend Developer"
                                      TextChanged="OnFormTextChanged" />
@@ -113,7 +120,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Email" />
+                            <TextBlock x:Name="EmailLabelTextBlock" Text="Email" />
                             <TextBox x:Name="EmailTextBox"
                                      PlaceholderText="john.doe@example.com"
                                      TextChanged="OnFormTextChanged" />
@@ -123,7 +130,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Phone" />
+                            <TextBlock x:Name="PhoneLabelTextBlock" Text="Phone" />
                             <TextBox x:Name="PhoneTextBox"
                                      PlaceholderText="+421 900 000 000"
                                      TextChanged="OnFormTextChanged" />
@@ -133,7 +140,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Location" />
+                            <TextBlock x:Name="LocationLabelTextBlock" Text="Location" />
                             <TextBox x:Name="LocationTextBox"
                                      PlaceholderText="Bratislava, Slovakia"
                                      TextChanged="OnFormTextChanged" />
@@ -143,7 +150,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="LinkedIn URL" />
+                            <TextBlock x:Name="LinkedInUrlLabelTextBlock" Text="LinkedIn URL" />
                             <TextBox x:Name="LinkedInUrlTextBox"
                                      PlaceholderText="https://www.linkedin.com/in/johndoe"
                                      TextChanged="OnFormTextChanged" />
@@ -153,7 +160,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Portfolio / website URL" />
+                            <TextBlock x:Name="PortfolioUrlLabelTextBlock" Text="Portfolio / website URL" />
                             <TextBox x:Name="PortfolioUrlTextBox"
                                      PlaceholderText="https://johndoe.dev"
                                      TextChanged="OnFormTextChanged" />
@@ -163,7 +170,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="GitHub URL" />
+                            <TextBlock x:Name="GitHubUrlLabelTextBlock" Text="GitHub URL" />
                             <TextBox x:Name="GitHubUrlTextBox"
                                      PlaceholderText="https://github.com/johndoe"
                                      TextChanged="OnFormTextChanged" />
@@ -173,7 +180,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Short summary" />
+                            <TextBlock x:Name="ShortSummaryLabelTextBlock" Text="Short summary" />
                             <TextBox x:Name="ShortSummaryTextBox"
                                      AcceptsReturn="True"
                                      MinHeight="96"
@@ -207,7 +214,8 @@
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                     CornerRadius="8">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Preview"
+                    <TextBlock x:Name="PreviewTitleTextBlock"
+                               Text="Preview"
                                FontSize="18"
                                FontWeight="SemiBold" />
                     <Border Padding="16"
@@ -241,22 +249,49 @@
                     <Grid Grid.Row="0"
                           ColumnDefinitions="*,Auto"
                           ColumnSpacing="16">
-                        <TextBlock Text="Setup"
+                        <TextBlock x:Name="SetupTitleTextBlock"
+                                   Text="Setup"
                                    FontSize="24"
                                    FontWeight="SemiBold"
                                    VerticalAlignment="Center" />
-                        <Button Grid.Column="1"
+                        <Button x:Name="SetupTopCloseButton"
+                                Grid.Column="1"
                                 Content="Close"
                                 Click="OnCloseSetupClicked" />
                     </Grid>
 
-                    <TextBlock Grid.Row="1"
-                               Margin="0,24,0,0"
-                               Text="Setup options will be added in a future step."
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <StackPanel Grid.Row="1"
+                                Margin="0,24,0,0"
+                                Spacing="12">
+                        <TextBlock x:Name="SetupPlaceholderTextBlock"
+                                   Text="Setup options will be added in a future step."
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
 
-                    <Button Grid.Row="2"
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LanguageLabelTextBlock"
+                                       Text="Language" />
+                            <ComboBox x:Name="LanguageComboBox"
+                                      MinWidth="220"
+                                      SelectionChanged="OnLanguageSelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="loc:SupportedLanguage">
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="8">
+                                            <TextBlock Text="{Binding FlagEmoji}"
+                                                       FontSize="16"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding NativeName}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button x:Name="SetupBottomCloseButton"
+                            Grid.Row="2"
                             Content="Close"
                             HorizontalAlignment="Right"
                             Click="OnCloseSetupClicked" />
@@ -284,11 +319,13 @@
                     <Grid Grid.Row="0"
                           ColumnDefinitions="*,Auto"
                           ColumnSpacing="16">
-                        <TextBlock Text="Templates"
+                        <TextBlock x:Name="TemplatesTitleTextBlock"
+                                   Text="Templates"
                                    FontSize="24"
                                    FontWeight="SemiBold"
                                    VerticalAlignment="Center" />
-                        <Button Grid.Column="1"
+                        <Button x:Name="TemplatesTopCloseButton"
+                                Grid.Column="1"
                                 Content="Close"
                                 Click="OnCloseTemplatesClicked" />
                     </Grid>
@@ -311,9 +348,11 @@
                                         <Border Grid.Column="1"
                                                 Background="White" />
                                     </Grid>
-                                    <TextBlock Text="Classic Sidebar"
+                                    <TextBlock x:Name="ClassicSidebarNameTextBlock"
+                                               Text="Classic Sidebar"
                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="Light sidebar with contact details and a clean content area."
+                                    <TextBlock x:Name="ClassicSidebarDescriptionTextBlock"
+                                               Text="Light sidebar with contact details and a clean content area."
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                     <TextBlock x:Name="ClassicSidebarSelectedTextBlock"
@@ -342,9 +381,11 @@
                                                 Grid.Column="1"
                                                 Background="White" />
                                     </Grid>
-                                    <TextBlock Text="Modern Sidebar"
+                                    <TextBlock x:Name="ModernSidebarNameTextBlock"
+                                               Text="Modern Sidebar"
                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="Compact sidebar with a dark name band and focused content."
+                                    <TextBlock x:Name="ModernSidebarDescriptionTextBlock"
+                                               Text="Compact sidebar with a dark name band and focused content."
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                     <TextBlock x:Name="ModernSidebarSelectedTextBlock"
@@ -368,9 +409,11 @@
                                         <Border Grid.Row="1"
                                                 Background="White" />
                                     </Grid>
-                                    <TextBlock Text="Clean Top Header"
+                                    <TextBlock x:Name="CleanTopHeaderNameTextBlock"
+                                               Text="Clean Top Header"
                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="Safe default with a full-width color header and simple sections."
+                                    <TextBlock x:Name="CleanTopHeaderDescriptionTextBlock"
+                                               Text="Safe default with a full-width color header and simple sections."
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                     <TextBlock x:Name="CleanTopHeaderSelectedTextBlock"
@@ -398,9 +441,11 @@
                                                     Background="#F2F2F2" />
                                         </Grid>
                                     </Grid>
-                                    <TextBlock Text="Dark Sidebar Accent"
+                                    <TextBlock x:Name="DarkSidebarAccentNameTextBlock"
+                                               Text="Dark Sidebar Accent"
                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="Dark sidebar, colored header, and stronger visual personality."
+                                    <TextBlock x:Name="DarkSidebarAccentDescriptionTextBlock"
+                                               Text="Dark sidebar, colored header, and stronger visual personality."
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                     <TextBlock x:Name="DarkSidebarSelectedTextBlock"
@@ -412,7 +457,8 @@
                         </WrapPanel>
                     </ScrollViewer>
 
-                    <Button Grid.Row="2"
+                    <Button x:Name="TemplatesBottomCloseButton"
+                            Grid.Row="2"
                             Content="Close"
                             HorizontalAlignment="Right"
                             Click="OnCloseTemplatesClicked" />

@@ -6,9 +6,11 @@ using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Media;
 using ReVitae.Core.Cv;
+using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,6 +21,8 @@ namespace ReVitae;
 public partial class MainWindow : Window
 {
     private readonly FieldValidator _validator = MainPersonalInformationSchema.CreateValidator();
+    private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
+    private bool _isUpdatingLanguageSelection;
     private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
 
     private enum CvTemplateId
@@ -48,9 +52,20 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeLanguageSelector();
+        ApplyLocalization();
         UpdateTemplateSelectionState();
         UpdatePreview();
         UpdateValidationState();
+    }
+
+    private void InitializeLanguageSelector()
+    {
+        _isUpdatingLanguageSelection = true;
+        LanguageComboBox.ItemsSource = AppLocalizer.SupportedLanguages;
+        LanguageComboBox.SelectedItem = AppLocalizer.SupportedLanguages
+            .First(language => language.Code == _localizer.LanguageCode);
+        _isUpdatingLanguageSelection = false;
     }
 
     private void OnFormTextChanged(object? sender, TextChangedEventArgs e)
@@ -79,6 +94,19 @@ public partial class MainWindow : Window
     private void OnCloseTemplatesClicked(object? sender, RoutedEventArgs e)
     {
         SetTemplatesModalVisible(false);
+    }
+
+    private void OnLanguageSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_isUpdatingLanguageSelection || LanguageComboBox.SelectedItem is not SupportedLanguage language)
+        {
+            return;
+        }
+
+        _localizer = new AppLocalizer(language.Code);
+        ApplyLocalization();
+        UpdateValidationState();
+        UpdatePreview();
     }
 
     private void OnSelectClassicSidebarTemplateClicked(object? sender, RoutedEventArgs e)
@@ -135,14 +163,14 @@ public partial class MainWindow : Window
         if (!validationResult.IsValid)
         {
             UpdateValidationState(validationResult);
-            ExportStatusTextBlock.Text = "Fix validation errors before exporting PDF.";
+            ExportStatusTextBlock.Text = _localizer.Get(TranslationKeys.ExportFixValidation);
             return;
         }
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
         {
-            ExportStatusTextBlock.Text = "Unable to open the file picker.";
+            ExportStatusTextBlock.Text = _localizer.Get(TranslationKeys.ExportFilePickerUnavailable);
             return;
         }
 
@@ -171,7 +199,51 @@ public partial class MainWindow : Window
         var pdfBytes = CreatePdfBytes(BuildPreviewLines());
         await stream.WriteAsync(pdfBytes);
 
-        ExportStatusTextBlock.Text = $"Exported PDF to {file.Name}.";
+        ExportStatusTextBlock.Text = _localizer.Format(TranslationKeys.ExportedPdfTo, file.Name);
+    }
+
+    private void ApplyLocalization()
+    {
+        HeaderSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.HeaderSubtitle);
+        ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
+        ToolTip.SetTip(OpenTemplatesButton, _localizer.Get(TranslationKeys.OpenTemplates));
+
+        MainPersonalInformationTitleTextBlock.Text = _localizer.Get(TranslationKeys.MainPersonalInformation);
+        FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
+        LastNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.LastName);
+        ProfessionalTitleLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfessionalTitle);
+        EmailLabelTextBlock.Text = _localizer.Get(TranslationKeys.Email);
+        PhoneLabelTextBlock.Text = _localizer.Get(TranslationKeys.Phone);
+        LocationLabelTextBlock.Text = _localizer.Get(TranslationKeys.Location);
+        LinkedInUrlLabelTextBlock.Text = _localizer.Get(TranslationKeys.LinkedInUrl);
+        PortfolioUrlLabelTextBlock.Text = _localizer.Get(TranslationKeys.PortfolioUrl);
+        GitHubUrlLabelTextBlock.Text = _localizer.Get(TranslationKeys.GitHubUrl);
+        ShortSummaryLabelTextBlock.Text = _localizer.Get(TranslationKeys.ShortSummary);
+        ShortSummaryTextBox.PlaceholderText = _localizer.Get(TranslationKeys.ShortSummaryPlaceholder);
+        ExportPdfButton.Content = _localizer.Get(TranslationKeys.ExportPdf);
+        PreviewTitleTextBlock.Text = _localizer.Get(TranslationKeys.Preview);
+
+        SetupTitleTextBlock.Text = _localizer.Get(TranslationKeys.Setup);
+        SetupPlaceholderTextBlock.Text = _localizer.Get(TranslationKeys.SetupPlaceholder);
+        SetupTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
+        SetupBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
+        LanguageLabelTextBlock.Text = _localizer.Get(TranslationKeys.Language);
+
+        TemplatesTitleTextBlock.Text = _localizer.Get(TranslationKeys.Templates);
+        TemplatesTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
+        TemplatesBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
+        ClassicSidebarNameTextBlock.Text = _localizer.Get(TranslationKeys.ClassicSidebar);
+        ClassicSidebarDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.ClassicSidebarDescription);
+        ModernSidebarNameTextBlock.Text = _localizer.Get(TranslationKeys.ModernSidebar);
+        ModernSidebarDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.ModernSidebarDescription);
+        CleanTopHeaderNameTextBlock.Text = _localizer.Get(TranslationKeys.CleanTopHeader);
+        CleanTopHeaderDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.CleanTopHeaderDescription);
+        DarkSidebarAccentNameTextBlock.Text = _localizer.Get(TranslationKeys.DarkSidebarAccent);
+        DarkSidebarAccentDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.DarkSidebarAccentDescription);
+        ClassicSidebarSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
+        ModernSidebarSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
+        CleanTopHeaderSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
+        DarkSidebarSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
     }
 
     private void UpdatePreview()
@@ -233,7 +305,7 @@ public partial class MainWindow : Window
         UpdateFieldErrorMessages(validationResult);
         ValidationSummaryTextBlock.Text = validationResult.IsValid
             ? string.Empty
-            : string.Join(Environment.NewLine, validationResult.Errors.Select(error => error.Message));
+            : string.Join(Environment.NewLine, validationResult.Errors.Select(error => _localizer.Get(error.Message)));
     }
 
     private void UpdateFieldErrorMessages(FieldValidationResult validationResult)
@@ -257,9 +329,9 @@ public partial class MainWindow : Window
         ShortSummaryErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.ShortSummary);
     }
 
-    private static string GetFieldError(IReadOnlyDictionary<string, string> errorsByField, string fieldKey)
+    private string GetFieldError(IReadOnlyDictionary<string, string> errorsByField, string fieldKey)
     {
-        return errorsByField.TryGetValue(fieldKey, out var error) ? error : string.Empty;
+        return errorsByField.TryGetValue(fieldKey, out var error) ? _localizer.Get(error) : string.Empty;
     }
 
     private FieldValidationResult ValidateForm()
@@ -291,14 +363,14 @@ public partial class MainWindow : Window
             BuildFullName(),
             NormalizeValue(ProfessionalTitleTextBox.Text),
             string.Empty,
-            $"Email: {NormalizeValue(EmailTextBox.Text)}",
-            $"Phone: {NormalizeValue(PhoneTextBox.Text)}",
-            $"Location: {NormalizeValue(LocationTextBox.Text)}",
-            $"LinkedIn: {NormalizeValue(LinkedInUrlTextBox.Text)}",
-            $"Portfolio: {NormalizeValue(PortfolioUrlTextBox.Text)}",
-            $"GitHub: {NormalizeValue(GitHubUrlTextBox.Text)}",
+            $"{_localizer.Get(TranslationKeys.Email)}: {NormalizeValue(EmailTextBox.Text)}",
+            $"{_localizer.Get(TranslationKeys.Phone)}: {NormalizeValue(PhoneTextBox.Text)}",
+            $"{_localizer.Get(TranslationKeys.Location)}: {NormalizeValue(LocationTextBox.Text)}",
+            $"{_localizer.Get(TranslationKeys.LinkedInUrl)}: {NormalizeValue(LinkedInUrlTextBox.Text)}",
+            $"{_localizer.Get(TranslationKeys.PortfolioUrl)}: {NormalizeValue(PortfolioUrlTextBox.Text)}",
+            $"{_localizer.Get(TranslationKeys.GitHubUrl)}: {NormalizeValue(GitHubUrlTextBox.Text)}",
             string.Empty,
-            "Summary:"
+            $"{_localizer.Get(TranslationKeys.Summary)}:"
         };
 
         lines.AddRange(BuildSummaryLines());
@@ -364,7 +436,7 @@ public partial class MainWindow : Window
             PhotoPath: null);
     }
 
-    private static Control BuildClassicSidebarTemplate(CvTemplateData data)
+    private Control BuildClassicSidebarTemplate(CvTemplateData data)
     {
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.36*,0.64*");
@@ -379,8 +451,8 @@ public partial class MainWindow : Window
         sidebar.Children.Add(CreateContactSection(data));
 
         var content = CreateContentPanel();
-        content.Children.Add(CreateSection("Summary", GetSummary(data)));
-        content.Children.Add(CreateSection("Contact Links", BuildLines("LinkedIn", data.LinkedInUrl, "Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+        content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
+        content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.ContactLinks), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
 
         root.Children.Add(sidebar);
         Grid.SetColumn(content, 1);
@@ -389,7 +461,7 @@ public partial class MainWindow : Window
         return root;
     }
 
-    private static Control BuildModernSidebarTemplate(CvTemplateData data)
+    private Control BuildModernSidebarTemplate(CvTemplateData data)
     {
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
@@ -400,7 +472,7 @@ public partial class MainWindow : Window
             Background = Brush.Parse("#D7D7D7"),
             Margin = new Thickness(18)
         };
-        sidebar.Children.Add(CreateSection("Contact", BuildLines("Phone", data.Phone, "Email", data.Email, "LinkedIn", data.LinkedInUrl)));
+        sidebar.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Contact), BuildLines(_localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl)));
 
         var content = new Grid
         {
@@ -416,8 +488,8 @@ public partial class MainWindow : Window
             });
 
         var body = CreateContentPanel();
-        body.Children.Add(CreateSection("Profile", GetSummary(data)));
-        body.Children.Add(CreateSection("Digital", BuildLines("Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Profile), GetSummary(data)));
+        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Digital), BuildLines(_localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         Grid.SetRow(body, 1);
         content.Children.Add(body);
 
@@ -428,7 +500,7 @@ public partial class MainWindow : Window
         return root;
     }
 
-    private static Control BuildCleanTopHeaderTemplate(CvTemplateData data)
+    private Control BuildCleanTopHeaderTemplate(CvTemplateData data)
     {
         var root = new StackPanel
         {
@@ -447,9 +519,9 @@ public partial class MainWindow : Window
         header.Children.Add(namePanel);
 
         var contact = new StackPanel { Spacing = 3 };
-        contact.Children.Add(CreateText($"Email: {data.Email}", 11, Brushes.White, FontWeight.SemiBold));
-        contact.Children.Add(CreateText($"Phone: {data.Phone}", 11, Brushes.White, FontWeight.SemiBold));
-        contact.Children.Add(CreateText($"Location: {data.Location}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"{_localizer.Get(TranslationKeys.Email)}: {data.Email}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"{_localizer.Get(TranslationKeys.Phone)}: {data.Phone}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"{_localizer.Get(TranslationKeys.Location)}: {data.Location}", 11, Brushes.White, FontWeight.SemiBold));
         Grid.SetColumn(contact, 1);
         header.Children.Add(contact);
 
@@ -462,14 +534,14 @@ public partial class MainWindow : Window
             });
 
         var body = CreateContentPanel();
-        body.Children.Add(CreateSection("Summary", GetSummary(data)));
-        body.Children.Add(CreateSection("Links", BuildLines("LinkedIn", data.LinkedInUrl, "Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
+        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Links), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         root.Children.Add(body);
 
         return root;
     }
 
-    private static Control BuildDarkSidebarAccentTemplate(CvTemplateData data)
+    private Control BuildDarkSidebarAccentTemplate(CvTemplateData data)
     {
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
@@ -480,8 +552,8 @@ public partial class MainWindow : Window
             Background = Brush.Parse("#2F3A45"),
             Margin = new Thickness(18)
         };
-        sidebar.Children.Add(CreateText("CONTACT", 16, Brushes.White, FontWeight.Bold));
-        sidebar.Children.Add(CreateText(BuildLines("Email", data.Email, "Phone", data.Phone, "Location", data.Location), 11, Brushes.White, FontWeight.Normal));
+        sidebar.Children.Add(CreateText(_localizer.Get(TranslationKeys.Contact).ToUpperInvariant(), 16, Brushes.White, FontWeight.Bold));
+        sidebar.Children.Add(CreateText(BuildLines(_localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Location), data.Location), 11, Brushes.White, FontWeight.Normal));
 
         var content = new StackPanel { Background = Brush.Parse("#F2F2F2") };
         content.Children.Add(
@@ -501,8 +573,8 @@ public partial class MainWindow : Window
 
         var body = CreateContentPanel();
         body.Background = Brush.Parse("#F2F2F2");
-        body.Children.Add(CreateSection("Objective", GetSummary(data)));
-        body.Children.Add(CreateSection("Online", BuildLines("LinkedIn", data.LinkedInUrl, "Portfolio", data.PortfolioUrl, "GitHub", data.GitHubUrl)));
+        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Objective), GetSummary(data)));
+        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Online), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         content.Children.Add(body);
 
         root.Children.Add(sidebar);
@@ -539,9 +611,9 @@ public partial class MainWindow : Window
         return panel;
     }
 
-    private static Control CreateContactSection(CvTemplateData data)
+    private Control CreateContactSection(CvTemplateData data)
     {
-        return CreateSection("Contact", BuildLines("Email", data.Email, "Phone", data.Phone, "Location", data.Location));
+        return CreateSection(_localizer.Get(TranslationKeys.Contact), BuildLines(_localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Location), data.Location));
     }
 
     private static Control CreateSection(string title, string content)
