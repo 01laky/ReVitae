@@ -31,10 +31,10 @@
                         Orientation="Horizontal"
                         Spacing="8"
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Top">
+                        VerticalAlignment="Center">
                 <Button x:Name="OpenSetupButton"
-                        Width="64"
-                        Height="50"
+                        Width="56"
+                        Height="48"
                         Padding="0"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
@@ -42,7 +42,26 @@
                         ToolTip.Tip="Open setup"
                         AutomationProperties.Name="Open setup">
                     <TextBlock Text="⚙"
-                               FontSize="48"
+                               FontSize="32"
+                               LineHeight="32"
+                               Margin="0,4,0,0"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Button>
+
+                <Button x:Name="OpenTemplatesButton"
+                        Width="56"
+                        Height="48"
+                        Padding="0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Click="OnOpenTemplatesClicked"
+                        ToolTip.Tip="Open templates"
+                        AutomationProperties.Name="Open templates">
+                    <TextBlock Text="🎨"
+                               FontSize="28"
+                               LineHeight="28"
+                               Margin="0,4,0,0"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center" />
                 </Button>
@@ -241,6 +260,49 @@
                             Content="Close"
                             HorizontalAlignment="Right"
                             Click="OnCloseSetupClicked" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="TemplatesModalOverlay"
+              Grid.RowSpan="2"
+              Background="#99000000"
+              IsVisible="False">
+            <Border x:Name="TemplatesModalPanel"
+                    MaxWidth="1100"
+                    MaxHeight="800"
+                    MinWidth="360"
+                    MinHeight="280"
+                    Padding="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <TextBlock Text="Templates"
+                                   FontSize="24"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Content="Close"
+                                Click="OnCloseTemplatesClicked" />
+                    </Grid>
+
+                    <TextBlock Grid.Row="1"
+                               Margin="0,24,0,0"
+                               Text="Template selection will be added in a future step."
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+                    <Button Grid.Row="2"
+                            Content="Close"
+                            HorizontalAlignment="Right"
+                            Click="OnCloseTemplatesClicked" />
                 </Grid>
             </Border>
         </Grid>

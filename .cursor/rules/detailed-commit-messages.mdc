@@ -1,0 +1,21 @@
+---
+description: Require detailed commit messages
+alwaysApply: true
+---
+
+# Commit Messages
+
+When creating commits in this repository, always write a detailed and descriptive
+commit message.
+
+The commit message should:
+
+- use a concise summary line,
+- include a longer body whenever the change is more than trivial,
+- explain what changed,
+- explain why the change was made,
+- mention important validation, tests, or scripts that were run,
+- avoid vague messages such as `update`, `fix`, or `changes`.
+
+Prefer enough detail that the commit can be understood later from Git history
+without needing the chat context.

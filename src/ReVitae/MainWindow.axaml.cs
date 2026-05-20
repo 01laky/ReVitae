@@ -36,23 +36,47 @@ public partial class MainWindow : Window
         SetSetupModalVisible(true);
     }
 
+    private void OnOpenTemplatesClicked(object? sender, RoutedEventArgs e)
+    {
+        SetTemplatesModalVisible(true);
+    }
+
     private void OnCloseSetupClicked(object? sender, RoutedEventArgs e)
     {
         SetSetupModalVisible(false);
     }
 
+    private void OnCloseTemplatesClicked(object? sender, RoutedEventArgs e)
+    {
+        SetTemplatesModalVisible(false);
+    }
+
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Escape && SetupModalOverlay.IsVisible)
+        if (e.Key != Key.Escape)
+        {
+            return;
+        }
+
+        if (TemplatesModalOverlay.IsVisible)
+        {
+            SetTemplatesModalVisible(false);
+        }
+        else if (SetupModalOverlay.IsVisible)
         {
             SetSetupModalVisible(false);
-            e.Handled = true;
         }
+        else
+        {
+            return;
+        }
+
+        e.Handled = true;
     }
 
     private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        UpdateSetupModalSize();
+        UpdateModalSizes();
     }
 
     private async void OnExportPdfClicked(object? sender, RoutedEventArgs e)
@@ -108,13 +132,31 @@ public partial class MainWindow : Window
     private void SetSetupModalVisible(bool isVisible)
     {
         SetupModalOverlay.IsVisible = isVisible;
-        UpdateSetupModalSize();
+        if (isVisible)
+        {
+            SetTemplatesModalVisible(false);
+        }
+
+        UpdateModalSizes();
     }
 
-    private void UpdateSetupModalSize()
+    private void SetTemplatesModalVisible(bool isVisible)
+    {
+        TemplatesModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            SetSetupModalVisible(false);
+        }
+
+        UpdateModalSizes();
+    }
+
+    private void UpdateModalSizes()
     {
         SetupModalPanel.Width = Math.Max(SetupModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
         SetupModalPanel.Height = Math.Max(SetupModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
+        TemplatesModalPanel.Width = Math.Max(TemplatesModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
+        TemplatesModalPanel.Height = Math.Max(TemplatesModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
     }
 
     private void UpdateValidationState(FieldValidationResult? validationResult = null)
