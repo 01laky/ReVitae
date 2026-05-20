@@ -1,9 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using ReVitae.Core.Cv;
+using ReVitae.Core.Validation;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,20 +14,32 @@ namespace ReVitae;
 
 public partial class MainWindow : Window
 {
+    private readonly FieldValidator _validator = MainPersonalInformationSchema.CreateValidator();
+
     public MainWindow()
     {
         InitializeComponent();
         UpdatePreview();
+        UpdateValidationState();
     }
 
     private void OnFormTextChanged(object? sender, TextChangedEventArgs e)
     {
         UpdatePreview();
+        UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
     }
 
     private async void OnExportPdfClicked(object? sender, RoutedEventArgs e)
     {
+        var validationResult = ValidateForm();
+        if (!validationResult.IsValid)
+        {
+            UpdateValidationState(validationResult);
+            ExportStatusTextBlock.Text = "Fix validation errors before exporting PDF.";
+            return;
+        }
+
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
         {
@@ -63,6 +78,65 @@ public partial class MainWindow : Window
     private void UpdatePreview()
     {
         PreviewTextBlock.Text = string.Join(Environment.NewLine, BuildPreviewLines());
+    }
+
+    private void UpdateValidationState(FieldValidationResult? validationResult = null)
+    {
+        validationResult ??= ValidateForm();
+
+        ExportPdfButton.IsEnabled = validationResult.IsValid;
+        UpdateFieldErrorMessages(validationResult);
+        ValidationSummaryTextBlock.Text = validationResult.IsValid
+            ? string.Empty
+            : string.Join(Environment.NewLine, validationResult.Errors.Select(error => error.Message));
+    }
+
+    private void UpdateFieldErrorMessages(FieldValidationResult validationResult)
+    {
+        var errorsByField = validationResult.Errors
+            .GroupBy(error => error.FieldKey)
+            .ToDictionary(
+                group => group.Key,
+                group => string.Join(Environment.NewLine, group.Select(error => error.Message)),
+                StringComparer.Ordinal);
+
+        FirstNameErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.FirstName);
+        LastNameErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.LastName);
+        ProfessionalTitleErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.ProfessionalTitle);
+        EmailErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.Email);
+        PhoneErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.Phone);
+        LocationErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.Location);
+        LinkedInUrlErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.LinkedInUrl);
+        PortfolioUrlErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.PortfolioUrl);
+        GitHubUrlErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.GitHubUrl);
+        ShortSummaryErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.ShortSummary);
+    }
+
+    private static string GetFieldError(IReadOnlyDictionary<string, string> errorsByField, string fieldKey)
+    {
+        return errorsByField.TryGetValue(fieldKey, out var error) ? error : string.Empty;
+    }
+
+    private FieldValidationResult ValidateForm()
+    {
+        return _validator.Validate(BuildFieldValues());
+    }
+
+    private IReadOnlyDictionary<string, string?> BuildFieldValues()
+    {
+        return new Dictionary<string, string?>
+        {
+            [MainPersonalInformationFieldKeys.FirstName] = FirstNameTextBox.Text,
+            [MainPersonalInformationFieldKeys.LastName] = LastNameTextBox.Text,
+            [MainPersonalInformationFieldKeys.ProfessionalTitle] = ProfessionalTitleTextBox.Text,
+            [MainPersonalInformationFieldKeys.Email] = EmailTextBox.Text,
+            [MainPersonalInformationFieldKeys.Phone] = PhoneTextBox.Text,
+            [MainPersonalInformationFieldKeys.Location] = LocationTextBox.Text,
+            [MainPersonalInformationFieldKeys.LinkedInUrl] = LinkedInUrlTextBox.Text,
+            [MainPersonalInformationFieldKeys.PortfolioUrl] = PortfolioUrlTextBox.Text,
+            [MainPersonalInformationFieldKeys.GitHubUrl] = GitHubUrlTextBox.Text,
+            [MainPersonalInformationFieldKeys.ShortSummary] = ShortSummaryTextBox.Text
+        };
     }
 
     private string[] BuildPreviewLines()

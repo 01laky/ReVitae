@@ -39,6 +39,9 @@
                             <TextBox x:Name="FirstNameTextBox"
                                      PlaceholderText="John"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="FirstNameErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -46,6 +49,9 @@
                             <TextBox x:Name="LastNameTextBox"
                                      PlaceholderText="Doe"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="LastNameErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -53,6 +59,9 @@
                             <TextBox x:Name="ProfessionalTitleTextBox"
                                      PlaceholderText="Frontend Developer"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="ProfessionalTitleErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -60,6 +69,9 @@
                             <TextBox x:Name="EmailTextBox"
                                      PlaceholderText="john.doe@example.com"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="EmailErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -67,6 +79,9 @@
                             <TextBox x:Name="PhoneTextBox"
                                      PlaceholderText="+421 900 000 000"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="PhoneErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -74,6 +89,9 @@
                             <TextBox x:Name="LocationTextBox"
                                      PlaceholderText="Bratislava, Slovakia"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="LocationErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -81,6 +99,9 @@
                             <TextBox x:Name="LinkedInUrlTextBox"
                                      PlaceholderText="https://www.linkedin.com/in/johndoe"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="LinkedInUrlErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -88,6 +109,9 @@
                             <TextBox x:Name="PortfolioUrlTextBox"
                                      PlaceholderText="https://johndoe.dev"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="PortfolioUrlErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -95,6 +119,9 @@
                             <TextBox x:Name="GitHubUrlTextBox"
                                      PlaceholderText="https://github.com/johndoe"
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="GitHubUrlErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
@@ -105,9 +132,17 @@
                                      TextWrapping="Wrap"
                                      PlaceholderText="Write two to four sentences about your professional profile."
                                      TextChanged="OnFormTextChanged" />
+                            <TextBlock x:Name="ShortSummaryErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                         </StackPanel>
 
-                        <Button Content="Export PDF"
+                        <TextBlock x:Name="ValidationSummaryTextBlock"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+
+                        <Button x:Name="ExportPdfButton"
+                                Content="Export PDF"
                                 HorizontalAlignment="Left"
                                 Click="OnExportPdfClicked" />
 

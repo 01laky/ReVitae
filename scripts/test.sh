@@ -6,4 +6,3 @@ cd "$ROOT_DIR"
 
 dotnet restore ReVitae.sln
 dotnet test ReVitae.sln --configuration Release --no-restore
-dotnet build ReVitae.sln --configuration Release --no-restore
