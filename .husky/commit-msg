@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+set -eu
+
+commit_msg_file="$1"
+tmp_file="${commit_msg_file}.tmp"
+
+awk '
+  BEGIN { IGNORECASE = 1 }
+  $0 !~ /cursoragent|cursoragent@cursor\.com|Co-authored-by:[[:space:]]*Cursor[[:space:]]*<cursoragent@cursor\.com>/
+' "$commit_msg_file" > "$tmp_file"
+mv "$tmp_file" "$commit_msg_file"
+
+if grep -qiE "cursoragent|cursoragent@cursor\\.com|Co-authored-by:[[:space:]]*Cursor[[:space:]]*<cursoragent@cursor\\.com>" "$commit_msg_file"; then
+  echo "Commit message must not include Cursor as a co-author." >&2
+  exit 1
+fi

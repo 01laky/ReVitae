@@ -1,0 +1,17 @@
+---
+description: Prevent Cursor co-author trailers in commits
+alwaysApply: true
+---
+
+# Commit Authorship
+
+Do not add Cursor as a co-author in any commit message for this repository.
+
+Never include these trailers or identities:
+
+- `Co-authored-by: Cursor <cursoragent@cursor.com>`
+- `cursoragent`
+- `cursoragent@cursor.com`
+
+Commit messages should only include human authorship explicitly requested by the
+user.
