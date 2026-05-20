@@ -4,5 +4,8 @@ public enum FieldFormat
 {
     Text,
     Email,
-    Url
+    Url,
+    Month,
+    Year,
+    EmploymentType
 }

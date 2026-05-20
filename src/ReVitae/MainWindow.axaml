@@ -3,6 +3,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:loc="clr-namespace:ReVitae.Core.Localization;assembly=ReVitae.Core"
+        xmlns:controls="clr-namespace:ReVitae.Controls"
+        xmlns:workExperience="clr-namespace:ReVitae.WorkExperience"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="ReVitae.MainWindow"
         mc:Ignorable="d"
         d:DesignWidth="900"
@@ -20,13 +23,13 @@
         <Grid Grid.Row="0"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="16">
-            <StackPanel Grid.Column="0" Spacing="8">
+            <StackPanel Grid.Column="0"
+                        Classes="re-vitae-page">
                 <TextBlock Text="ReVitae"
-                           FontSize="28"
-                           FontWeight="Bold" />
+                           Classes="re-vitae-app-title" />
                 <TextBlock x:Name="HeaderSubtitleTextBlock"
-                           Text="Create a simple CV preview and export a plain PDF."
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                           Classes="re-vitae-subtitle"
+                           Text="Create a simple CV preview and export a plain PDF." />
             </StackPanel>
 
             <StackPanel Grid.Column="1"
@@ -35,41 +38,23 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center">
                 <Button x:Name="OpenSetupButton"
-                        Width="48"
-                        Height="48"
-                        Padding="0"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"
+                        Classes="re-vitae-icon-button"
                         Click="OnOpenSetupClicked"
                         ToolTip.Tip="Open setup"
                         AutomationProperties.Name="Open setup">
-                    <Viewbox Width="26"
-                             Height="26"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center">
-                        <TextBlock Text="⚙"
-                                   FontSize="26"
-                                   TextAlignment="Center" />
-                    </Viewbox>
+                    <materialIcons:MaterialIcon Kind="Cog"
+                                                Width="24"
+                                                Height="24" />
                 </Button>
 
                 <Button x:Name="OpenTemplatesButton"
-                        Width="48"
-                        Height="48"
-                        Padding="0"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"
+                        Classes="re-vitae-icon-button"
                         Click="OnOpenTemplatesClicked"
                         ToolTip.Tip="Open templates"
                         AutomationProperties.Name="Open templates">
-                    <Viewbox Width="26"
-                             Height="26"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center">
-                        <TextBlock Text="🎨"
-                                   FontSize="26"
-                                   TextAlignment="Center" />
-                    </Viewbox>
+                    <materialIcons:MaterialIcon Kind="ViewGrid"
+                                                Width="24"
+                                                Height="24" />
                 </Button>
             </StackPanel>
         </Grid>
@@ -79,148 +64,129 @@
               ColumnDefinitions="*,*"
               ColumnSpacing="24">
             <ScrollViewer Grid.Column="0">
-                <Border Padding="20"
-                        BorderThickness="1"
-                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                        CornerRadius="8">
-                    <StackPanel Spacing="14">
-                        <TextBlock x:Name="MainPersonalInformationTitleTextBlock"
-                                   Text="Main / Personal information"
-                                   FontSize="18"
-                                   FontWeight="SemiBold" />
-
-                        <StackPanel Spacing="6">
+                <Border Classes="re-vitae-app-card">
+                    <StackPanel Classes="re-vitae-section-body">
+                        <controls:ExpandableSection x:Name="PersonalInformationSection"
+                                                    IsExpanded="True">
+                            <controls:ExpandableSection.SectionContent>
+                                <StackPanel Classes="re-vitae-section-body">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="FirstNameLabelTextBlock" Text="First name" />
                             <TextBox x:Name="FirstNameTextBox"
                                      PlaceholderText="John"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="FirstNameErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="LastNameLabelTextBlock" Text="Last name" />
                             <TextBox x:Name="LastNameTextBox"
                                      PlaceholderText="Doe"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="LastNameErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="ProfessionalTitleLabelTextBlock" Text="Professional title" />
                             <TextBox x:Name="ProfessionalTitleTextBox"
                                      PlaceholderText="Frontend Developer"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="ProfessionalTitleErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="EmailLabelTextBlock" Text="Email" />
                             <TextBox x:Name="EmailTextBox"
                                      PlaceholderText="john.doe@example.com"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="EmailErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="PhoneLabelTextBlock" Text="Phone" />
                             <TextBox x:Name="PhoneTextBox"
                                      PlaceholderText="+421 900 000 000"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="PhoneErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="LocationLabelTextBlock" Text="Location" />
                             <TextBox x:Name="LocationTextBox"
                                      PlaceholderText="Bratislava, Slovakia"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="LocationErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="LinkedInUrlLabelTextBlock" Text="LinkedIn URL" />
                             <TextBox x:Name="LinkedInUrlTextBox"
                                      PlaceholderText="https://www.linkedin.com/in/johndoe"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="LinkedInUrlErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="PortfolioUrlLabelTextBlock" Text="Portfolio / website URL" />
                             <TextBox x:Name="PortfolioUrlTextBox"
                                      PlaceholderText="https://johndoe.dev"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="PortfolioUrlErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="GitHubUrlLabelTextBlock" Text="GitHub URL" />
                             <TextBox x:Name="GitHubUrlTextBox"
                                      PlaceholderText="https://github.com/johndoe"
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="GitHubUrlErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="ShortSummaryLabelTextBlock" Text="Short summary" />
                             <TextBox x:Name="ShortSummaryTextBox"
-                                     AcceptsReturn="True"
-                                     MinHeight="96"
-                                     TextWrapping="Wrap"
+                                     Classes="re-vitae-multiline"
                                      PlaceholderText="Write two to four sentences about your professional profile."
                                      TextChanged="OnFormTextChanged" />
                             <TextBlock x:Name="ShortSummaryErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                       Classes="re-vitae-error" />
                         </StackPanel>
+                                </StackPanel>
+                            </controls:ExpandableSection.SectionContent>
+                        </controls:ExpandableSection>
+
+                        <workExperience:WorkExperienceSectionView x:Name="WorkExperienceSection" />
 
                         <TextBlock x:Name="ValidationSummaryTextBlock"
-                                   TextWrapping="Wrap"
-                                   Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                                   Classes="re-vitae-error" />
 
                         <Button x:Name="ExportPdfButton"
+                                Classes="re-vitae-primary"
                                 Content="Export PDF"
-                                HorizontalAlignment="Left"
                                 Click="OnExportPdfClicked" />
 
                         <TextBlock x:Name="ExportStatusTextBlock"
-                                   TextWrapping="Wrap"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                   Classes="re-vitae-secondary" />
                     </StackPanel>
                 </Border>
             </ScrollViewer>
 
             <Border Grid.Column="1"
-                    Padding="20"
-                    BorderThickness="1"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    CornerRadius="8">
-                <StackPanel Spacing="14">
+                    Classes="re-vitae-app-card">
+                <StackPanel Classes="re-vitae-section-body">
                     <TextBlock x:Name="PreviewTitleTextBlock"
-                               Text="Preview"
-                               FontSize="18"
-                               FontWeight="SemiBold" />
-                    <Border Padding="16"
-                            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                            CornerRadius="6">
+                               Classes="re-vitae-section-title"
+                               Text="Preview" />
+                    <Border Classes="re-vitae-preview-surface">
                         <ScrollViewer>
                             <ContentControl x:Name="PreviewContentControl" />
                         </ScrollViewer>
@@ -231,28 +197,24 @@
 
         <Grid x:Name="SetupModalOverlay"
               Grid.RowSpan="2"
-              Background="#99000000"
+              Classes="re-vitae-modal-overlay"
               IsVisible="False">
             <Border x:Name="SetupModalPanel"
+                    Classes="re-vitae-modal-panel"
                     MaxWidth="1100"
                     MaxHeight="800"
                     MinWidth="360"
                     MinHeight="280"
-                    Padding="24"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12">
+                    VerticalAlignment="Center">
                 <Grid RowDefinitions="Auto,*,Auto">
                     <Grid Grid.Row="0"
                           ColumnDefinitions="*,Auto"
                           ColumnSpacing="16">
                         <TextBlock x:Name="SetupTitleTextBlock"
-                                   Text="Setup"
+                                   Classes="re-vitae-app-title"
                                    FontSize="24"
-                                   FontWeight="SemiBold"
+                                   Text="Setup"
                                    VerticalAlignment="Center" />
                         <Button x:Name="SetupTopCloseButton"
                                 Grid.Column="1"
@@ -262,13 +224,12 @@
 
                     <StackPanel Grid.Row="1"
                                 Margin="0,24,0,0"
-                                Spacing="12">
+                                Classes="re-vitae-section-body">
                         <TextBlock x:Name="SetupPlaceholderTextBlock"
-                                   Text="Setup options will be added in a future step."
-                                   TextWrapping="Wrap"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                   Classes="re-vitae-secondary"
+                                   Text="Setup options will be added in a future step." />
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="LanguageLabelTextBlock"
                                        Text="Language" />
                             <ComboBox x:Name="LanguageComboBox"
@@ -301,28 +262,24 @@
 
         <Grid x:Name="TemplatesModalOverlay"
               Grid.RowSpan="2"
-              Background="#99000000"
+              Classes="re-vitae-modal-overlay"
               IsVisible="False">
             <Border x:Name="TemplatesModalPanel"
+                    Classes="re-vitae-modal-panel"
                     MaxWidth="1100"
                     MaxHeight="800"
                     MinWidth="360"
                     MinHeight="280"
-                    Padding="24"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12">
+                    VerticalAlignment="Center">
                 <Grid RowDefinitions="Auto,*,Auto">
                     <Grid Grid.Row="0"
                           ColumnDefinitions="*,Auto"
                           ColumnSpacing="16">
                         <TextBlock x:Name="TemplatesTitleTextBlock"
-                                   Text="Templates"
+                                   Classes="re-vitae-app-title"
                                    FontSize="24"
-                                   FontWeight="SemiBold"
+                                   Text="Templates"
                                    VerticalAlignment="Center" />
                         <Button x:Name="TemplatesTopCloseButton"
                                 Grid.Column="1"
@@ -334,11 +291,7 @@
                                   Margin="0,24,0,0">
                         <WrapPanel>
                             <Button x:Name="ClassicSidebarTemplateButton"
-                                    Width="220"
-                                    MinHeight="190"
-                                    Margin="0,0,16,16"
-                                    Padding="12"
-                                    HorizontalContentAlignment="Stretch"
+                                    Classes="re-vitae-template-card"
                                     Click="OnSelectClassicSidebarTemplateClicked">
                                 <StackPanel Spacing="10">
                                     <Grid Height="86"
@@ -352,22 +305,16 @@
                                                Text="Classic Sidebar"
                                                FontWeight="SemiBold" />
                                     <TextBlock x:Name="ClassicSidebarDescriptionTextBlock"
-                                               Text="Light sidebar with contact details and a clean content area."
-                                               TextWrapping="Wrap"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                               Classes="re-vitae-secondary"
+                                               Text="Light sidebar with contact details and a clean content area." />
                                     <TextBlock x:Name="ClassicSidebarSelectedTextBlock"
-                                               Text="Selected"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                               Classes="re-vitae-accent"
+                                               Text="Selected" />
                                 </StackPanel>
                             </Button>
 
                             <Button x:Name="ModernSidebarTemplateButton"
-                                    Width="220"
-                                    MinHeight="190"
-                                    Margin="0,0,16,16"
-                                    Padding="12"
-                                    HorizontalContentAlignment="Stretch"
+                                    Classes="re-vitae-template-card"
                                     Click="OnSelectModernSidebarTemplateClicked">
                                 <StackPanel Spacing="10">
                                     <Grid Height="86"
@@ -385,22 +332,16 @@
                                                Text="Modern Sidebar"
                                                FontWeight="SemiBold" />
                                     <TextBlock x:Name="ModernSidebarDescriptionTextBlock"
-                                               Text="Compact sidebar with a dark name band and focused content."
-                                               TextWrapping="Wrap"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                               Classes="re-vitae-secondary"
+                                               Text="Compact sidebar with a dark name band and focused content." />
                                     <TextBlock x:Name="ModernSidebarSelectedTextBlock"
-                                               Text="Selected"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                               Classes="re-vitae-accent"
+                                               Text="Selected" />
                                 </StackPanel>
                             </Button>
 
                             <Button x:Name="CleanTopHeaderTemplateButton"
-                                    Width="220"
-                                    MinHeight="190"
-                                    Margin="0,0,16,16"
-                                    Padding="12"
-                                    HorizontalContentAlignment="Stretch"
+                                    Classes="re-vitae-template-card"
                                     Click="OnSelectCleanTopHeaderTemplateClicked">
                                 <StackPanel Spacing="10">
                                     <Grid Height="86"
@@ -413,22 +354,16 @@
                                                Text="Clean Top Header"
                                                FontWeight="SemiBold" />
                                     <TextBlock x:Name="CleanTopHeaderDescriptionTextBlock"
-                                               Text="Safe default with a full-width color header and simple sections."
-                                               TextWrapping="Wrap"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                               Classes="re-vitae-secondary"
+                                               Text="Safe default with a full-width color header and simple sections." />
                                     <TextBlock x:Name="CleanTopHeaderSelectedTextBlock"
-                                               Text="Selected"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                               Classes="re-vitae-accent"
+                                               Text="Selected" />
                                 </StackPanel>
                             </Button>
 
                             <Button x:Name="DarkSidebarTemplateButton"
-                                    Width="220"
-                                    MinHeight="190"
-                                    Margin="0,0,16,16"
-                                    Padding="12"
-                                    HorizontalContentAlignment="Stretch"
+                                    Classes="re-vitae-template-card"
                                     Click="OnSelectDarkSidebarTemplateClicked">
                                 <StackPanel Spacing="10">
                                     <Grid Height="86"
@@ -445,13 +380,11 @@
                                                Text="Dark Sidebar Accent"
                                                FontWeight="SemiBold" />
                                     <TextBlock x:Name="DarkSidebarAccentDescriptionTextBlock"
-                                               Text="Dark sidebar, colored header, and stronger visual personality."
-                                               TextWrapping="Wrap"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                               Classes="re-vitae-secondary"
+                                               Text="Dark sidebar, colored header, and stronger visual personality." />
                                     <TextBlock x:Name="DarkSidebarSelectedTextBlock"
-                                               Text="Selected"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                               Classes="re-vitae-accent"
+                                               Text="Selected" />
                                 </StackPanel>
                             </Button>
                         </WrapPanel>

@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Media;
 using ReVitae.Core.Cv;
+using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using System;
@@ -21,6 +22,7 @@ namespace ReVitae;
 public partial class MainWindow : Window
 {
     private readonly FieldValidator _validator = MainPersonalInformationSchema.CreateValidator();
+    private readonly WorkExperienceCollectionValidator _workExperienceValidator = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private bool _isUpdatingLanguageSelection;
     private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
@@ -33,6 +35,17 @@ public partial class MainWindow : Window
         DarkSidebarAccent
     }
 
+    private sealed record WorkExperiencePreviewEntry(
+        string JobTitle,
+        string Company,
+        string Location,
+        string EmploymentTypeLabel,
+        string DateRange,
+        string? Description,
+        string? Achievements,
+        string? Technologies,
+        string? CompanyUrl);
+
     private sealed record CvTemplateData(
         string FirstName,
         string LastName,
@@ -44,7 +57,8 @@ public partial class MainWindow : Window
         string PortfolioUrl,
         string GitHubUrl,
         string? ShortSummary,
-        string? PhotoPath)
+        string? PhotoPath,
+        IReadOnlyList<WorkExperiencePreviewEntry> WorkExperienceEntries)
     {
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
@@ -53,6 +67,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         InitializeLanguageSelector();
+        WorkExperienceSection.EntriesChanged += OnWorkExperienceChanged;
         ApplyLocalization();
         UpdateTemplateSelectionState();
         UpdatePreview();
@@ -66,6 +81,13 @@ public partial class MainWindow : Window
         LanguageComboBox.SelectedItem = AppLocalizer.SupportedLanguages
             .First(language => language.Code == _localizer.LanguageCode);
         _isUpdatingLanguageSelection = false;
+    }
+
+    private void OnWorkExperienceChanged(object? sender, EventArgs e)
+    {
+        UpdatePreview();
+        UpdateValidationState();
+        ExportStatusTextBlock.Text = string.Empty;
     }
 
     private void OnFormTextChanged(object? sender, TextChangedEventArgs e)
@@ -208,7 +230,10 @@ public partial class MainWindow : Window
         ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
         ToolTip.SetTip(OpenTemplatesButton, _localizer.Get(TranslationKeys.OpenTemplates));
 
-        MainPersonalInformationTitleTextBlock.Text = _localizer.Get(TranslationKeys.MainPersonalInformation);
+        PersonalInformationSection.Title = _localizer.Get(TranslationKeys.MainPersonalInformation);
+        PersonalInformationSection.ExpandToolTip = _localizer.Get(TranslationKeys.ExpandSection);
+        PersonalInformationSection.CollapseToolTip = _localizer.Get(TranslationKeys.CollapseSection);
+        WorkExperienceSection.SetLocalizer(_localizer);
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
         LastNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.LastName);
         ProfessionalTitleLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfessionalTitle);
@@ -265,6 +290,11 @@ public partial class MainWindow : Window
         ModernSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.ModernSidebar;
         CleanTopHeaderSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.CleanTopHeader;
         DarkSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.DarkSidebarAccent;
+
+        ClassicSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.ClassicSidebar);
+        ModernSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.ModernSidebar);
+        CleanTopHeaderTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.CleanTopHeader);
+        DarkSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.DarkSidebarAccent);
     }
 
     private void SetSetupModalVisible(bool isVisible)
@@ -303,6 +333,7 @@ public partial class MainWindow : Window
 
         ExportPdfButton.IsEnabled = validationResult.IsValid;
         UpdateFieldErrorMessages(validationResult);
+        WorkExperienceSection.UpdateValidation(validationResult);
         ValidationSummaryTextBlock.Text = validationResult.IsValid
             ? string.Empty
             : string.Join(Environment.NewLine, validationResult.Errors.Select(error => _localizer.Get(error.Message)));
@@ -336,7 +367,10 @@ public partial class MainWindow : Window
 
     private FieldValidationResult ValidateForm()
     {
-        return _validator.Validate(BuildFieldValues());
+        var personalResult = _validator.Validate(BuildFieldValues());
+        var workExperienceResult = _workExperienceValidator.Validate(WorkExperienceSection.Entries.ToArray());
+        var combinedErrors = personalResult.Errors.Concat(workExperienceResult.Errors).ToArray();
+        return new FieldValidationResult(combinedErrors);
     }
 
     private IReadOnlyDictionary<string, string?> BuildFieldValues()
@@ -374,8 +408,96 @@ public partial class MainWindow : Window
         };
 
         lines.AddRange(BuildSummaryLines());
+        lines.AddRange(BuildWorkExperiencePdfLines());
 
         return lines.ToArray();
+    }
+
+    private IEnumerable<string> BuildWorkExperiencePdfLines()
+    {
+        var activeEntries = GetActiveWorkExperienceEntries();
+        if (activeEntries.Count == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        var lines = new List<string>
+        {
+            string.Empty,
+            _localizer.Get(TranslationKeys.PreviewWorkExperience)
+        };
+
+        foreach (var entry in activeEntries)
+        {
+            lines.Add(string.Empty);
+            lines.Add(entry.JobTitle);
+            lines.Add(BuildWorkExperienceMetaLine(entry));
+            AppendMultilineBlock(lines, entry.Description);
+            if (!string.IsNullOrWhiteSpace(entry.Achievements))
+            {
+                lines.Add(_localizer.Get(TranslationKeys.PreviewAchievements) + ":");
+                AppendMultilineBlock(lines, entry.Achievements);
+            }
+
+            if (!string.IsNullOrWhiteSpace(entry.Technologies))
+            {
+                lines.Add($"{_localizer.Get(TranslationKeys.PreviewTechnologies)}: {entry.Technologies}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(entry.CompanyUrl))
+            {
+                lines.Add($"{_localizer.Get(TranslationKeys.WorkExperienceCompanyUrl)}: {entry.CompanyUrl}");
+            }
+        }
+
+        return lines;
+    }
+
+    private static void AppendMultilineBlock(List<string> lines, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        lines.AddRange(
+            value.Replace("\r\n", "\n", StringComparison.Ordinal)
+                .Split('\n', StringSplitOptions.None));
+    }
+
+    private string BuildWorkExperienceMetaLine(WorkExperiencePreviewEntry entry)
+    {
+        var parts = new List<string> { entry.Company };
+        if (!string.IsNullOrWhiteSpace(entry.Location) && entry.Location != "-")
+        {
+            parts.Add(entry.Location);
+        }
+
+        parts.Add(entry.EmploymentTypeLabel);
+        parts.Add(entry.DateRange);
+        return string.Join(" · ", parts);
+    }
+
+    private IReadOnlyList<WorkExperiencePreviewEntry> GetActiveWorkExperienceEntries()
+    {
+        return WorkExperienceSection.Entries
+            .Where(entry => entry.HasUserInput())
+            .Select(BuildWorkExperiencePreviewEntry)
+            .ToArray();
+    }
+
+    private WorkExperiencePreviewEntry BuildWorkExperiencePreviewEntry(WorkExperienceEntry entry)
+    {
+        return new WorkExperiencePreviewEntry(
+            NormalizeValue(entry.JobTitle),
+            NormalizeValue(entry.Company),
+            NormalizeOptionalValue(entry.Location),
+            _localizer.Get(entry.EmploymentType.ToTranslationKey()),
+            entry.BuildDateRangeLabel(_localizer.Get(TranslationKeys.WorkExperiencePresent)),
+            entry.Description,
+            entry.Achievements,
+            entry.Technologies,
+            entry.CompanyUrl);
     }
 
     private string BuildFullName()
@@ -433,7 +555,13 @@ public partial class MainWindow : Window
             NormalizeValue(PortfolioUrlTextBox.Text),
             NormalizeValue(GitHubUrlTextBox.Text),
             ShortSummaryTextBox.Text?.Trim(),
-            PhotoPath: null);
+            PhotoPath: null,
+            GetActiveWorkExperienceEntries());
+    }
+
+    private static string NormalizeOptionalValue(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 
     private Control BuildClassicSidebarTemplate(CvTemplateData data)
@@ -452,6 +580,7 @@ public partial class MainWindow : Window
 
         var content = CreateContentPanel();
         content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
+        AddWorkExperienceSection(content, data);
         content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.ContactLinks), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
 
         root.Children.Add(sidebar);
@@ -489,6 +618,7 @@ public partial class MainWindow : Window
 
         var body = CreateContentPanel();
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Profile), GetSummary(data)));
+        AddWorkExperienceSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Digital), BuildLines(_localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         Grid.SetRow(body, 1);
         content.Children.Add(body);
@@ -535,6 +665,7 @@ public partial class MainWindow : Window
 
         var body = CreateContentPanel();
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
+        AddWorkExperienceSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Links), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         root.Children.Add(body);
 
@@ -574,6 +705,7 @@ public partial class MainWindow : Window
         var body = CreateContentPanel();
         body.Background = Brush.Parse("#F2F2F2");
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Objective), GetSummary(data)));
+        AddWorkExperienceSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Online), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         content.Children.Add(body);
 
@@ -614,6 +746,53 @@ public partial class MainWindow : Window
     private Control CreateContactSection(CvTemplateData data)
     {
         return CreateSection(_localizer.Get(TranslationKeys.Contact), BuildLines(_localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Location), data.Location));
+    }
+
+    private void AddWorkExperienceSection(StackPanel panel, CvTemplateData data)
+    {
+        if (data.WorkExperienceEntries.Count == 0)
+        {
+            return;
+        }
+
+        panel.Children.Add(CreateSection(_localizer.Get(TranslationKeys.PreviewWorkExperience), BuildWorkExperiencePreviewContent(data)));
+    }
+
+    private string BuildWorkExperiencePreviewContent(CvTemplateData data)
+    {
+        var entries = new List<string>();
+        foreach (var entry in data.WorkExperienceEntries)
+        {
+            var block = new List<string>
+            {
+                entry.JobTitle,
+                BuildWorkExperienceMetaLine(entry)
+            };
+
+            if (!string.IsNullOrWhiteSpace(entry.Description))
+            {
+                block.Add(entry.Description);
+            }
+
+            if (!string.IsNullOrWhiteSpace(entry.Achievements))
+            {
+                block.Add($"{_localizer.Get(TranslationKeys.PreviewAchievements)}:{Environment.NewLine}{entry.Achievements}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(entry.Technologies))
+            {
+                block.Add($"{_localizer.Get(TranslationKeys.PreviewTechnologies)}: {entry.Technologies}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(entry.CompanyUrl))
+            {
+                block.Add($"{_localizer.Get(TranslationKeys.WorkExperienceCompanyUrl)}: {entry.CompanyUrl}");
+            }
+
+            entries.Add(string.Join(Environment.NewLine, block));
+        }
+
+        return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
     }
 
     private static Control CreateSection(string title, string content)

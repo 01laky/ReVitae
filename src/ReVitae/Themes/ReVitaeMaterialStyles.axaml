@@ -1,0 +1,160 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.Preview>
+        <Border Padding="24">
+            <StackPanel Spacing="12">
+                <TextBlock Classes="re-vitae-app-title"
+                           Text="ReVitae" />
+                <TextBlock Classes="re-vitae-subtitle"
+                           Text="Material preview" />
+                <Border Classes="re-vitae-app-card">
+                    <TextBlock Text="Card content" />
+                </Border>
+            </StackPanel>
+        </Border>
+    </Design.Preview>
+
+    <Style Selector="TextBlock.re-vitae-app-title">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <Style Selector="TextBlock.re-vitae-section-title">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.re-vitae-subtitle">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Opacity" Value="0.72" />
+    </Style>
+
+    <Style Selector="TextBlock.re-vitae-error">
+        <Setter Property="Foreground" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="TextBlock.re-vitae-secondary">
+        <Setter Property="Opacity" Value="0.72" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="TextBlock.re-vitae-counter">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Opacity" Value="0.72" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-app-card">
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialPaperBrush}" />
+        <Setter Property="BoxShadow" Value="0 2 8 0 #22000000" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-entry-card">
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialPaperBrush}" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-preview-surface">
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Background" Value="{DynamicResource MaterialThemeBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="TextBlock.re-vitae-accent">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="Grid.re-vitae-modal-overlay">
+        <Setter Property="Background" Value="#99000000" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-modal-panel">
+        <Setter Property="Padding" Value="24" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialPaperBrush}" />
+        <Setter Property="BoxShadow" Value="0 8 24 0 #44000000" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-drag-handle">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Background" Value="{DynamicResource MaterialThemeBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="SizeAll" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-icon-button">
+        <Setter Property="Width" Value="44" />
+        <Setter Property="Height" Value="44" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="22" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-expand-toggle">
+        <Setter Property="Width" Value="36" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="18" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-primary">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Padding" Value="16,10" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-secondary">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Padding" Value="14,8" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-template-card">
+        <Setter Property="Width" Value="220" />
+        <Setter Property="MinHeight" Value="190" />
+        <Setter Property="Margin" Value="0,0,16,16" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-template-card.selected">
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <Style Selector="StackPanel.re-vitae-form-field">
+        <Setter Property="Spacing" Value="6" />
+    </Style>
+
+    <Style Selector="StackPanel.re-vitae-page">
+        <Setter Property="Spacing" Value="16" />
+    </Style>
+
+    <Style Selector="StackPanel.re-vitae-section-body">
+        <Setter Property="Spacing" Value="14" />
+    </Style>
+
+    <Style Selector="TextBox.re-vitae-multiline">
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="MinHeight" Value="96" />
+    </Style>
+</Styles>

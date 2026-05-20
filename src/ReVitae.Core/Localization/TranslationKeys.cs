@@ -62,6 +62,64 @@ public static class TranslationKeys
     public const string ValidationPortfolioUrlFormat = "validation.portfolioUrl.format";
     public const string ValidationGitHubUrlFormat = "validation.gitHubUrl.format";
 
+    public const string WorkExperience = "form.workExperience";
+    public const string WorkExperienceEmptyHint = "workExperience.emptyHint";
+    public const string WorkExperienceAdd = "workExperience.add";
+    public const string WorkExperienceDuplicate = "workExperience.duplicate";
+    public const string WorkExperienceRemove = "workExperience.remove";
+    public const string WorkExperienceSortByDate = "workExperience.sortByDate";
+    public const string WorkExperienceJobTitle = "workExperience.field.jobTitle";
+    public const string WorkExperienceCompany = "workExperience.field.company";
+    public const string WorkExperienceLocation = "workExperience.field.location";
+    public const string WorkExperienceEmploymentType = "workExperience.field.employmentType";
+    public const string WorkExperienceStartDate = "workExperience.field.startDate";
+    public const string WorkExperienceEndDate = "workExperience.field.endDate";
+    public const string WorkExperienceStartMonth = "workExperience.field.startMonth";
+    public const string WorkExperienceStartYear = "workExperience.field.startYear";
+    public const string WorkExperienceEndMonth = "workExperience.field.endMonth";
+    public const string WorkExperienceEndYear = "workExperience.field.endYear";
+    public const string WorkExperienceCurrentlyWorking = "workExperience.field.currentlyWorking";
+    public const string WorkExperienceDescription = "workExperience.field.description";
+    public const string WorkExperienceAchievements = "workExperience.field.achievements";
+    public const string WorkExperienceTechnologies = "workExperience.field.technologies";
+    public const string WorkExperienceCompanyUrl = "workExperience.field.companyUrl";
+    public const string WorkExperiencePresent = "workExperience.present";
+    public const string WorkExperienceDragToReorder = "workExperience.dragToReorder";
+    public const string WorkExperienceExpand = "workExperience.expand";
+    public const string WorkExperienceCollapse = "workExperience.collapse";
+    public const string WorkExperienceValidationErrors = "workExperience.validationErrors";
+    public const string EmploymentTypeFullTime = "workExperience.employmentType.fullTime";
+    public const string EmploymentTypePartTime = "workExperience.employmentType.partTime";
+    public const string EmploymentTypeContract = "workExperience.employmentType.contract";
+    public const string EmploymentTypeFreelance = "workExperience.employmentType.freelance";
+    public const string EmploymentTypeInternship = "workExperience.employmentType.internship";
+    public const string PreviewWorkExperience = "preview.workExperience";
+    public const string PreviewAchievements = "preview.achievements";
+    public const string PreviewTechnologies = "preview.technologies";
+    public const string ExpandSection = "form.expandSection";
+    public const string CollapseSection = "form.collapseSection";
+    public const string ValidationWorkExperienceJobTitleRequired = "validation.workExperience.jobTitle.required";
+    public const string ValidationWorkExperienceJobTitleMax = "validation.workExperience.jobTitle.max";
+    public const string ValidationWorkExperienceCompanyRequired = "validation.workExperience.company.required";
+    public const string ValidationWorkExperienceCompanyMax = "validation.workExperience.company.max";
+    public const string ValidationWorkExperienceLocationMax = "validation.workExperience.location.max";
+    public const string ValidationWorkExperienceEmploymentTypeRequired = "validation.workExperience.employmentType.required";
+    public const string ValidationWorkExperienceEmploymentTypeInvalid = "validation.workExperience.employmentType.invalid";
+    public const string ValidationWorkExperienceStartMonthRequired = "validation.workExperience.startMonth.required";
+    public const string ValidationWorkExperienceStartMonthInvalid = "validation.workExperience.startMonth.invalid";
+    public const string ValidationWorkExperienceStartYearRequired = "validation.workExperience.startYear.required";
+    public const string ValidationWorkExperienceStartYearInvalid = "validation.workExperience.startYear.invalid";
+    public const string ValidationWorkExperienceEndMonthRequired = "validation.workExperience.endMonth.required";
+    public const string ValidationWorkExperienceEndMonthInvalid = "validation.workExperience.endMonth.invalid";
+    public const string ValidationWorkExperienceEndYearRequired = "validation.workExperience.endYear.required";
+    public const string ValidationWorkExperienceEndYearInvalid = "validation.workExperience.endYear.invalid";
+    public const string ValidationWorkExperienceDescriptionMax = "validation.workExperience.description.max";
+    public const string ValidationWorkExperienceAchievementsMax = "validation.workExperience.achievements.max";
+    public const string ValidationWorkExperienceTechnologiesMax = "validation.workExperience.technologies.max";
+    public const string ValidationWorkExperienceCompanyUrlMax = "validation.workExperience.companyUrl.max";
+    public const string ValidationWorkExperienceCompanyUrlFormat = "validation.workExperience.companyUrl.format";
+    public const string ValidationWorkExperienceStartAfterEnd = "validation.workExperience.dateRange.startAfterEnd";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -122,6 +180,63 @@ public static class TranslationKeys
         ValidationEmailFormat,
         ValidationLinkedInUrlFormat,
         ValidationPortfolioUrlFormat,
-        ValidationGitHubUrlFormat
+        ValidationGitHubUrlFormat,
+        WorkExperience,
+        WorkExperienceEmptyHint,
+        WorkExperienceAdd,
+        WorkExperienceDuplicate,
+        WorkExperienceRemove,
+        WorkExperienceSortByDate,
+        WorkExperienceJobTitle,
+        WorkExperienceCompany,
+        WorkExperienceLocation,
+        WorkExperienceEmploymentType,
+        WorkExperienceStartDate,
+        WorkExperienceEndDate,
+        WorkExperienceStartMonth,
+        WorkExperienceStartYear,
+        WorkExperienceEndMonth,
+        WorkExperienceEndYear,
+        WorkExperienceCurrentlyWorking,
+        WorkExperienceDescription,
+        WorkExperienceAchievements,
+        WorkExperienceTechnologies,
+        WorkExperienceCompanyUrl,
+        WorkExperiencePresent,
+        WorkExperienceDragToReorder,
+        WorkExperienceExpand,
+        WorkExperienceCollapse,
+        WorkExperienceValidationErrors,
+        EmploymentTypeFullTime,
+        EmploymentTypePartTime,
+        EmploymentTypeContract,
+        EmploymentTypeFreelance,
+        EmploymentTypeInternship,
+        PreviewWorkExperience,
+        PreviewAchievements,
+        PreviewTechnologies,
+        ExpandSection,
+        CollapseSection,
+        ValidationWorkExperienceJobTitleRequired,
+        ValidationWorkExperienceJobTitleMax,
+        ValidationWorkExperienceCompanyRequired,
+        ValidationWorkExperienceCompanyMax,
+        ValidationWorkExperienceLocationMax,
+        ValidationWorkExperienceEmploymentTypeRequired,
+        ValidationWorkExperienceEmploymentTypeInvalid,
+        ValidationWorkExperienceStartMonthRequired,
+        ValidationWorkExperienceStartMonthInvalid,
+        ValidationWorkExperienceStartYearRequired,
+        ValidationWorkExperienceStartYearInvalid,
+        ValidationWorkExperienceEndMonthRequired,
+        ValidationWorkExperienceEndMonthInvalid,
+        ValidationWorkExperienceEndYearRequired,
+        ValidationWorkExperienceEndYearInvalid,
+        ValidationWorkExperienceDescriptionMax,
+        ValidationWorkExperienceAchievementsMax,
+        ValidationWorkExperienceTechnologiesMax,
+        ValidationWorkExperienceCompanyUrlMax,
+        ValidationWorkExperienceCompanyUrlFormat,
+        ValidationWorkExperienceStartAfterEnd
     ];
 }

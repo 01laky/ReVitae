@@ -1,4 +1,5 @@
 using System.Net.Mail;
+using ReVitae.Core.Cv.WorkExperience;
 
 namespace ReVitae.Core.Validation;
 
@@ -71,8 +72,26 @@ public sealed class FieldValidator
             FieldFormat.Text => true,
             FieldFormat.Email => IsEmailValid(value),
             FieldFormat.Url => IsUrlValid(value),
+            FieldFormat.Month => IsMonthValid(value),
+            FieldFormat.Year => IsYearValid(value),
+            FieldFormat.EmploymentType => IsEmploymentTypeValid(value),
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
         };
+    }
+
+    private static bool IsMonthValid(string value)
+    {
+        return int.TryParse(value, out var month) && MonthYearValue.IsValidMonth(month);
+    }
+
+    private static bool IsYearValid(string value)
+    {
+        return int.TryParse(value, out var year) && MonthYearValue.IsValidYear(year);
+    }
+
+    private static bool IsEmploymentTypeValid(string value)
+    {
+        return Enum.TryParse<EmploymentType>(value, ignoreCase: false, out _);
     }
 
     private static bool IsEmailValid(string value)
