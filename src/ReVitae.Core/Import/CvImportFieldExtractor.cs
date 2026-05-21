@@ -146,7 +146,7 @@ public static class CvImportFieldExtractor
                 var parts = nameLine.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (parts.Length == 1
                     && headerLines.Length > 1
-                    && headerLines[1].Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length == 1)
+                    && IsLikelyNameToken(headerLines[1]))
                 {
                     personal.FirstName = headerLines[0];
                     personal.LastName = headerLines[1];
@@ -732,6 +732,19 @@ public static class CvImportFieldExtractor
             || line.Contains(" at ", StringComparison.OrdinalIgnoreCase)
             || line.Contains(" s.r.o.", StringComparison.OrdinalIgnoreCase)
             || line.Contains(" a.s.", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsLikelyNameToken(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)
+            || CvImportPatterns.Email.IsMatch(line)
+            || CvImportPatterns.Url.IsMatch(line)
+            || CvImportPatterns.Phone.IsMatch(line))
+        {
+            return false;
+        }
+
+        return line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length == 1;
     }
 
     private static IEnumerable<string> SplitCommaList(string value)

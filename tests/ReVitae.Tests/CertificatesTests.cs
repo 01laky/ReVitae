@@ -160,6 +160,34 @@ public sealed class CertificatesTests
         Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationCertificatesIssueYearInvalid);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(13)]
+    public void Validate_RejectsInvalidExpirationMonth(int month)
+    {
+        var entry = CreateValidEntry();
+        entry.ExpirationMonth = month;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationCertificatesExpirationMonthInvalid);
+    }
+
+    [Theory]
+    [InlineData(1949)]
+    [InlineData(2101)]
+    public void Validate_RejectsInvalidExpirationYear(int year)
+    {
+        var entry = CreateValidEntry();
+        entry.ExpirationYear = year;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationCertificatesExpirationYearInvalid);
+    }
+
     [Fact]
     public void Validate_ValidatesMultipleActiveEntriesTogether()
     {

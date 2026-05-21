@@ -84,6 +84,7 @@ public sealed class WorkExperienceTests
     [Theory]
     [InlineData("jobTitle", 121, TranslationKeys.ValidationWorkExperienceJobTitleMax)]
     [InlineData("company", 161, TranslationKeys.ValidationWorkExperienceCompanyMax)]
+    [InlineData("location", 121, TranslationKeys.ValidationWorkExperienceLocationMax)]
     [InlineData("description", 2001, TranslationKeys.ValidationWorkExperienceDescriptionMax)]
     [InlineData("achievements", 2001, TranslationKeys.ValidationWorkExperienceAchievementsMax)]
     [InlineData("technologies", 501, TranslationKeys.ValidationWorkExperienceTechnologiesMax)]
@@ -191,6 +192,34 @@ public sealed class WorkExperienceTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationWorkExperienceStartYearInvalid);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(13)]
+    public void Validate_RejectsInvalidEndMonth(int month)
+    {
+        var entry = CreateValidEntry();
+        entry.EndMonth = month;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationWorkExperienceEndMonthInvalid);
+    }
+
+    [Theory]
+    [InlineData(1949)]
+    [InlineData(2101)]
+    public void Validate_RejectsInvalidEndYear(int year)
+    {
+        var entry = CreateValidEntry();
+        entry.EndYear = year;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationWorkExperienceEndYearInvalid);
     }
 
     [Fact]
@@ -310,6 +339,7 @@ public sealed class WorkExperienceTests
         {
             case "jobTitle": entry.JobTitle = value; break;
             case "company": entry.Company = value; break;
+            case "location": entry.Location = value; break;
             case "description": entry.Description = value; break;
             case "achievements": entry.Achievements = value; break;
             case "technologies": entry.Technologies = value; break;

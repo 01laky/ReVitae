@@ -85,6 +85,7 @@ public sealed class EducationTests
     [InlineData("institution", 161, TranslationKeys.ValidationEducationInstitutionMax)]
     [InlineData("degree", 161, TranslationKeys.ValidationEducationDegreeMax)]
     [InlineData("fieldOfStudy", 161, TranslationKeys.ValidationEducationFieldOfStudyMax)]
+    [InlineData("location", 121, TranslationKeys.ValidationEducationLocationMax)]
     [InlineData("description", 2001, TranslationKeys.ValidationEducationDescriptionMax)]
     [InlineData("grade", 81, TranslationKeys.ValidationEducationGradeMax)]
     public void Validate_RejectsValuesOverMaximumLength(string fieldName, int length, string expectedMessageKey)
@@ -191,6 +192,34 @@ public sealed class EducationTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationEducationStartYearInvalid);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(13)]
+    public void Validate_RejectsInvalidEndMonth(int month)
+    {
+        var entry = CreateValidEntry();
+        entry.EndMonth = month;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationEducationEndMonthInvalid);
+    }
+
+    [Theory]
+    [InlineData(1949)]
+    [InlineData(2101)]
+    public void Validate_RejectsInvalidEndYear(int year)
+    {
+        var entry = CreateValidEntry();
+        entry.EndYear = year;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationEducationEndYearInvalid);
     }
 
     [Fact]
@@ -319,6 +348,7 @@ public sealed class EducationTests
             case "institution": entry.Institution = value; break;
             case "degree": entry.Degree = value; break;
             case "fieldOfStudy": entry.FieldOfStudy = value; break;
+            case "location": entry.Location = value; break;
             case "description": entry.Description = value; break;
             case "grade": entry.Grade = value; break;
             default: throw new ArgumentOutOfRangeException(nameof(fieldName));

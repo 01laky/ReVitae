@@ -96,6 +96,7 @@ public sealed class ProjectsTests
     [Theory]
     [InlineData("name", 161, TranslationKeys.ValidationProjectsNameMax)]
     [InlineData("role", 121, TranslationKeys.ValidationProjectsRoleMax)]
+    [InlineData("organization", 161, TranslationKeys.ValidationProjectsOrganizationMax)]
     [InlineData("highlights", 2001, TranslationKeys.ValidationProjectsHighlightsMax)]
     [InlineData("description", 2001, TranslationKeys.ValidationProjectsDescriptionMax)]
     public void Validate_RejectsValuesOverMaximumLength(string fieldName, int length, string expectedMessageKey)
@@ -186,6 +187,34 @@ public sealed class ProjectsTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationProjectsStartMonthInvalid);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(13)]
+    public void Validate_RejectsInvalidEndMonth(int month)
+    {
+        var entry = CreateValidEntry();
+        entry.EndMonth = month;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationProjectsEndMonthInvalid);
+    }
+
+    [Theory]
+    [InlineData(1949)]
+    [InlineData(2101)]
+    public void Validate_RejectsInvalidEndYear(int year)
+    {
+        var entry = CreateValidEntry();
+        entry.EndYear = year;
+
+        var result = Validator.Validate([entry]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Message == TranslationKeys.ValidationProjectsEndYearInvalid);
     }
 
     [Fact]
@@ -352,6 +381,7 @@ public sealed class ProjectsTests
         {
             case "name": entry.Name = value; break;
             case "role": entry.Role = value; break;
+            case "organization": entry.Organization = value; break;
             case "highlights": entry.Highlights = value; break;
             case "description": entry.Description = value; break;
             default: throw new ArgumentOutOfRangeException(nameof(fieldName));
