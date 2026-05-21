@@ -7,7 +7,9 @@ using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Media;
 using ReVitae.Core.Cv;
+using ReVitae.Core.Cv.AdditionalInformation;
 using ReVitae.Core.Cv.Certificates;
+using ReVitae.Core.Cv.Links;
 using ReVitae.Core.Cv.Projects;
 using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Cv.Languages;
@@ -36,6 +38,8 @@ public partial class MainWindow : Window
     private readonly LanguagesCollectionValidator _languagesValidator = new();
     private readonly CertificatesCollectionValidator _certificatesValidator = new();
     private readonly ProjectsCollectionValidator _projectsValidator = new();
+    private readonly LinksCollectionValidator _linksValidator = new();
+    private readonly AdditionalInformationValidator _additionalInformationValidator = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private bool _isUpdatingLanguageSelection;
     private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
@@ -108,7 +112,9 @@ public partial class MainWindow : Window
         IReadOnlyList<SkillsPreviewGroup> SkillsGroups,
         IReadOnlyList<LanguagePreviewEntry> LanguageEntries,
         IReadOnlyList<CertificatePreviewEntry> CertificateEntries,
-        IReadOnlyList<ProjectPreviewEntry> ProjectEntries)
+        IReadOnlyList<ProjectPreviewEntry> ProjectEntries,
+        IReadOnlyList<string> CustomLinkLines,
+        string? AdditionalInformationContent)
     {
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
@@ -123,6 +129,8 @@ public partial class MainWindow : Window
         LanguagesSection.EntriesChanged += OnLanguagesChanged;
         CertificatesSection.EntriesChanged += OnCertificatesChanged;
         ProjectsSection.EntriesChanged += OnProjectsChanged;
+        LinksSection.EntriesChanged += OnLinksChanged;
+        AdditionalInformationSection.ContentChanged += OnAdditionalInformationChanged;
         ApplyLocalization();
         UpdateTemplateSelectionState();
         UpdatePreview();
@@ -174,6 +182,20 @@ public partial class MainWindow : Window
     }
 
     private void OnProjectsChanged(object? sender, EventArgs e)
+    {
+        UpdatePreview();
+        UpdateValidationState();
+        ExportStatusTextBlock.Text = string.Empty;
+    }
+
+    private void OnLinksChanged(object? sender, EventArgs e)
+    {
+        UpdatePreview();
+        UpdateValidationState();
+        ExportStatusTextBlock.Text = string.Empty;
+    }
+
+    private void OnAdditionalInformationChanged(object? sender, EventArgs e)
     {
         UpdatePreview();
         UpdateValidationState();
@@ -346,6 +368,8 @@ public partial class MainWindow : Window
         LanguagesSection.SetLocalizer(_localizer);
         CertificatesSection.SetLocalizer(_localizer);
         ProjectsSection.SetLocalizer(_localizer);
+        LinksSection.SetLocalizer(_localizer);
+        AdditionalInformationSection.SetLocalizer(_localizer);
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
         LastNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.LastName);
         ProfessionalTitleLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfessionalTitle);
@@ -471,6 +495,8 @@ public partial class MainWindow : Window
         LanguagesSection.UpdateValidation(validationResult);
         CertificatesSection.UpdateValidation(validationResult);
         ProjectsSection.UpdateValidation(validationResult);
+        LinksSection.UpdateValidation(validationResult);
+        AdditionalInformationSection.UpdateValidation(validationResult);
         ValidationSummaryTextBlock.Text = validationResult.IsValid
             ? string.Empty
             : string.Join(Environment.NewLine, validationResult.Errors.Select(error => _localizer.Get(error.Message)));
@@ -511,6 +537,8 @@ public partial class MainWindow : Window
         var languagesResult = _languagesValidator.Validate(LanguagesSection.Entries.ToArray());
         var certificatesResult = _certificatesValidator.Validate(CertificatesSection.Entries.ToArray());
         var projectsResult = _projectsValidator.Validate(ProjectsSection.Entries.ToArray());
+        var linksResult = _linksValidator.Validate(LinksSection.Entries.ToArray());
+        var additionalInformationResult = _additionalInformationValidator.Validate(AdditionalInformationSection.ContentModel);
         var combinedErrors = personalResult.Errors
             .Concat(workExperienceResult.Errors)
             .Concat(educationResult.Errors)
@@ -518,6 +546,8 @@ public partial class MainWindow : Window
             .Concat(languagesResult.Errors)
             .Concat(certificatesResult.Errors)
             .Concat(projectsResult.Errors)
+            .Concat(linksResult.Errors)
+            .Concat(additionalInformationResult.Errors)
             .ToArray();
         return new FieldValidationResult(combinedErrors);
     }
@@ -563,6 +593,8 @@ public partial class MainWindow : Window
         lines.AddRange(BuildLanguagesPdfLines());
         lines.AddRange(BuildCertificatesPdfLines());
         lines.AddRange(BuildProjectsPdfLines());
+        lines.AddRange(BuildCustomLinksPdfLines());
+        lines.AddRange(BuildAdditionalInformationPdfLines());
 
         return lines.ToArray();
     }
@@ -892,6 +924,55 @@ public partial class MainWindow : Window
             ProjectPreviewFormatter.FormatDetailLines(entry, _localizer));
     }
 
+    private IEnumerable<string> BuildCustomLinksPdfLines()
+    {
+        var lines = GetActiveCustomLinkLines();
+        if (lines.Count == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        var pdfLines = new List<string>
+        {
+            string.Empty,
+            _localizer.Get(TranslationKeys.PreviewCustomLinks)
+        };
+
+        foreach (var line in lines)
+        {
+            pdfLines.Add(string.Empty);
+            pdfLines.Add(line);
+        }
+
+        return pdfLines;
+    }
+
+    private IReadOnlyList<string> GetActiveCustomLinkLines()
+    {
+        return LinksSection.Entries
+            .Where(entry => entry.HasUserInput())
+            .Select(LinkPreviewFormatter.FormatLine)
+            .ToArray();
+    }
+
+    private IEnumerable<string> BuildAdditionalInformationPdfLines()
+    {
+        var content = AdditionalInformationSection.ContentModel.Content?.Trim();
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return Array.Empty<string>();
+        }
+
+        var lines = new List<string>
+        {
+            string.Empty,
+            _localizer.Get(TranslationKeys.PreviewAdditionalInformation)
+        };
+
+        AppendMultilineBlock(lines, content);
+        return lines;
+    }
+
     private IReadOnlyList<WorkExperiencePreviewEntry> GetActiveWorkExperienceEntries()
     {
         return WorkExperienceSection.Entries
@@ -975,7 +1056,15 @@ public partial class MainWindow : Window
             GetActiveSkillsPreviewGroups(),
             GetActiveLanguagePreviewEntries(),
             GetActiveCertificatePreviewEntries(),
-            GetActiveProjectPreviewEntries());
+            GetActiveProjectPreviewEntries(),
+            GetActiveCustomLinkLines(),
+            GetAdditionalInformationContent());
+    }
+
+    private string? GetAdditionalInformationContent()
+    {
+        var content = AdditionalInformationSection.ContentModel.Content?.Trim();
+        return string.IsNullOrWhiteSpace(content) ? null : content;
     }
 
     private static string NormalizeOptionalValue(string? value)
@@ -1000,6 +1089,8 @@ public partial class MainWindow : Window
         AddLanguagesSection(content, data);
         AddCertificatesSection(content, data);
         AddProjectsSection(content, data);
+        AddCustomLinksSection(content, data);
+        AddAdditionalInformationSection(content, data);
         content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.ContactLinks), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
 
         root.Children.Add(CreateSidebarPanel(Brush.Parse("#D8D8D8"), sidebarContent));
@@ -1041,6 +1132,8 @@ public partial class MainWindow : Window
         AddLanguagesSection(body, data);
         AddCertificatesSection(body, data);
         AddProjectsSection(body, data);
+        AddCustomLinksSection(body, data);
+        AddAdditionalInformationSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Digital), BuildLines(_localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         Grid.SetRow(WrapContentPanel(body), 1);
         content.Children.Add(WrapContentPanel(body));
@@ -1093,6 +1186,8 @@ public partial class MainWindow : Window
         AddLanguagesSection(body, data);
         AddCertificatesSection(body, data);
         AddProjectsSection(body, data);
+        AddCustomLinksSection(body, data);
+        AddAdditionalInformationSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Links), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         root.Children.Add(WrapContentPanel(body));
 
@@ -1138,6 +1233,8 @@ public partial class MainWindow : Window
         AddLanguagesSection(body, data);
         AddCertificatesSection(body, data);
         AddProjectsSection(body, data);
+        AddCustomLinksSection(body, data);
+        AddAdditionalInformationSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Online), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         content.Children.Add(WrapContentPanel(body, Brush.Parse("#F2F2F2")));
 
@@ -1392,6 +1489,30 @@ public partial class MainWindow : Window
         }
 
         return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
+    }
+
+    private void AddCustomLinksSection(StackPanel panel, CvTemplateData data)
+    {
+        if (data.CustomLinkLines.Count == 0)
+        {
+            return;
+        }
+
+        panel.Children.Add(CreateSection(
+            _localizer.Get(TranslationKeys.PreviewCustomLinks),
+            string.Join(Environment.NewLine, data.CustomLinkLines)));
+    }
+
+    private void AddAdditionalInformationSection(StackPanel panel, CvTemplateData data)
+    {
+        if (string.IsNullOrWhiteSpace(data.AdditionalInformationContent))
+        {
+            return;
+        }
+
+        panel.Children.Add(CreateSection(
+            _localizer.Get(TranslationKeys.PreviewAdditionalInformation),
+            data.AdditionalInformationContent));
     }
 
     private static Control CreateSection(string title, string content)

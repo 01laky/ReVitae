@@ -351,6 +351,33 @@ public static class TranslationKeys
     public const string ValidationProjectsBulkTechnologiesMax = "validation.projects.bulkTechnologies.max";
     public const string ValidationProjectsStartAfterEnd = "validation.projects.startAfterEnd";
 
+    public const string CustomLinks = "form.customLinks";
+    public const string CustomLinksEmptyHint = "customLinks.emptyHint";
+    public const string CustomLinksAdd = "customLinks.add";
+    public const string CustomLinksDuplicate = "customLinks.duplicate";
+    public const string CustomLinksRemove = "customLinks.remove";
+    public const string CustomLinksLabel = "customLinks.field.label";
+    public const string CustomLinksUrl = "customLinks.field.url";
+    public const string CustomLinksNote = "customLinks.field.note";
+    public const string CustomLinksDragToReorder = "customLinks.dragToReorder";
+    public const string CustomLinksExpand = "customLinks.expand";
+    public const string CustomLinksCollapse = "customLinks.collapse";
+    public const string CustomLinksValidationErrors = "customLinks.validationErrors";
+    public const string PreviewCustomLinks = "preview.customLinks";
+    public const string ValidationLinksLabelRequired = "validation.links.label.required";
+    public const string ValidationLinksLabelMax = "validation.links.label.max";
+    public const string ValidationLinksUrlRequired = "validation.links.url.required";
+    public const string ValidationLinksUrlMax = "validation.links.url.max";
+    public const string ValidationLinksUrlFormat = "validation.links.url.format";
+    public const string ValidationLinksNoteMax = "validation.links.note.max";
+    public const string ValidationLinksDuplicateUrl = "validation.links.duplicateUrl";
+
+    public const string AdditionalInformation = "form.additionalInformation";
+    public const string AdditionalInformationEmptyHint = "additionalInformation.emptyHint";
+    public const string AdditionalInformationContent = "additionalInformation.field.content";
+    public const string PreviewAdditionalInformation = "preview.additionalInformation";
+    public const string ValidationAdditionalInformationContentMax = "validation.additionalInformation.content.max";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -694,6 +721,31 @@ public static class TranslationKeys
         ValidationProjectsTechnologyNameMax,
         ValidationProjectsDuplicateTechnology,
         ValidationProjectsBulkTechnologiesMax,
-        ValidationProjectsStartAfterEnd
+        ValidationProjectsStartAfterEnd,
+        CustomLinks,
+        CustomLinksEmptyHint,
+        CustomLinksAdd,
+        CustomLinksDuplicate,
+        CustomLinksRemove,
+        CustomLinksLabel,
+        CustomLinksUrl,
+        CustomLinksNote,
+        CustomLinksDragToReorder,
+        CustomLinksExpand,
+        CustomLinksCollapse,
+        CustomLinksValidationErrors,
+        PreviewCustomLinks,
+        ValidationLinksLabelRequired,
+        ValidationLinksLabelMax,
+        ValidationLinksUrlRequired,
+        ValidationLinksUrlMax,
+        ValidationLinksUrlFormat,
+        ValidationLinksNoteMax,
+        ValidationLinksDuplicateUrl,
+        AdditionalInformation,
+        AdditionalInformationEmptyHint,
+        AdditionalInformationContent,
+        PreviewAdditionalInformation,
+        ValidationAdditionalInformationContentMax
     ];
 }

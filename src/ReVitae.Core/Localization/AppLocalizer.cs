@@ -365,7 +365,32 @@ public sealed class AppLocalizer
         [TranslationKeys.ValidationProjectsTechnologyNameMax] = "Technology name must be 80 characters or fewer.",
         [TranslationKeys.ValidationProjectsDuplicateTechnology] = "This technology is already listed in this project.",
         [TranslationKeys.ValidationProjectsBulkTechnologiesMax] = "Bulk technologies text must be 1000 characters or fewer.",
-        [TranslationKeys.ValidationProjectsStartAfterEnd] = "Start date must not be after end date."
+        [TranslationKeys.ValidationProjectsStartAfterEnd] = "Start date must not be after end date.",
+        [TranslationKeys.CustomLinks] = "Links",
+        [TranslationKeys.CustomLinksEmptyHint] = "Add links to profiles, portfolios, or publications that are not already in your main contact details.",
+        [TranslationKeys.CustomLinksAdd] = "Add link",
+        [TranslationKeys.CustomLinksDuplicate] = "Duplicate",
+        [TranslationKeys.CustomLinksRemove] = "Remove",
+        [TranslationKeys.CustomLinksLabel] = "Label",
+        [TranslationKeys.CustomLinksUrl] = "URL",
+        [TranslationKeys.CustomLinksNote] = "Note",
+        [TranslationKeys.CustomLinksDragToReorder] = "Drag to reorder",
+        [TranslationKeys.CustomLinksExpand] = "Expand entry",
+        [TranslationKeys.CustomLinksCollapse] = "Collapse entry",
+        [TranslationKeys.CustomLinksValidationErrors] = "{0} errors",
+        [TranslationKeys.PreviewCustomLinks] = "Links",
+        [TranslationKeys.ValidationLinksLabelRequired] = "Label is required.",
+        [TranslationKeys.ValidationLinksLabelMax] = "Label must be 80 characters or fewer.",
+        [TranslationKeys.ValidationLinksUrlRequired] = "URL is required.",
+        [TranslationKeys.ValidationLinksUrlMax] = "URL must be 240 characters or fewer.",
+        [TranslationKeys.ValidationLinksUrlFormat] = "URL must be a valid http or https URL.",
+        [TranslationKeys.ValidationLinksNoteMax] = "Note must be 120 characters or fewer.",
+        [TranslationKeys.ValidationLinksDuplicateUrl] = "This URL is already listed.",
+        [TranslationKeys.AdditionalInformation] = "Additional Information",
+        [TranslationKeys.AdditionalInformationEmptyHint] = "Use this section for interests, volunteering, publications, or other notes that do not belong elsewhere.",
+        [TranslationKeys.AdditionalInformationContent] = "Content",
+        [TranslationKeys.PreviewAdditionalInformation] = "Additional Information",
+        [TranslationKeys.ValidationAdditionalInformationContentMax] = "Content must be 3000 characters or fewer."
     };
 
     private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> TranslationOverlays =

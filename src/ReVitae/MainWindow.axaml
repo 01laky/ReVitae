@@ -10,6 +10,8 @@
         xmlns:languages="clr-namespace:ReVitae.Languages"
         xmlns:certificates="clr-namespace:ReVitae.Certificates"
         xmlns:projects="clr-namespace:ReVitae.Projects"
+        xmlns:links="clr-namespace:ReVitae.Links"
+        xmlns:additionalInformation="clr-namespace:ReVitae.AdditionalInformation"
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="ReVitae.MainWindow"
         mc:Ignorable="d"
@@ -180,6 +182,10 @@
                         <certificates:CertificatesSectionView x:Name="CertificatesSection" />
 
                         <projects:ProjectsSectionView x:Name="ProjectsSection" />
+
+                        <links:LinksSectionView x:Name="LinksSection" />
+
+                        <additionalInformation:AdditionalInformationSectionView x:Name="AdditionalInformationSection" />
 
                         <TextBlock x:Name="ValidationSummaryTextBlock"
                                    Classes="re-vitae-error" />
