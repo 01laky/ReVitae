@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-728%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-783%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -53,7 +53,7 @@ Most CV workflows mix content and layout together. ReVitae separates them.
 
 ReVitae includes dedicated form sections for the core CV content:
 
-- Personal information and professional summary
+- Personal information (optional profile photo), professional summary, and contact fields
 - Work experience
 - Education
 - Skills
@@ -65,6 +65,13 @@ ReVitae includes dedicated form sections for the core CV content:
 
 Each section has focused validation, repeatable entries where needed, live
 preview updates, localized UI text, and inline field-level error messages.
+
+**Profile photo (optional):** upload JPEG, PNG, or WebP up to **15 MB** from the
+top of Personal information. JPEGs are EXIF-orientation normalized on save. Click
+the photo to replace it; sidebar templates show **initials** when no photo is set.
+Photos appear in template preview and in PDF/HTML/DOCX export. ReVitae JSON/YAML
+**v2** round-trips embedded photo bytes; document imports (PDF, DOCX, HTML, …)
+do not extract photos.
 
 ### CV import (multi-format)
 
@@ -133,12 +140,12 @@ control:
 ## Product Status
 
 ReVitae is an active early-stage desktop app. The structured CV form, inline
-validation UI, template preview, **multi-format export** (15 formats via
-`CvDocumentExporter`), and **multi-format CV import** (prompt **021**) through
-`CvDocumentImporter` are in place. Intro / replace flows cover PDF plus the
-additional structured and text-native formats listed above. Next major themes
-remain **local persistence** and smarter CV guidance / optional AI-assisted
-workflows.
+validation UI, template preview, **optional profile photo** (prompt **023**),
+**multi-format export** (15 formats via `CvDocumentExporter`), and
+**multi-format CV import** (prompt **021**) through `CvDocumentImporter` are in
+place. Intro / replace flows cover PDF plus the additional structured and
+text-native formats listed above. Next major themes remain **local persistence**
+and smarter CV guidance / optional AI-assisted workflows.
 
 ### Versioning
 

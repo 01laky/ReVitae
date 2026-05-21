@@ -35,7 +35,7 @@ The application should provide an editable form that stores all CV information i
 
 Initial form sections should include:
 
-- personal information,
+- personal information (optional profile photo upload),
 - contact information,
 - professional summary,
 - work experience,
@@ -48,6 +48,11 @@ Initial form sections should include:
 - additional information.
 
 The form should be the main source of truth for the CV. Users should be able to edit every field manually at any time.
+
+Optional profile photos (JPEG/PNG/WebP, max 15 MB) are stored locally, normalized
+for EXIF orientation, shown in template preview and visual exports, and embedded in
+ReVitae JSON/YAML v2 interchange. Sidebar templates show initials when no photo is
+uploaded. Document imports do not extract photos from PDF/DOCX/HTML.
 
 ### Create a New CV From Scratch
 

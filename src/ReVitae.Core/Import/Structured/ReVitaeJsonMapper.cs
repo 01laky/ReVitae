@@ -5,6 +5,7 @@ using ReVitae.Core.Cv.Certificates;
 using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Cv.Links;
+using ReVitae.Core.Cv.ProfilePhoto;
 using ReVitae.Core.Cv.Projects;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
@@ -15,7 +16,8 @@ namespace ReVitae.Core.Import.Structured;
 
 public static class ReVitaeJsonMapper
 {
-    private const int SupportedRevision = 1;
+    private const int MinSupportedRevision = 1;
+    private const int MaxSupportedRevision = 2;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -37,7 +39,7 @@ public static class ReVitaeJsonMapper
             return CvImportResult.Failed(TranslationKeys.ImportErrorUnreadableDocument);
         }
 
-        if (dto is null || dto.RevitaeVersion != SupportedRevision)
+        if (dto is null || dto.RevitaeVersion < MinSupportedRevision || dto.RevitaeVersion > MaxSupportedRevision)
         {
             return CvImportResult.Failed(TranslationKeys.ImportErrorUnsupportedStructuredFormat);
         }
@@ -70,7 +72,7 @@ public static class ReVitaeJsonMapper
         var languages = dto.Languages ?? [];
         var education = dto.Education ?? [];
         var experience = dto.WorkExperience ?? [];
-        var personal = dto.PersonalInformation ?? new PersonalInformationImport();
+        var personal = MapPersonalInformation(dto.PersonalInformation);
 
         string additionalInformation = string.Empty;
         if (!string.IsNullOrWhiteSpace(dto.AdditionalInformation?.Content))
@@ -114,6 +116,51 @@ public static class ReVitaeJsonMapper
         };
     }
 
+    internal static PersonalInformationImport MapPersonalInformation(PersonalInformationFileDto? dto)
+    {
+        if (dto is null)
+        {
+            return new PersonalInformationImport();
+        }
+
+        var personal = new PersonalInformationImport
+        {
+            FirstName = dto.FirstName ?? string.Empty,
+            LastName = dto.LastName ?? string.Empty,
+            ProfessionalTitle = dto.ProfessionalTitle ?? string.Empty,
+            Email = dto.Email ?? string.Empty,
+            Phone = dto.Phone ?? string.Empty,
+            Location = dto.Location ?? string.Empty,
+            LinkedInUrl = dto.LinkedInUrl ?? string.Empty,
+            PortfolioUrl = dto.PortfolioUrl ?? string.Empty,
+            GitHubUrl = dto.GitHubUrl ?? string.Empty,
+            ShortSummary = dto.ShortSummary ?? string.Empty
+        };
+
+        if (!string.IsNullOrWhiteSpace(dto.ProfilePhotoBase64))
+        {
+            try
+            {
+                var bytes = Convert.FromBase64String(dto.ProfilePhotoBase64);
+                var contentType = string.IsNullOrWhiteSpace(dto.ProfilePhotoContentType)
+                    ? "image/jpeg"
+                    : dto.ProfilePhotoContentType;
+                var storage = new ProfilePhotoStorage();
+                var saveResult = storage.TrySaveBytes(bytes, contentType);
+                if (saveResult.Success && !string.IsNullOrWhiteSpace(saveResult.StoredPath))
+                {
+                    personal.ProfilePhotoPath = saveResult.StoredPath!;
+                }
+            }
+            catch (FormatException)
+            {
+                // Invalid base64 — skip photo, keep text import.
+            }
+        }
+
+        return personal;
+    }
+
     private static void AppendPersonalConfidences(PersonalInformationImport personal, ICollection<ImportedFieldConfidence> sink)
     {
         void Tag(string path, string? raw)
@@ -134,13 +181,17 @@ public static class ReVitaeJsonMapper
         Tag(MainPersonalInformationFieldKeys.PortfolioUrl, personal.PortfolioUrl);
         Tag(MainPersonalInformationFieldKeys.GitHubUrl, personal.GitHubUrl);
         Tag(MainPersonalInformationFieldKeys.ShortSummary, personal.ShortSummary);
+        if (ProfilePhotoStorage.FileExists(personal.ProfilePhotoPath))
+        {
+            Tag(MainPersonalInformationFieldKeys.ProfilePhotoPath, personal.ProfilePhotoPath);
+        }
     }
 
     private sealed class RevitaeFile
     {
         public int RevitaeVersion { get; init; }
 
-        public PersonalInformationImport? PersonalInformation { get; init; }
+        public PersonalInformationFileDto? PersonalInformation { get; init; }
 
         public List<WorkExperienceEntry>? WorkExperience { get; init; }
 
@@ -157,6 +208,33 @@ public static class ReVitaeJsonMapper
         public List<LinkEntry>? Links { get; init; }
 
         public AdditionalInformationDraft? AdditionalInformation { get; init; }
+    }
+
+    internal sealed class PersonalInformationFileDto
+    {
+        public string? FirstName { get; init; }
+
+        public string? LastName { get; init; }
+
+        public string? ProfessionalTitle { get; init; }
+
+        public string? Email { get; init; }
+
+        public string? Phone { get; init; }
+
+        public string? Location { get; init; }
+
+        public string? LinkedInUrl { get; init; }
+
+        public string? PortfolioUrl { get; init; }
+
+        public string? GitHubUrl { get; init; }
+
+        public string? ShortSummary { get; init; }
+
+        public string? ProfilePhotoBase64 { get; init; }
+
+        public string? ProfilePhotoContentType { get; init; }
     }
 
     private sealed class SkillsGroupDraft

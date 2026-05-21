@@ -2,11 +2,15 @@ namespace ReVitae.Core.Export.Pdf.Templates;
 
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
+using ReVitae.Core.Cv.ProfilePhoto;
+using ReVitae.Core.Export.Pdf;
 
 internal static class CleanTopHeaderPdfTemplate
 {
     public static byte[] Render(CvExportDocument document)
     {
+        var hasPhoto = ProfilePhotoStorage.FileExists(document.PhotoPath);
+
         return Document.Create(container =>
         {
             container.Page(page =>
@@ -18,6 +22,12 @@ internal static class CleanTopHeaderPdfTemplate
                     content.Spacing(16);
                     content.Item().Background("#5A9BD5").Padding(20).Row(header =>
                     {
+                        if (hasPhoto)
+                        {
+                            header.ConstantItem(72).Element(container =>
+                                CvPdfPhotoHelpers.ComposeHeaderPhoto(container, document, 64));
+                        }
+
                         header.RelativeItem(55).Column(name =>
                         {
                             name.Spacing(5);

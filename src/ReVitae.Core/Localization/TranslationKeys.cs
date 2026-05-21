@@ -23,6 +23,17 @@ public static class TranslationKeys
     public const string GitHubUrl = "field.gitHubUrl";
     public const string ShortSummary = "field.shortSummary";
     public const string ShortSummaryPlaceholder = "placeholder.shortSummary";
+    public const string ProfilePhoto = "field.profilePhoto";
+    public const string ProfilePhotoUploadHint = "profilePhoto.uploadHint";
+    public const string ProfilePhotoChangeHint = "profilePhoto.changeHint";
+    public const string ProfilePhotoUploadButton = "profilePhoto.uploadButton";
+    public const string ProfilePhotoRemove = "profilePhoto.remove";
+    public const string ProfilePhotoFilePickerTitle = "profilePhoto.filePickerTitle";
+    public const string ProfilePhotoFileType = "profilePhoto.fileType";
+    public const string ProfilePhotoUnsupportedFormat = "profilePhoto.error.unsupportedFormat";
+    public const string ProfilePhotoFileTooLarge = "profilePhoto.error.fileTooLarge";
+    public const string ProfilePhotoUnreadable = "profilePhoto.error.unreadable";
+    public const string ProfilePhotoMissingOnDisk = "profilePhoto.warning.missingOnDisk";
     public const string ExportPdf = "action.exportPdf";
     public const string Export = "action.export";
     public const string ExportCv = "action.exportCv";
@@ -492,6 +503,17 @@ public static class TranslationKeys
         GitHubUrl,
         ShortSummary,
         ShortSummaryPlaceholder,
+        ProfilePhoto,
+        ProfilePhotoUploadHint,
+        ProfilePhotoChangeHint,
+        ProfilePhotoUploadButton,
+        ProfilePhotoRemove,
+        ProfilePhotoFilePickerTitle,
+        ProfilePhotoFileType,
+        ProfilePhotoUnsupportedFormat,
+        ProfilePhotoFileTooLarge,
+        ProfilePhotoUnreadable,
+        ProfilePhotoMissingOnDisk,
         ExportPdf,
         Export,
         ExportCv,

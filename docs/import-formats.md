@@ -34,6 +34,17 @@ implementations registered from `CvDocumentImporter`.
 Structured formats (`JsonResumeMapper`, `ReVitaeJsonMapper`, Europass / HR‑XML,
 tabular) populate `CvImportResult` directly when recognition succeeds.
 
+### Profile photos
+
+- **ReVitae JSON/YAML v2:** optional `profilePhotoBase64` +
+  `profilePhotoContentType` in `personalInformation` are decoded, normalized, and
+  saved under `%LocalAppData%/ReVitae/profile-photos/`. Invalid base64 skips the
+  photo but keeps text import.
+- **ReVitae JSON v1:** no photo fields; imports behave as before.
+- **Document/text imports** (PDF, DOCX, HTML, Markdown, …): **no photo
+  extraction** — the profile photo area stays empty until the user uploads manually.
+- **HEIC/HEIF:** not accepted by the upload picker (document as a known limitation).
+
 Text pipelines (`CvTextImportPipeline`) mirror legacy PDF import: normalize →
 segment → extract fields.
 
@@ -89,3 +100,4 @@ rather than network or file disclosure.
 - Export formats: [`export-formats.md`](export-formats.md)
 - Native interchange schema: [`revitae-project-json.md`](revitae-project-json.md)
 - Product prompt and rationale: [`../prompts/021-multi-format-cv-import.md`](../prompts/021-multi-format-cv-import.md)
+- Profile photo upload and template integration: [`../prompts/023-profile-picture-upload.md`](../prompts/023-profile-picture-upload.md)

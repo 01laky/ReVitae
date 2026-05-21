@@ -1,3 +1,5 @@
+using ReVitae.Core.Cv.ProfilePhoto;
+
 namespace ReVitae.Core.Import;
 
 public sealed class PersonalInformationImport
@@ -22,6 +24,8 @@ public sealed class PersonalInformationImport
 
     public string ShortSummary { get; set; } = string.Empty;
 
+    public string ProfilePhotoPath { get; set; } = string.Empty;
+
     public bool HasAnyData()
     {
         return !string.IsNullOrWhiteSpace(FirstName)
@@ -33,6 +37,7 @@ public sealed class PersonalInformationImport
             || !string.IsNullOrWhiteSpace(LinkedInUrl)
             || !string.IsNullOrWhiteSpace(PortfolioUrl)
             || !string.IsNullOrWhiteSpace(GitHubUrl)
-            || !string.IsNullOrWhiteSpace(ShortSummary);
+            || !string.IsNullOrWhiteSpace(ShortSummary)
+            || ProfilePhotoStorage.FileExists(ProfilePhotoPath);
     }
 }

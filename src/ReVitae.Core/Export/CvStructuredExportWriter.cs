@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
+using ReVitae.Core.Cv.ProfilePhoto;
 using ReVitae.Core.Import;
 using CvWorkExperienceEntry = ReVitae.Core.Cv.WorkExperience.WorkExperienceEntry;
 using CvEducationEntry = ReVitae.Core.Cv.Education.EducationEntry;
@@ -90,11 +91,13 @@ internal static class CvStructuredExportWriter
 
     private static object BuildRevitaeDto(CvExportSourceData source)
     {
-        var root = new Dictionary<string, object?> { ["revitaeVersion"] = 1 };
+        var photoBytes = ProfilePhotoBytes.TryRead(source.Personal.ProfilePhotoPath);
+        var hasPhoto = photoBytes is { Length: > 0 };
+        var root = new Dictionary<string, object?> { ["revitaeVersion"] = hasPhoto ? 2 : 1 };
 
-        if (HasPersonal(source.Personal))
+        if (HasPersonal(source.Personal) || hasPhoto)
         {
-            root["personalInformation"] = source.Personal;
+            root["personalInformation"] = BuildPersonalInformationDto(source.Personal, photoBytes);
         }
 
         if (source.WorkExperience.Count > 0)
@@ -300,10 +303,46 @@ internal static class CvStructuredExportWriter
         return $"{year.Value:0000}-{month.Value:00}";
     }
 
+    private static Dictionary<string, object?> BuildPersonalInformationDto(
+        PersonalInformationImport personal,
+        byte[]? photoBytes)
+    {
+        var dto = new Dictionary<string, object?>
+        {
+            ["firstName"] = personal.FirstName,
+            ["lastName"] = personal.LastName,
+            ["professionalTitle"] = personal.ProfessionalTitle,
+            ["email"] = personal.Email,
+            ["phone"] = personal.Phone,
+            ["location"] = personal.Location,
+            ["linkedInUrl"] = personal.LinkedInUrl,
+            ["portfolioUrl"] = personal.PortfolioUrl,
+            ["gitHubUrl"] = personal.GitHubUrl,
+            ["shortSummary"] = personal.ShortSummary
+        };
+
+        if (photoBytes is { Length: > 0 })
+        {
+            var contentType = ProfilePhotoFormats.GetContentTypeForExtension(
+                Path.GetExtension(personal.ProfilePhotoPath));
+            dto["profilePhotoBase64"] = Convert.ToBase64String(photoBytes);
+            dto["profilePhotoContentType"] = contentType;
+        }
+
+        return dto;
+    }
+
     private static bool HasPersonal(PersonalInformationImport personal) =>
         !string.IsNullOrWhiteSpace(personal.FirstName)
         || !string.IsNullOrWhiteSpace(personal.LastName)
-        || !string.IsNullOrWhiteSpace(personal.Email);
+        || !string.IsNullOrWhiteSpace(personal.Email)
+        || !string.IsNullOrWhiteSpace(personal.ProfessionalTitle)
+        || !string.IsNullOrWhiteSpace(personal.Phone)
+        || !string.IsNullOrWhiteSpace(personal.Location)
+        || !string.IsNullOrWhiteSpace(personal.LinkedInUrl)
+        || !string.IsNullOrWhiteSpace(personal.PortfolioUrl)
+        || !string.IsNullOrWhiteSpace(personal.GitHubUrl)
+        || !string.IsNullOrWhiteSpace(personal.ShortSummary);
 
     private static object? JsonElementToPlainObject(JsonElement element) => element.ValueKind switch
     {

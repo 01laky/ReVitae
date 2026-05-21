@@ -2,6 +2,7 @@ namespace ReVitae.Core.Export.Pdf.Templates;
 
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
+using ReVitae.Core.Export.Pdf;
 
 internal static class DarkSidebarAccentPdfTemplate
 {
@@ -18,6 +19,13 @@ internal static class DarkSidebarAccentPdfTemplate
                     row.RelativeItem(34).Background("#2F3A45").Padding(16).Column(sidebar =>
                     {
                         sidebar.Spacing(10);
+                        sidebar.Item().Element(container =>
+                            CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(
+                                container,
+                                document,
+                                88,
+                                "#5B9BB0",
+                                "#FFFFFF"));
                         sidebar.Item().Text(document.Labels.Contact.ToUpperInvariant()).FontSize(16).Bold().FontColor(Colors.White);
                         sidebar.Item().Text(CvExportPreviewContentBuilder.BuildContactLines(document)).FontColor(Colors.White);
                     });

@@ -5,6 +5,7 @@ using System.Xml;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using ReVitae.Core.Cv.ProfilePhoto;
 using ReVitae.Core.Export.Pdf;
 
 namespace ReVitae.Core.Export;
@@ -53,6 +54,7 @@ internal static class CvVisualExportWriter
         mainPart.Document = new Document(new Body());
         var body = mainPart.Document.Body!;
 
+        CvDocxPhotoInserter.TryAppendPhoto(mainPart, body, document.PhotoPath);
         AppendDocxHeading(body, document.FullName, 28);
         if (!string.IsNullOrWhiteSpace(document.ProfessionalTitle))
         {
@@ -152,9 +154,17 @@ internal static class CvVisualExportWriter
         sb.AppendLine("h1{color:" + accent + ";margin-bottom:0.2rem;}");
         sb.AppendLine("h2{border-bottom:2px solid " + accent + ";padding-bottom:0.25rem;margin-top:1.5rem;}");
         sb.AppendLine(".subtitle{color:#555;margin-top:0;}");
+        sb.AppendLine(".profile-photo{width:96px;height:96px;border-radius:50%;object-fit:cover;margin-bottom:0.75rem;}");
         sb.AppendLine("pre{white-space:pre-wrap;font-family:inherit;}");
         sb.AppendLine("</style>");
         sb.AppendLine("</head><body>");
+
+        var photoDataUri = ProfilePhotoBytes.TryGetDataUri(document.PhotoPath);
+        if (!string.IsNullOrWhiteSpace(photoDataUri))
+        {
+            sb.AppendLine("<img class=\"profile-photo\" src=\"" + photoDataUri + "\" alt=\"Profile photo\" />");
+        }
+
         sb.AppendLine("<h1>" + EscapeHtml(document.FullName) + "</h1>");
         if (!string.IsNullOrWhiteSpace(document.ProfessionalTitle))
         {

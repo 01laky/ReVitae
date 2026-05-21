@@ -98,6 +98,39 @@
                             <controls:ExpandableSection.SectionContent>
                                 <StackPanel Classes="re-vitae-section-body">
                         <StackPanel Classes="re-vitae-form-field">
+                            <TextBlock x:Name="ProfilePhotoLabelTextBlock" Text="Profile photo" />
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                                <Button x:Name="ProfilePhotoUploadButton"
+                                        Classes="re-vitae-icon-button"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0"
+                                        Click="OnProfilePhotoUploadClicked">
+                                    <Border x:Name="ProfilePhotoPreviewHost"
+                                            Width="112"
+                                            Height="112"
+                                            CornerRadius="56"
+                                            ClipToBounds="True"
+                                            Background="#E8E8E8" />
+                                </Button>
+                                <StackPanel Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Spacing="8">
+                                    <TextBlock x:Name="ProfilePhotoHintTextBlock"
+                                               Text="Click to upload a photo"
+                                               TextWrapping="Wrap" />
+                                    <Button x:Name="ProfilePhotoRemoveButton"
+                                            Classes="re-vitae-text-button"
+                                            IsVisible="False"
+                                            Click="OnProfilePhotoRemoveClicked"
+                                            Content="Remove photo" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock x:Name="ProfilePhotoErrorTextBlock"
+                                       Classes="re-vitae-error" />
+                        </StackPanel>
+
+                        <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="FirstNameLabelTextBlock" Text="First name" />
                             <TextBox x:Name="FirstNameTextBox"
                                      PlaceholderText="John"

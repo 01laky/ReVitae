@@ -2,6 +2,7 @@ namespace ReVitae.Core.Export.Pdf.Templates;
 
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
+using ReVitae.Core.Export.Pdf;
 
 internal static class ModernSidebarPdfTemplate
 {
@@ -18,6 +19,13 @@ internal static class ModernSidebarPdfTemplate
                     row.RelativeItem(34).Background("#D7D7D7").Padding(14).Column(sidebar =>
                     {
                         sidebar.Spacing(14);
+                        sidebar.Item().Element(container =>
+                            CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(
+                                container,
+                                document,
+                                88,
+                                "#BBBBBB",
+                                "#333333"));
                         CvPdfLayoutHelpers.ComposeSection(
                             sidebar,
                             document.Labels.Contact,

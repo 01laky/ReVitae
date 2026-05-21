@@ -11,8 +11,13 @@ Mapping is implemented by `ReVitaeJsonMapper` in `ReVitae.Core`.
 
 ## Supported revision
 
-Only **`revitaeVersion: 1`** is accepted today. Other integers yield
-`TranslationKeys.ImportErrorUnsupportedStructuredFormat`.
+**`revitaeVersion: 1`** and **`revitaeVersion: 2`** are accepted.
+
+- **Version 1:** text personal fields only (legacy interchange).
+- **Version 2:** same as v1 plus optional embedded profile photo in
+  `personalInformation`. Export emits v2 only when a stored photo is present.
+
+Other integers yield `TranslationKeys.ImportErrorUnsupportedStructuredFormat`.
 
 ## Root shape
 
@@ -40,13 +45,18 @@ code). Minimal conceptual schema:
 
 Fields align with `PersonalInformationImport`:
 
-| Field                                      | Notes               |
-| ------------------------------------------ | ------------------- |
-| `firstName`, `lastName`                    | Split-name friendly |
-| `professionalTitle`                        | Job headline        |
-| `email`, `phone`, `location`               | Contact             |
-| `linkedInUrl`, `portfolioUrl`, `gitHubUrl` | Known URL slots     |
-| `shortSummary`                             | Profile blurb       |
+| Field                                      | Notes                                             |
+| ------------------------------------------ | ------------------------------------------------- |
+| `firstName`, `lastName`                    | Split-name friendly                               |
+| `professionalTitle`                        | Job headline                                      |
+| `email`, `phone`, `location`               | Contact                                           |
+| `linkedInUrl`, `portfolioUrl`, `gitHubUrl` | Known URL slots                                   |
+| `shortSummary`                             | Profile blurb                                     |
+| `profilePhotoBase64`                       | v2 only — base64 image bytes                      |
+| `profilePhotoContentType`                  | v2 only — MIME type                               |
+
+Absolute filesystem paths (`profilePhotoPath`) are **never** serialized in export.
+Import writes decoded bytes to local app storage and sets runtime path only in memory.
 
 ### Repeatable sections
 
@@ -99,6 +109,26 @@ information text after import.
   }
 }
 ```
+
+Version **2** adds optional embedded photo fields under `personalInformation`
+(export emits v2 only when a stored photo exists):
+
+```json
+{
+  "revitaeVersion": 2,
+  "personalInformation": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@example.com",
+    "profilePhotoBase64": "<base64-encoded image bytes>",
+    "profilePhotoContentType": "image/jpeg"
+  }
+}
+```
+
+On import, decoded bytes are normalized (EXIF orientation for JPEG) and written to
+`%LocalAppData%/ReVitae/profile-photos/`. The runtime form holds a local path only;
+that path is never written back into exported JSON/YAML.
 
 ## Validation rule
 

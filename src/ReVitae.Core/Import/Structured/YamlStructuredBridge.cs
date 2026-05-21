@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Nodes;
 using YamlDotNet.RepresentationModel;
 
@@ -87,7 +88,7 @@ internal static class YamlStructuredBridge
         switch (node)
         {
             case YamlScalarNode scalar:
-                return JsonValue.Create(scalar.Value);
+                return ScalarToJsonValue(scalar.Value);
             case YamlSequenceNode sequence:
                 {
                     var array = new JsonArray();
@@ -133,5 +134,30 @@ internal static class YamlStructuredBridge
         }
 
         return obj;
+    }
+
+    private static JsonNode? ScalarToJsonValue(string? value)
+    {
+        if (value is null)
+        {
+            return JsonValue.Create((string?)null);
+        }
+
+        if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
+        {
+            return JsonValue.Create(longValue);
+        }
+
+        if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var doubleValue))
+        {
+            return JsonValue.Create(doubleValue);
+        }
+
+        if (bool.TryParse(value, out var boolValue))
+        {
+            return JsonValue.Create(boolValue);
+        }
+
+        return JsonValue.Create(value);
     }
 }

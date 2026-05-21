@@ -16,6 +16,7 @@ using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
+using ReVitae.Core.Cv.ProfilePhoto;
 using ReVitae.Core.Export;
 using ReVitae.Core.Import;
 using ReVitae.Import;
@@ -24,6 +25,7 @@ using ReVitae.Controls;
 using ReVitae.Core.Validation;
 using ReVitae.Core.Validation.Presentation;
 using ReVitae.Export;
+using ReVitae.Preview;
 using ReVitae.Ui;
 using ReVitae.Ui.Validation;
 using System;
@@ -89,6 +91,7 @@ public partial class MainWindow : Window
         WireValidationRefreshOnSectionExpand(LinksSection);
         WireValidationRefreshOnSectionExpand(AdditionalInformationSection);
         ApplyLocalization();
+        RefreshProfilePhotoUi();
         UpdateTemplateSelectionState();
         UpdatePreview();
         UpdateValidationState();
@@ -505,7 +508,8 @@ public partial class MainWindow : Window
             || !string.IsNullOrWhiteSpace(LinkedInUrlTextBox.Text)
             || !string.IsNullOrWhiteSpace(PortfolioUrlTextBox.Text)
             || !string.IsNullOrWhiteSpace(GitHubUrlTextBox.Text)
-            || !string.IsNullOrWhiteSpace(ShortSummaryTextBox.Text);
+            || !string.IsNullOrWhiteSpace(ShortSummaryTextBox.Text)
+            || ProfilePhotoStorage.FileExists(_profilePhotoPath);
     }
 
     private void ClearCvForm()
@@ -547,6 +551,7 @@ public partial class MainWindow : Window
         PortfolioUrlTextBox.Text = string.Empty;
         GitHubUrlTextBox.Text = string.Empty;
         ShortSummaryTextBox.Text = string.Empty;
+        ClearProfilePhoto(showMissingWarning: false);
 
         foreach (var textBox in new TextBox[]
         {
@@ -642,6 +647,7 @@ public partial class MainWindow : Window
 
     private void ApplyCvImportResult(CvImportResult result)
     {
+        ClearProfilePhotoBeforeImport();
         ApplyPersonalInformationImport(result.Personal);
         WorkExperienceSection.ReplaceEntries(
             result.WorkExperienceEntries,
@@ -685,6 +691,8 @@ public partial class MainWindow : Window
         PortfolioUrlTextBox.Text = personal.PortfolioUrl;
         GitHubUrlTextBox.Text = personal.GitHubUrl;
         ShortSummaryTextBox.Text = personal.ShortSummary;
+        ApplyImportedProfilePhoto(
+            string.IsNullOrWhiteSpace(personal.ProfilePhotoPath) ? null : personal.ProfilePhotoPath);
     }
 
     private void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
@@ -1086,7 +1094,8 @@ public partial class MainWindow : Window
             LinkedInUrl = NormalizeValue(LinkedInUrlTextBox.Text),
             PortfolioUrl = NormalizeValue(PortfolioUrlTextBox.Text),
             GitHubUrl = NormalizeValue(GitHubUrlTextBox.Text),
-            ShortSummary = ShortSummaryTextBox.Text?.Trim() ?? string.Empty
+            ShortSummary = ShortSummaryTextBox.Text?.Trim() ?? string.Empty,
+            ProfilePhotoPath = _profilePhotoPath ?? string.Empty
         };
 
         return CvExportSourceDataFactory.Create(
@@ -1142,6 +1151,9 @@ public partial class MainWindow : Window
         AutomationProperties.SetName(CreateNewCvButton, _localizer.Get(TranslationKeys.IntroCreateNew));
         AutomationProperties.SetName(ImportCvButton, _localizer.Get(TranslationKeys.IntroImportPdf));
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
+        ProfilePhotoLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfilePhoto);
+        ProfilePhotoRemoveButton.Content = _localizer.Get(TranslationKeys.ProfilePhotoRemove);
+        RefreshProfilePhotoUi();
         LastNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.LastName);
         ProfessionalTitleLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfessionalTitle);
         EmailLabelTextBlock.Text = _localizer.Get(TranslationKeys.Email);
@@ -1637,7 +1649,7 @@ public partial class MainWindow : Window
             NormalizeValue(PortfolioUrlTextBox.Text),
             NormalizeValue(GitHubUrlTextBox.Text),
             ShortSummaryTextBox.Text?.Trim(),
-            PhotoPath: null,
+            PhotoPath: ProfilePhotoStorage.FileExists(_profilePhotoPath) ? _profilePhotoPath : null,
             GetActiveWorkExperienceEntries(),
             GetActiveEducationEntries(),
             GetActiveSkillsPreviewGroups(),
@@ -1665,6 +1677,11 @@ public partial class MainWindow : Window
         root.ColumnDefinitions = new ColumnDefinitions("0.36*,0.64*");
 
         var sidebarContent = new StackPanel { Spacing = 14 };
+        sidebarContent.Children.Add(ProfilePhotoPreviewFactory.CreateSidebarPhotoOrInitials(
+            document,
+            88,
+            Brush.Parse("#B8B8B8"),
+            Brushes.White));
         sidebarContent.Children.Add(CreateNameBlock(document.FirstName, document.LastName, "#F47C2C", stacked: true));
         sidebarContent.Children.Add(CreateContactSection(document));
 
@@ -1694,6 +1711,11 @@ public partial class MainWindow : Window
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
 
         var sidebarContent = new StackPanel { Spacing = 14 };
+        sidebarContent.Children.Add(ProfilePhotoPreviewFactory.CreateSidebarPhotoOrInitials(
+            document,
+            88,
+            Brush.Parse("#BBBBBB"),
+            Brush.Parse("#333333")));
         sidebarContent.Children.Add(CreateSection(document.Labels.Contact, CvExportPreviewContentBuilder.BuildLines(
             document.Labels.Phone, document.Phone,
             document.Labels.Email, document.Email,
@@ -1746,19 +1768,33 @@ public partial class MainWindow : Window
 
         var header = new Grid
         {
-            ColumnDefinitions = new ColumnDefinitions("0.55*,0.45*")
+            ColumnDefinitions = new ColumnDefinitions("Auto,0.55*,0.45*")
         };
+
+        var headerPhoto = ProfilePhotoPreviewFactory.CreateHeaderPhotoIfPresent(document, 72);
+        var nameColumnIndex = 0;
+        if (headerPhoto is not null)
+        {
+            header.Children.Add(headerPhoto);
+            nameColumnIndex = 1;
+            Grid.SetColumn(headerPhoto, 0);
+        }
+        else
+        {
+            header.ColumnDefinitions = new ColumnDefinitions("0.55*,0.45*");
+        }
 
         var namePanel = new StackPanel { Spacing = 6 };
         namePanel.Children.Add(CreateText(document.FullName, 30, Brushes.White, FontWeight.Bold));
         namePanel.Children.Add(CreateText(document.ProfessionalTitle, 14, Brushes.White, FontWeight.SemiBold));
+        Grid.SetColumn(namePanel, nameColumnIndex);
         header.Children.Add(namePanel);
 
         var contact = new StackPanel { Spacing = 3 };
         contact.Children.Add(CreateText($"{document.Labels.Email}: {document.Email}", 11, Brushes.White, FontWeight.SemiBold));
         contact.Children.Add(CreateText($"{document.Labels.Phone}: {document.Phone}", 11, Brushes.White, FontWeight.SemiBold));
         contact.Children.Add(CreateText($"{document.Labels.Location}: {document.Location}", 11, Brushes.White, FontWeight.SemiBold));
-        Grid.SetColumn(contact, 1);
+        Grid.SetColumn(contact, nameColumnIndex + 1);
         header.Children.Add(contact);
 
         root.Children.Add(
@@ -1791,6 +1827,11 @@ public partial class MainWindow : Window
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
 
         var sidebarContent = new StackPanel { Spacing = 16 };
+        sidebarContent.Children.Add(ProfilePhotoPreviewFactory.CreateSidebarPhotoOrInitials(
+            document,
+            88,
+            Brush.Parse("#5B9BB0"),
+            Brushes.White));
         sidebarContent.Children.Add(CreateText(document.Labels.Contact.ToUpperInvariant(), 16, Brushes.White, FontWeight.Bold));
         sidebarContent.Children.Add(CreateText(CvExportPreviewContentBuilder.BuildContactLines(document), 11, Brushes.White, FontWeight.Normal));
 

@@ -12,4 +12,5 @@ public static class MainPersonalInformationFieldKeys
     public const string PortfolioUrl = "portfolioUrl";
     public const string GitHubUrl = "gitHubUrl";
     public const string ShortSummary = "shortSummary";
+    public const string ProfilePhotoPath = "profilePhotoPath";
 }

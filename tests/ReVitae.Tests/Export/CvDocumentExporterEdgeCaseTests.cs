@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
+using ReVitae.Core.Cv.ProfilePhoto;
 using ReVitae.Core.Export;
 using ReVitae.Core.Import;
 using ReVitae.Core.Import.Structured;
@@ -65,6 +66,85 @@ public sealed class CvDocumentExporterEdgeCaseTests
         var import = ReVitaeJsonMapper.Map(json);
         Assert.True(import.Success);
         Assert.Equal("Jane", import.Personal.FirstName);
+    }
+
+    [Fact]
+    public void Export_WithPhotoPath_DoesNotThrowForVisualFormats()
+    {
+        var tempDirectory = ProfilePhotoTestHelpers.CreateTempDirectory();
+        try
+        {
+            var storage = new ProfilePhotoStorage(tempDirectory);
+            var saved = storage.TrySaveCopy(ProfilePhotoTestHelpers.WriteMinimalPng(tempDirectory));
+            Assert.True(saved.Success);
+
+            var document = CvExportTestFixtures.CreateRepresentativeDocument() with { PhotoPath = saved.StoredPath };
+            var source = CvExportTestFixtures.CreateRepresentativeSourceData();
+            source.Personal.ProfilePhotoPath = saved.StoredPath!;
+
+            foreach (var format in new[] { CvExportFormat.Pdf, CvExportFormat.Html, CvExportFormat.Docx })
+            {
+                using var stream = new MemoryStream();
+                var result = CvDocumentExporter.Export(document, source, format, stream);
+                Assert.True(result.Success, format.ToString());
+                Assert.True(stream.Length > 0);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void Export_WithMissingPhotoPath_SucceedsWithoutThrowing()
+    {
+        var document = CvExportTestFixtures.CreateRepresentativeDocument() with
+        {
+            PhotoPath = Path.Combine(Path.GetTempPath(), "missing-profile-photo.png")
+        };
+        var source = CvExportTestFixtures.CreateRepresentativeSourceData();
+
+        foreach (var format in new[] { CvExportFormat.Pdf, CvExportFormat.Html, CvExportFormat.Docx, CvExportFormat.RevitaeJson })
+        {
+            using var stream = new MemoryStream();
+            var result = CvDocumentExporter.Export(document, source, format, stream);
+            Assert.True(result.Success, format.ToString());
+            Assert.True(stream.Length > 0);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ExportAllFormatsMemberData))]
+    public void Export_AllShippedFormats_WithPhoto_SucceedWithNonEmptyOutput(CvExportFormat format)
+    {
+        var tempDirectory = ProfilePhotoTestHelpers.CreateTempDirectory();
+        try
+        {
+            var storage = new ProfilePhotoStorage(tempDirectory);
+            var saved = storage.TrySaveCopy(ProfilePhotoTestHelpers.WriteMinimalPng(tempDirectory));
+            Assert.True(saved.Success);
+
+            var document = CvExportTestFixtures.CreateRepresentativeDocument() with { PhotoPath = saved.StoredPath };
+            var source = CvExportTestFixtures.CreateRepresentativeSourceData();
+            source.Personal.ProfilePhotoPath = saved.StoredPath!;
+
+            using var stream = new MemoryStream();
+            var result = CvDocumentExporter.Export(document, source, format, stream);
+
+            Assert.True(result.Success);
+            Assert.True(stream.Length > 0);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
     }
 
     public static IEnumerable<object[]> ExportAllFormatsMemberData() =>

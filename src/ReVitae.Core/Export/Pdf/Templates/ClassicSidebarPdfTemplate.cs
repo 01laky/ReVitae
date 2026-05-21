@@ -1,6 +1,7 @@
 namespace ReVitae.Core.Export.Pdf.Templates;
 
 using QuestPDF.Fluent;
+using ReVitae.Core.Export.Pdf;
 
 internal static class ClassicSidebarPdfTemplate
 {
@@ -17,6 +18,13 @@ internal static class ClassicSidebarPdfTemplate
                     row.RelativeItem(36).Background("#D8D8D8").Padding(14).Column(sidebar =>
                     {
                         sidebar.Spacing(14);
+                        sidebar.Item().Element(container =>
+                            CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(
+                                container,
+                                document,
+                                88,
+                                "#B8B8B8",
+                                "#FFFFFF"));
                         sidebar.Item().Text(document.FirstName).FontSize(24).Bold();
                         sidebar.Item().Text(document.LastName).FontSize(24).Bold().FontColor("#F47C2C");
 

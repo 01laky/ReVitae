@@ -9,13 +9,22 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **Optional profile photo** (prompt **023**): upload JPEG/PNG/WebP (max **15 MB**)
+  from Personal information; EXIF auto-orient on save; click-to-replace; local
+  storage under `%LocalAppData%/ReVitae/profile-photos/`; template preview +
+  PDF/HTML/DOCX embedding; sidebar **initials fallback** when no photo.
+- ReVitae JSON/YAML **`revitaeVersion: 2`** with `profilePhotoBase64` /
+  `profilePhotoContentType` round-trip (v1 unchanged; absolute paths never exported).
+- Profile photo test suites (`ProfilePhotoStorageTests`, `ProfilePhotoInitialsTests`,
+  structured/export extensions) — **783 tests** total.
+
 - **Multi-format CV export** (prompt **022**): **Export** toolbar button opens an
   in-window format modal with 15 formats (PDF, DOCX, ODT, RTF, HTML, Markdown,
   TXT, LaTeX, ReVitae JSON, JSON Resume, YAML, Europass XML, HR-XML, CSV, TSV).
 - `CvDocumentExporter` facade, `CvExportFormatCatalog`, visual/structured writers,
   save-dialog defaults, post-export **Open file** / **Show in folder** actions,
   and SVG format icons under `src/ReVitae/Assets/ExportFormats/`.
-- Export test suites under `tests/ReVitae.Tests/Export/` (728 tests total).
+- Export test suites under `tests/ReVitae.Tests/Export/` (783 tests total).
 - Documentation: [`docs/export-formats.md`](docs/export-formats.md).
 
 - Unified **multi-format CV import** via `CvDocumentImporter` (prompt **021**): PDF;
@@ -41,6 +50,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- **YAML structured import:** numeric/boolean YAML scalars map to JSON numbers
+  again (fixes native ReVitae YAML round-trip).
 - Education import no longer creates duplicate garbage entries when PDF text
   extraction splits a single institution name across blank lines (continuation
   blocks such as `and Training` / `Engineering` merge into one entry).

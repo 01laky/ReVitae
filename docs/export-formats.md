@@ -32,7 +32,7 @@ validation uses `CvExportPathHelper` in Core.
 | Web & text    | Markdown      | `.md`                      | Semantic headings                                   |
 | Web & text    | Plain text    | `.txt`                     | Readable section blocks                             |
 | Web & text    | LaTeX         | `.tex`                     | Compilable `article` stub                           |
-| Structured    | ReVitae JSON  | `.revitae.json`            | `revitaeVersion: 1` — `ReVitaeJsonMapper` import    |
+| Structured    | ReVitae JSON  | `.revitae.json`            | v1 text-only; v2 adds optional embedded photo       |
 | Structured    | JSON Resume   | `.json`                    | Subset compatible with `JsonResumeMapper`           |
 | Structured    | YAML          | `.yaml`                    | JSON-equivalent tree (quoted scalars for `#`, `+`)  |
 | Structured    | Europass XML  | `_europass.xml` suffix     | Europass namespace                                  |
@@ -43,6 +43,27 @@ validation uses `CvExportPathHelper` in Core.
 Filename defaults come from `CvExportFilenameHelper.SuggestFilename(first, last, format)`.
 JSON/XML variants disambiguate via extension or suffix (see catalog in
 `CvExportFormatCatalog`).
+
+## Profile photo in visual exports
+
+When a profile photo is uploaded in the form, `BuildExportDocument()` sets
+`CvExportDocument.PhotoPath` to the local stored copy:
+
+| Format | With photo | Without photo |
+| ------ | ---------- | ------------- |
+| PDF (all templates) | Embedded image in template slot | Sidebar templates show **initials avatar**; Clean Top Header stays text-only |
+| HTML | `<img>` data URI in header/sidebar region | No photo block |
+| DOCX | Inline image after name block | No image |
+| ODT | Best-effort (no dedicated photo slot in v1) | — |
+
+Source images: JPEG/PNG/WebP up to **15 MB**; WebP is transcoded to JPEG in
+`ProfilePhotoStorage` for downstream writers. JPEG uploads are EXIF-orientation
+normalized on save.
+
+Structured ReVitae JSON/YAML export never writes absolute `profilePhotoPath`.
+When a photo exists, export emits **`revitaeVersion: 2`** with
+`profilePhotoBase64` and `profilePhotoContentType` inside `personalInformation`.
+Text-only exports remain at version 1.
 
 ## Architecture
 
@@ -70,5 +91,11 @@ modal UI and save-dialog defaults (`CvExportSaveDialogDefaults`). Icons live und
 ## Tests
 
 Export coverage lives under `tests/ReVitae.Tests/Export/` including facade routing,
-catalog, filename helper, save-dialog defaults, per-format smoke checks, and
-structured round-trip tests (`ExportImportRoundTripTests`).
+catalog, filename helper, save-dialog defaults, per-format smoke checks, structured
+round-trip tests (`ExportImportRoundTripTests`), and profile-photo export paths
+(`CvStructuredExportWriterPhotoTests`, extensions to `CvDocumentExporterEdgeCaseTests`).
+
+Profile photo storage and initials logic are covered in
+`tests/ReVitae.Tests/ProfilePhotoStorageTests.cs` and
+`ProfilePhotoInitialsTests.cs`. The full suite currently runs **783** tests via
+`dotnet test`.
