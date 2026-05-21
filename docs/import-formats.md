@@ -86,5 +86,6 @@ rather than network or file disclosure.
 
 ## Related docs
 
+- Export formats: [`export-formats.md`](export-formats.md)
 - Native interchange schema: [`revitae-project-json.md`](revitae-project-json.md)
 - Product prompt and rationale: [`../prompts/021-multi-format-cv-import.md`](../prompts/021-multi-format-cv-import.md)

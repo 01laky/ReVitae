@@ -5,18 +5,23 @@ using System.Text;
 
 public static class CvExportFilenameHelper
 {
-    public static string SuggestFilename(string? firstName, string? lastName)
+    public static string SuggestFilename(string? firstName, string? lastName, CvExportFormat format)
     {
+        var extension = CvExportFormatCatalog.GetExtension(format);
+        var suffix = CvExportFormatCatalog.GetFilenameSuffix(format);
         var sanitizedFirstName = SanitizePart(firstName);
         var sanitizedLastName = SanitizePart(lastName);
 
         if (string.IsNullOrWhiteSpace(sanitizedFirstName) || string.IsNullOrWhiteSpace(sanitizedLastName))
         {
-            return "ReVitae_CV.pdf";
+            return $"ReVitae_CV{suffix}{extension}";
         }
 
-        return $"{sanitizedFirstName}_{sanitizedLastName}_CV.pdf";
+        return $"{sanitizedFirstName}_{sanitizedLastName}_CV{suffix}{extension}";
     }
+
+    public static string SuggestFilename(string? firstName, string? lastName) =>
+        SuggestFilename(firstName, lastName, CvExportFormat.Pdf);
 
     private static string SanitizePart(string? value)
     {

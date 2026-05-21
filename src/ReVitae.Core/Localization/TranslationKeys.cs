@@ -5,6 +5,7 @@ public static class TranslationKeys
     public const string HeaderSubtitle = "header.subtitle";
     public const string OpenSetup = "action.openSetup";
     public const string OpenUploadCv = "action.openUploadCv";
+    public const string OpenCreateNewCv = "action.openCreateNewCv";
     public const string OpenTemplates = "action.openTemplates";
     public const string Confirm = "action.confirm";
     public const string Cancel = "action.cancel";
@@ -23,9 +24,52 @@ public static class TranslationKeys
     public const string ShortSummary = "field.shortSummary";
     public const string ShortSummaryPlaceholder = "placeholder.shortSummary";
     public const string ExportPdf = "action.exportPdf";
+    public const string Export = "action.export";
+    public const string ExportCv = "action.exportCv";
     public const string ExportSaveDialogTitle = "export.saveDialogTitle";
+    public const string ExportSaveDialogTitleFormat = "export.saveDialogTitleFormat";
     public const string ExportPdfFileType = "export.pdfFileType";
+    public const string ExportDocxFileType = "export.docxFileType";
+    public const string ExportOdtFileType = "export.odtFileType";
+    public const string ExportRtfFileType = "export.rtfFileType";
+    public const string ExportHtmlFileType = "export.htmlFileType";
+    public const string ExportMarkdownFileType = "export.markdownFileType";
+    public const string ExportTxtFileType = "export.txtFileType";
+    public const string ExportLatexFileType = "export.latexFileType";
+    public const string ExportRevitaeJsonFileType = "export.revitaeJsonFileType";
+    public const string ExportJsonResumeFileType = "export.jsonResumeFileType";
+    public const string ExportYamlFileType = "export.yamlFileType";
+    public const string ExportEuropassXmlFileType = "export.europassXmlFileType";
+    public const string ExportHrXmlFileType = "export.hrXmlFileType";
+    public const string ExportCsvFileType = "export.csvFileType";
+    public const string ExportTsvFileType = "export.tsvFileType";
     public const string ExportFailed = "export.failed";
+    public const string ExportFailedFormat = "export.failedFormat";
+    public const string ExportModalTitle = "export.modalTitle";
+    public const string ExportModalSubtitle = "export.modalSubtitle";
+    public const string ExportModalClose = "export.modalClose";
+    public const string ExportCategoryDocuments = "export.category.documents";
+    public const string ExportCategoryWebAndText = "export.category.webAndText";
+    public const string ExportCategoryStructured = "export.category.structured";
+    public const string ExportFormatPdf = "export.format.pdf";
+    public const string ExportFormatPdfHint = "export.format.pdfHint";
+    public const string ExportFormatDocx = "export.format.docx";
+    public const string ExportFormatOdt = "export.format.odt";
+    public const string ExportFormatRtf = "export.format.rtf";
+    public const string ExportFormatHtml = "export.format.html";
+    public const string ExportFormatMarkdown = "export.format.markdown";
+    public const string ExportFormatTxt = "export.format.txt";
+    public const string ExportFormatLatex = "export.format.latex";
+    public const string ExportFormatRevitaeJson = "export.format.revitaeJson";
+    public const string ExportFormatJsonResume = "export.format.jsonResume";
+    public const string ExportFormatYaml = "export.format.yaml";
+    public const string ExportFormatEuropassXml = "export.format.europassXml";
+    public const string ExportFormatHrXml = "export.format.hrXml";
+    public const string ExportFormatCsv = "export.format.csv";
+    public const string ExportFormatTsv = "export.format.tsv";
+    public const string ExportFormatRecommended = "export.format.recommended";
+    public const string ExportOpenFile = "export.openFile";
+    public const string ExportShowInFolder = "export.showInFolder";
     public const string Preview = "preview.title";
     public const string PreviewExpandTitle = "modal.previewExpand.title";
     public const string Setup = "modal.setup.title";
@@ -56,6 +100,7 @@ public static class TranslationKeys
     public const string ExportFixValidation = "export.fixValidation";
     public const string ExportFilePickerUnavailable = "export.filePickerUnavailable";
     public const string ExportedPdfTo = "export.exportedPdfTo";
+    public const string ExportedTo = "export.exportedTo";
     public const string ValidationFirstNameRequired = "validation.firstName.required";
     public const string ValidationLastNameRequired = "validation.lastName.required";
     public const string ValidationEmailRequired = "validation.email.required";
@@ -399,6 +444,8 @@ public static class TranslationKeys
     public const string IntroImportRetry = "intro.importRetry";
     public const string ReplaceCvConfirmTitle = "modal.replaceCvConfirm.title";
     public const string ReplaceCvConfirmMessage = "modal.replaceCvConfirm.message";
+    public const string NewCvConfirmTitle = "modal.newCvConfirm.title";
+    public const string NewCvConfirmMessage = "modal.newCvConfirm.message";
     public const string UploadCvFilePickerTitle = "import.uploadCvFilePickerTitle";
     public const string ImportCvFilePickerTitle = "import.importCvFilePickerTitle";
     public const string ImportPdfFileType = "import.pdfFileType";
@@ -427,6 +474,7 @@ public static class TranslationKeys
         HeaderSubtitle,
         OpenSetup,
         OpenUploadCv,
+        OpenCreateNewCv,
         OpenTemplates,
         Confirm,
         Cancel,
@@ -445,9 +493,52 @@ public static class TranslationKeys
         ShortSummary,
         ShortSummaryPlaceholder,
         ExportPdf,
+        Export,
+        ExportCv,
         ExportSaveDialogTitle,
+        ExportSaveDialogTitleFormat,
         ExportPdfFileType,
+        ExportDocxFileType,
+        ExportOdtFileType,
+        ExportRtfFileType,
+        ExportHtmlFileType,
+        ExportMarkdownFileType,
+        ExportTxtFileType,
+        ExportLatexFileType,
+        ExportRevitaeJsonFileType,
+        ExportJsonResumeFileType,
+        ExportYamlFileType,
+        ExportEuropassXmlFileType,
+        ExportHrXmlFileType,
+        ExportCsvFileType,
+        ExportTsvFileType,
         ExportFailed,
+        ExportFailedFormat,
+        ExportModalTitle,
+        ExportModalSubtitle,
+        ExportModalClose,
+        ExportCategoryDocuments,
+        ExportCategoryWebAndText,
+        ExportCategoryStructured,
+        ExportFormatPdf,
+        ExportFormatPdfHint,
+        ExportFormatDocx,
+        ExportFormatOdt,
+        ExportFormatRtf,
+        ExportFormatHtml,
+        ExportFormatMarkdown,
+        ExportFormatTxt,
+        ExportFormatLatex,
+        ExportFormatRevitaeJson,
+        ExportFormatJsonResume,
+        ExportFormatYaml,
+        ExportFormatEuropassXml,
+        ExportFormatHrXml,
+        ExportFormatCsv,
+        ExportFormatTsv,
+        ExportFormatRecommended,
+        ExportOpenFile,
+        ExportShowInFolder,
         Preview,
         PreviewExpandTitle,
         Setup,
@@ -478,6 +569,7 @@ public static class TranslationKeys
         ExportFixValidation,
         ExportFilePickerUnavailable,
         ExportedPdfTo,
+        ExportedTo,
         ValidationFirstNameRequired,
         ValidationLastNameRequired,
         ValidationEmailRequired,
@@ -812,6 +904,8 @@ public static class TranslationKeys
         IntroImportRetry,
         ReplaceCvConfirmTitle,
         ReplaceCvConfirmMessage,
+        NewCvConfirmTitle,
+        NewCvConfirmMessage,
         UploadCvFilePickerTitle,
         ImportCvFilePickerTitle,
         ImportPdfFileType,

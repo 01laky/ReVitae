@@ -1,5 +1,20 @@
+using ReVitae.Core.Cv.Certificates;
+using ReVitae.Core.Cv.Education;
+using ReVitae.Core.Cv.Languages;
+using ReVitae.Core.Cv.Links;
+using ReVitae.Core.Cv.Projects;
+using ReVitae.Core.Cv.Skills;
+using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Export;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
+using ExportWorkExperienceEntry = ReVitae.Core.Export.WorkExperienceEntry;
+using ExportEducationEntry = ReVitae.Core.Export.EducationEntry;
+using ExportSkillItem = ReVitae.Core.Export.SkillItem;
+using ExportSkillsGroup = ReVitae.Core.Export.SkillsGroup;
+using ExportLanguageEntry = ReVitae.Core.Export.LanguageEntry;
+using ExportCertificateEntry = ReVitae.Core.Export.CertificateEntry;
+using ExportProjectEntry = ReVitae.Core.Export.ProjectEntry;
 
 namespace ReVitae.Tests.Export;
 
@@ -62,7 +77,7 @@ internal static class CvExportTestFixtures
             PhotoPath: null,
             WorkExperienceEntries:
             [
-                new WorkExperienceEntry(
+                new ExportWorkExperienceEntry(
                     "Senior Developer",
                     "Acme Corp",
                     "Košice",
@@ -75,7 +90,7 @@ internal static class CvExportTestFixtures
             ],
             EducationEntries:
             [
-                new EducationEntry(
+                new ExportEducationEntry(
                     "BSc Computer Science",
                     "Technical University",
                     "Software Engineering",
@@ -88,23 +103,23 @@ internal static class CvExportTestFixtures
             ],
             SkillsGroups:
             [
-                new SkillsGroup(
+                new ExportSkillsGroup(
                     "Programming",
-                    [new SkillItem("C#", "Advanced", 8)])
+                    [new ExportSkillItem("C#", "Advanced", 8)])
             ],
             LanguageEntries:
             [
-                new LanguageEntry("Slovak — Native", ["Reading: C2", "Writing: C2"])
+                new ExportLanguageEntry("Slovak — Native", ["Reading: C2", "Writing: C2"])
             ],
             CertificateEntries:
             [
-                new CertificateEntry(
+                new ExportCertificateEntry(
                     "AWS Solutions Architect",
                     ["Issued 2023", "Credential ID ABC-123"])
             ],
             ProjectEntries:
             [
-                new ProjectEntry(
+                new ExportProjectEntry(
                     "ReVitae",
                     ["Technologies: .NET, Avalonia", "Highlights: Local-first CV builder"])
             ],
@@ -150,4 +165,96 @@ internal static class CvExportTestFixtures
 
         return document with { AdditionalInformationContent = longParagraph };
     }
+
+    public static CvExportSourceData CreateRepresentativeSourceData()
+    {
+        var personal = new PersonalInformationImport
+        {
+            FirstName = "Ladislav",
+            LastName = "Kostolný",
+            ProfessionalTitle = "Software Engineer",
+            Email = "ladislav@example.com",
+            Phone = "+421 900 000 000",
+            Location = "Košice",
+            LinkedInUrl = "https://linkedin.com/in/ladislav",
+            PortfolioUrl = "https://example.com",
+            GitHubUrl = "https://github.com/ladislav",
+            ShortSummary = "Experienced engineer building desktop products."
+        };
+
+        var work = new ReVitae.Core.Cv.WorkExperience.WorkExperienceEntry
+        {
+            JobTitle = "Senior Developer",
+            Company = "Acme Corp",
+            Location = "Košice",
+            StartMonth = 1,
+            StartYear = 2020,
+            IsCurrentlyWorking = true,
+            Description = "Built cross-platform desktop apps.",
+            Achievements = "Shipped two major releases.",
+            Technologies = "C#, Avalonia, .NET",
+            CompanyUrl = "https://acme.example"
+        };
+
+        var education = new ReVitae.Core.Cv.Education.EducationEntry
+        {
+            Degree = "BSc Computer Science",
+            Institution = "Technical University",
+            FieldOfStudy = "Software Engineering",
+            Location = "Košice",
+            StartMonth = 9,
+            StartYear = 2016,
+            EndMonth = 6,
+            EndYear = 2020,
+            Grade = "1.0",
+            Description = "Focused on systems programming.",
+            InstitutionUrl = "https://school.example"
+        };
+
+        var skills = new SkillsGroupEntry { Category = "Programming" };
+        skills.Skills.Add(new ReVitae.Core.Cv.Skills.SkillItem { Name = "C#", YearsOfExperience = 8 });
+
+        var language = new ReVitae.Core.Cv.Languages.LanguageEntry { Language = "Slovak", Proficiency = LanguageProficiency.Native };
+        var certificate = new ReVitae.Core.Cv.Certificates.CertificateEntry { Name = "AWS Solutions Architect", Issuer = "Amazon", IssueYear = 2023 };
+        var project = new ReVitae.Core.Cv.Projects.ProjectEntry
+        {
+            Name = "ReVitae",
+            Description = "Local-first CV builder",
+            Highlights = "Technologies: .NET, Avalonia"
+        };
+        var link = new LinkEntry { Label = "Blog", Url = "https://blog.example" };
+
+        return new CvExportSourceData(
+            personal,
+            [work],
+            [education],
+            [skills],
+            [language],
+            [certificate],
+            [project],
+            [link],
+            "Open to remote roles across Europe.");
+    }
+
+    public static CvExportSourceData CreatePersonalOnlySourceData()
+    {
+        return new CvExportSourceData(
+            new PersonalInformationImport
+            {
+                FirstName = "Jane",
+                LastName = "Doe",
+                Email = "jane@example.com"
+            },
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            null);
+    }
+
+    public static IEnumerable<CvExportFormat> AllShippedFormats =>
+        Enum.GetValues<CvExportFormat>();
 }

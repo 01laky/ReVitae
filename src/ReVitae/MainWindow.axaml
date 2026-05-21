@@ -44,6 +44,16 @@
                         Spacing="8"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center">
+                <Button x:Name="OpenCreateNewCvButton"
+                        Classes="re-vitae-icon-button"
+                        Click="OnOpenCreateNewCvClicked"
+                        ToolTip.Tip="Create new CV"
+                        AutomationProperties.Name="Create new CV">
+                    <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline"
+                                                Width="24"
+                                                Height="24" />
+                </Button>
+
                 <Button x:Name="UploadCvButton"
                         Classes="re-vitae-icon-button"
                         Click="OnUploadCvClicked"
@@ -199,11 +209,25 @@
 
                         <Button x:Name="ExportPdfButton"
                                 Classes="re-vitae-primary"
-                                Content="Export PDF"
+                                Content="Export"
                                 Click="OnExportPdfClicked" />
 
                         <TextBlock x:Name="ExportStatusTextBlock"
                                    Classes="re-vitae-secondary" />
+
+                        <StackPanel x:Name="ExportPostActionPanel"
+                                    Orientation="Horizontal"
+                                    Spacing="12"
+                                    IsVisible="False">
+                            <Button x:Name="ExportOpenFileButton"
+                                    Classes="re-vitae-secondary"
+                                    Content="Open file"
+                                    Click="OnExportOpenFileClicked" />
+                            <Button x:Name="ExportShowInFolderButton"
+                                    Classes="re-vitae-secondary"
+                                    Content="Show in folder"
+                                    Click="OnExportShowInFolderClicked" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </ScrollViewer>
@@ -595,6 +619,42 @@
             </Border>
         </Grid>
 
+        <Grid x:Name="NewCvConfirmModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="NewCvConfirmModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="520"
+                    MinWidth="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="16"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="NewCvConfirmTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="24"
+                               Text="Discard changes?" />
+                    <TextBlock x:Name="NewCvConfirmMessageTextBlock"
+                               Classes="re-vitae-secondary"
+                               TextWrapping="Wrap"
+                               Text="Creating a new CV will discard all current data. Do you want to continue?" />
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="NewCvConfirmCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnNewCvConfirmCancelClicked" />
+                        <Button x:Name="NewCvConfirmOkButton"
+                                Classes="re-vitae-primary"
+                                Content="OK"
+                                Click="OnNewCvConfirmOkClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <Grid x:Name="ReplaceCvImportProgressModalOverlay"
               Grid.RowSpan="2"
               Classes="re-vitae-modal-overlay"
@@ -668,6 +728,52 @@
                             Content="Close"
                             HorizontalAlignment="Right"
                             Click="OnClosePreviewExpandClicked" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="ExportModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="ExportModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="960"
+                    MaxHeight="720"
+                    MinWidth="360"
+                    MinHeight="280"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <StackPanel Spacing="4">
+                            <TextBlock x:Name="ExportModalTitleTextBlock"
+                                       Classes="re-vitae-app-title"
+                                       FontSize="24"
+                                       Text="Export CV" />
+                            <TextBlock x:Name="ExportModalSubtitleTextBlock"
+                                       Classes="re-vitae-secondary"
+                                       Text="Choose a file format for your download." />
+                        </StackPanel>
+                        <Button x:Name="ExportModalTopCloseButton"
+                                Grid.Column="1"
+                                Content="Close"
+                                Click="OnCloseExportModalClicked" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1"
+                                  Margin="0,14,0,0">
+                        <StackPanel x:Name="ExportFormatCategoriesPanel"
+                                    Spacing="8" />
+                    </ScrollViewer>
+
+                    <Button x:Name="ExportModalBottomCloseButton"
+                            Grid.Row="2"
+                            Content="Close"
+                            HorizontalAlignment="Right"
+                            Click="OnCloseExportModalClicked" />
                 </Grid>
             </Border>
         </Grid>

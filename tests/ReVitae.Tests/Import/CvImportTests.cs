@@ -67,6 +67,8 @@ public sealed class DateRangeParserTests
     [InlineData("01/2020 - 03/2024", 1, 2020, 3, 2024, false)]
     [InlineData("2020 - Present", null, 2020, null, null, true)]
     [InlineData("06/2006", 6, 2006, null, null, false)]
+    [InlineData("09 / 2002 - 06 / 2006", 9, 2002, 6, 2006, false)]
+    [InlineData("01 / 2024 - 05 / 2026", 1, 2024, 5, 2026, false)]
     public void TryParse_ParsesCommonFormats(
         string input,
         int? startMonth,

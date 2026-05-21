@@ -9,6 +9,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **Multi-format CV export** (prompt **022**): **Export** toolbar button opens an
+  in-window format modal with 15 formats (PDF, DOCX, ODT, RTF, HTML, Markdown,
+  TXT, LaTeX, ReVitae JSON, JSON Resume, YAML, Europass XML, HR-XML, CSV, TSV).
+- `CvDocumentExporter` facade, `CvExportFormatCatalog`, visual/structured writers,
+  save-dialog defaults, post-export **Open file** / **Show in folder** actions,
+  and SVG format icons under `src/ReVitae/Assets/ExportFormats/`.
+- Export test suites under `tests/ReVitae.Tests/Export/` (728 tests total).
+- Documentation: [`docs/export-formats.md`](docs/export-formats.md).
+
 - Unified **multi-format CV import** via `CvDocumentImporter` (prompt **021**): PDF;
   TXT/Markdown/HTML; DOC/DOCX; ODT/RTF; AbiWord, Pages, WPS, LaTeX; Json Resume;
   native `.revitae.json`; YAML; CSV/TSV; Europass / HR‑XML-style XML when detected.
@@ -16,14 +25,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   (`SecureXmlReaderFactory`) for office-derived XML surfaces.
 - Structured mappers (`JsonResumeMapper`, `ReVitaeJsonMapper`, tabular, Europass,
   HR‑XML) plus text extractors registered behind `ICvFormatImporter`.
-- Targeted import edge-case suites under `tests/ReVitae.Tests/Import/` (608 tests
-  total).
+- Targeted import edge-case suites under `tests/ReVitae.Tests/Import/`.
 - Documentation: [`docs/import-formats.md`](docs/import-formats.md) format matrix
   and [`docs/revitae-project-json.md`](docs/revitae-project-json.md) native
   interchange schema.
 
 ### Changed
 
+- **Export PDF** renamed to **Export**; validation-gated format modal replaces
+  direct PDF save dialog; localized status and file-type labels updated for all
+  formats.
 - Intro and header **replace import** flows now accept all supported formats (not
   PDF-only); UI copy and file picker filters updated accordingly.
 - README, concept doc, and roadmap aligned with multi-format import scope.

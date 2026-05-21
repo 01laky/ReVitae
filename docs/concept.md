@@ -27,7 +27,7 @@ The application should:
 
 The first phase should focus on the core product without making local AI model management a blocker.
 
-Phase 1 should deliver a usable CV builder with structured data entry, template selection, preview, and PDF export.
+Phase 1 should deliver a usable CV builder with structured data entry, template selection, preview, and multi-format export (PDF plus structured and document interchange formats — see [`docs/export-formats.md`](export-formats.md)).
 
 ### Structured CV Form
 

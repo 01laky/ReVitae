@@ -257,7 +257,27 @@ public static class CvImportFieldExtractor
             {
                 SplitTitleCompany(titleLine, out var jobTitle, out var company);
                 entry.JobTitle = jobTitle;
-                entry.Company = company;
+                if (string.IsNullOrWhiteSpace(entry.Company))
+                {
+                    entry.Company = company;
+                }
+            }
+
+            if (lineIndex < lines.Length
+                && TryParseExportDelimitedMetaLine(lines[lineIndex], out var metaParts, out var metaDates))
+            {
+                if (metaParts.Count >= 1 && string.IsNullOrWhiteSpace(entry.Company))
+                {
+                    entry.Company = metaParts[0];
+                }
+
+                if (metaParts.Count >= 2)
+                {
+                    entry.Location = metaParts[1];
+                }
+
+                dateRange ??= metaDates;
+                lineIndex++;
             }
 
             if (dateRange is not null)
@@ -351,9 +371,32 @@ public static class CvImportFieldExtractor
             }
 
             var headerLines = new List<string>();
+            var exportMetaApplied = false;
             for (; lineIndex < lines.Length; lineIndex++)
             {
                 var line = lines[lineIndex];
+
+                if (headerLines.Count == 1
+                    && TryParseExportDelimitedMetaLine(line, out var metaParts, out var metaDates))
+                {
+                    entry.Degree = headerLines[0];
+                    entry.Institution = metaParts[0];
+                    if (metaParts.Count >= 2)
+                    {
+                        entry.Location = metaParts[1];
+                    }
+
+                    if (metaParts.Count >= 3)
+                    {
+                        InferDegreeType(entry, metaParts[2]);
+                    }
+
+                    dateRange ??= metaDates;
+                    exportMetaApplied = true;
+                    lineIndex++;
+                    break;
+                }
+
                 if (DateRangeParser.TryParse(line, out var inlineDate))
                 {
                     dateRange ??= inlineDate;
@@ -375,7 +418,10 @@ public static class CvImportFieldExtractor
                 headerLines.Add(line);
             }
 
-            AssignEducationHeader(entry, headerLines);
+            if (!exportMetaApplied)
+            {
+                AssignEducationHeader(entry, headerLines);
+            }
 
             if (lineIndex < lines.Length
                 && DateRangeParser.TryParse(lines[lineIndex], out var trailingDate))
@@ -815,6 +861,24 @@ public static class CvImportFieldExtractor
         out ParsedDateRange? dateRange)
     {
         dateRange = null;
+        if (lineIndex < lines.Length
+            && TryParseExportDelimitedMetaLine(lines[lineIndex], out var metaParts, out var metaDates))
+        {
+            if (metaParts.Count >= 1)
+            {
+                entry.Company = metaParts[0];
+            }
+
+            if (metaParts.Count >= 2)
+            {
+                entry.Location = metaParts[1];
+            }
+
+            dateRange = metaDates;
+            lineIndex++;
+            return;
+        }
+
         if (TryConsumeLeadingDateSection(lines, ref lineIndex, out dateRange, out var location)
             && !string.IsNullOrWhiteSpace(location))
         {
@@ -1632,13 +1696,16 @@ public static class CvImportFieldExtractor
         for (var index = 0; index < lines.Length; index++)
         {
             var line = lines[index];
-            var startsEntry = LooksLikeWorkEntryHeader(line)
-                && lines.Skip(index + 1).Take(3).Any(candidate => DateRangeParser.TryParse(candidate, out _));
+            var startsEntry = StartsWorkExperienceEntry(lines, index);
 
             if (startsEntry)
             {
+                if (current is { Count: > 0 })
+                {
+                    blocks.Add(current);
+                }
+
                 current = [line];
-                blocks.Add(current);
                 continue;
             }
 
@@ -1646,9 +1713,67 @@ public static class CvImportFieldExtractor
             current.Add(line);
         }
 
+        if (current is { Count: > 0 })
+        {
+            blocks.Add(current);
+        }
+
         return blocks
             .Where(block => block.Count > 0)
             .Select(block => string.Join('\n', block));
+    }
+
+    private static bool StartsWorkExperienceEntry(string[] lines, int index)
+    {
+        if (LooksLikeReVitaeExportWorkEntry(lines, index))
+        {
+            return true;
+        }
+
+        var line = lines[index];
+        if (line.Contains('·'))
+        {
+            return false;
+        }
+
+        return LooksLikeWorkEntryHeader(line)
+            && lines.Skip(index + 1).Take(3).Any(candidate => DateRangeParser.TryParse(candidate, out _));
+    }
+
+    private static bool LooksLikeReVitaeExportWorkEntry(string[] lines, int index)
+    {
+        if (index + 1 >= lines.Length)
+        {
+            return false;
+        }
+
+        var titleLine = lines[index];
+        var metaLine = lines[index + 1];
+        if (string.IsNullOrWhiteSpace(titleLine)
+            || titleLine.Contains('·')
+            || DateRangeParser.TryParse(titleLine, out _))
+        {
+            return false;
+        }
+
+        return metaLine.Contains('·')
+            && DateRangeParser.TryParseTrailingDateRange(metaLine, out _, out _);
+    }
+
+    private static bool TryParseExportDelimitedMetaLine(
+        string line,
+        out IReadOnlyList<string> parts,
+        out ParsedDateRange dateRange)
+    {
+        parts = [];
+        dateRange = new ParsedDateRange(null, null, null, null, false);
+        if (!DateRangeParser.TryParseTrailingDateRange(line, out dateRange, out var prefix))
+        {
+            return false;
+        }
+
+        parts = prefix.Split('·', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return parts.Count > 0;
     }
 
     private static bool LooksLikeWorkEntryHeader(string line)

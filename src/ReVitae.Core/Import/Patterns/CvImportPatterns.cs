@@ -18,7 +18,7 @@ public static class CvImportPatterns
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public static readonly Regex DateRange = new(
-        @"(?<start>(?:\d{1,2}/\d{4}|[A-Za-z]{3,9}\s+\d{4}|\d{4}))(?:\s*[-–]\s*(?<end>(?:\d{1,2}/\d{4}|[A-Za-z]{3,9}\s+\d{4}|\d{4}|present|current|súčasnosť|sucasnost)))?",
+        @"(?<start>(?:\d{1,2}\s*/\s*\d{4}|[A-Za-z]{3,9}\s+\d{4}|\d{4}))(?:\s*[-–]\s*(?<end>(?:\d{1,2}\s*/\s*\d{4}|[A-Za-z]{3,9}\s+\d{4}|\d{4}|present|current|súčasnosť|sucasnost)))?",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public static readonly Regex LabeledValue = new(
@@ -38,7 +38,7 @@ public static class CvImportPatterns
             return true;
         }
 
-        var slashMatch = Regex.Match(token, @"^(?<month>\d{1,2})/(?<year>\d{4})$");
+        var slashMatch = Regex.Match(token, @"^(?<month>\d{1,2})\s*/\s*(?<year>\d{4})$");
         if (slashMatch.Success
             && int.TryParse(slashMatch.Groups["month"].Value, out var parsedMonth)
             && int.TryParse(slashMatch.Groups["year"].Value, out var parsedYear)
@@ -95,7 +95,44 @@ public static class DateRangeParser
             return false;
         }
 
-        var match = CvImportPatterns.DateRange.Match(line);
+        if (line.Contains('·')
+            && TryParseTrailingDateRange(line, out range, out _))
+        {
+            return true;
+        }
+
+        return TryParseDateRangeSegment(line, out range);
+    }
+
+    public static bool TryParseTrailingDateRange(string line, out ParsedDateRange range, out string prefix)
+    {
+        range = new ParsedDateRange(null, null, null, null, false);
+        prefix = line;
+        if (!line.Contains('·'))
+        {
+            return false;
+        }
+
+        var lastSeparator = line.LastIndexOf('·');
+        var trailingSegment = line[(lastSeparator + 1)..].Trim();
+        if (!TryParseDateRangeSegment(trailingSegment, out range))
+        {
+            return false;
+        }
+
+        prefix = line[..lastSeparator].Trim();
+        return true;
+    }
+
+    private static bool TryParseDateRangeSegment(string segment, out ParsedDateRange range)
+    {
+        range = new ParsedDateRange(null, null, null, null, false);
+        if (string.IsNullOrWhiteSpace(segment))
+        {
+            return false;
+        }
+
+        var match = CvImportPatterns.DateRange.Match(segment);
         if (!match.Success)
         {
             return false;

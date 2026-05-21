@@ -173,6 +173,31 @@
         <Setter Property="Padding" Value="11" />
     </Style>
 
+    <Style Selector="Button.re-vitae-export-format-card">
+        <Setter Property="Width" Value="160" />
+        <Setter Property="MinHeight" Value="140" />
+        <Setter Property="Margin" Value="0,0,12,12" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-export-format-card > StackPanel">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Spacing" Value="8" />
+    </Style>
+
+    <Style Selector="Button.re-vitae-export-format-card:disabled">
+        <Setter Property="Opacity" Value="0.45" />
+    </Style>
+
+    <Style Selector="TextBlock.re-vitae-export-category">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,8,0,4" />
+    </Style>
+
     <Style Selector="Button.re-vitae-primary">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="Padding" Value="16,10" />

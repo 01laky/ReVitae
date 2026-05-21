@@ -17,7 +17,6 @@ using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Export;
-using ReVitae.Core.Export.Pdf;
 using ReVitae.Core.Import;
 using ReVitae.Import;
 using ReVitae.Core.Localization;
@@ -56,7 +55,6 @@ public partial class MainWindow : Window
     private readonly ProjectsCollectionValidator _projectsValidator = new();
     private readonly LinksCollectionValidator _linksValidator = new();
     private readonly AdditionalInformationValidator _additionalInformationValidator = new();
-    private readonly ICvPdfExporter _cvPdfExporter = new QuestPdfCvExporter();
     private readonly ValidationTouchTracker _validationTouchTracker = new();
     private readonly ValidationFieldRegistry _personalValidationRegistry = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
@@ -66,6 +64,7 @@ public partial class MainWindow : Window
     private StackPanel? _personalSectionErrorBadgePanel;
     private TextBlock? _personalSectionErrorBadgeTextBlock;
     private int _personalSectionErrorCount;
+    private string? _lastExportedFilePath;
 
     public MainWindow()
     {
@@ -247,6 +246,44 @@ public partial class MainWindow : Window
     private void OnCreateNewCvClicked(object? sender, RoutedEventArgs e)
     {
         SetIntroModalVisible(false);
+        StartNewCv();
+    }
+
+    private void OnOpenCreateNewCvClicked(object? sender, RoutedEventArgs e)
+    {
+        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible || _isImportInProgress)
+        {
+            return;
+        }
+
+        if (HasCvFormData())
+        {
+            SetNewCvConfirmModalVisible(true);
+            return;
+        }
+
+        StartNewCv();
+    }
+
+    private void OnNewCvConfirmCancelClicked(object? sender, RoutedEventArgs e)
+    {
+        SetNewCvConfirmModalVisible(false);
+    }
+
+    private void OnNewCvConfirmOkClicked(object? sender, RoutedEventArgs e)
+    {
+        SetNewCvConfirmModalVisible(false);
+        StartNewCv();
+    }
+
+    private void StartNewCv()
+    {
+        ClearCvForm();
+        HideExportPostActions();
+        ExportStatusTextBlock.Text = string.Empty;
+        FormScrollViewer.Offset = new Vector(0, 0);
+        UpdatePreview();
+        UpdateValidationState();
     }
 
     private async void OnUploadCvClicked(object? sender, RoutedEventArgs e)
@@ -349,6 +386,7 @@ public partial class MainWindow : Window
         }
 
         UploadCvButton.IsEnabled = false;
+        OpenCreateNewCvButton.IsEnabled = false;
 
         try
         {
@@ -407,6 +445,7 @@ public partial class MainWindow : Window
             }
 
             UploadCvButton.IsEnabled = true;
+            OpenCreateNewCvButton.IsEnabled = true;
         }
     }
 
@@ -536,6 +575,21 @@ public partial class MainWindow : Window
             SetupModalOverlay.IsVisible = false;
             TemplatesModalOverlay.IsVisible = false;
             PreviewExpandModalOverlay.IsVisible = false;
+            ExportModalOverlay.IsVisible = false;
+            NewCvConfirmModalOverlay.IsVisible = false;
+        }
+    }
+
+    private void SetNewCvConfirmModalVisible(bool isVisible)
+    {
+        NewCvConfirmModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            SetupModalOverlay.IsVisible = false;
+            TemplatesModalOverlay.IsVisible = false;
+            PreviewExpandModalOverlay.IsVisible = false;
+            ExportModalOverlay.IsVisible = false;
+            ReplaceCvConfirmModalOverlay.IsVisible = false;
         }
     }
 
@@ -769,12 +823,20 @@ public partial class MainWindow : Window
         {
             SetReplaceCvConfirmModalVisible(false);
         }
+        else if (NewCvConfirmModalOverlay.IsVisible)
+        {
+            SetNewCvConfirmModalVisible(false);
+        }
         else if (ReplaceCvImportProgressModalOverlay.IsVisible)
         {
             if (!_isImportInProgress)
             {
                 SetReplaceCvImportProgressModalVisible(false);
             }
+        }
+        else if (ExportModalOverlay.IsVisible)
+        {
+            SetExportModalVisible(false);
         }
         else if (TemplatesModalOverlay.IsVisible)
         {
@@ -803,6 +865,13 @@ public partial class MainWindow : Window
 
     private async void OnExportPdfClicked(object? sender, RoutedEventArgs e)
     {
+        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
+        {
+            return;
+        }
+
+        HideExportPostActions();
+
         var validationResult = ValidateForm();
         if (!validationResult.IsValid)
         {
@@ -813,6 +882,116 @@ public partial class MainWindow : Window
             return;
         }
 
+        OpenExportModal();
+    }
+
+    private void OnCloseExportModalClicked(object? sender, RoutedEventArgs e)
+    {
+        SetExportModalVisible(false);
+    }
+
+    private void OpenExportModal()
+    {
+        SetSetupModalVisible(false);
+        SetTemplatesModalVisible(false);
+        SetPreviewExpandModalVisible(false);
+        PopulateExportFormatCards();
+        SetExportModalVisible(true);
+    }
+
+    private void PopulateExportFormatCards()
+    {
+        ExportFormatCategoriesPanel.Children.Clear();
+
+        foreach (var category in new[]
+                 {
+                     CvExportFormatCategory.Documents,
+                     CvExportFormatCategory.WebAndText,
+                     CvExportFormatCategory.Structured
+                 })
+        {
+            ExportFormatCategoriesPanel.Children.Add(new TextBlock
+            {
+                Text = GetExportCategoryLabel(category),
+                Classes = { "re-vitae-export-category" }
+            });
+
+            var wrapPanel = new WrapPanel();
+            foreach (var descriptor in CvExportFormatCatalog.GetEnabledFormats().Where(d => d.Category == category))
+            {
+                wrapPanel.Children.Add(CreateExportFormatCard(descriptor));
+            }
+
+            ExportFormatCategoriesPanel.Children.Add(wrapPanel);
+        }
+    }
+
+    private Button CreateExportFormatCard(CvExportFormatDescriptor descriptor)
+    {
+        var card = new Button
+        {
+            Classes = { UiClasses.ExportFormatCard },
+            IsEnabled = descriptor.IsEnabled
+        };
+
+        var content = new StackPanel { Spacing = 8 };
+        var icon = CvExportFormatIconLoader.LoadIcon(descriptor.Format);
+        if (icon is not null)
+        {
+            content.Children.Add(new Image
+            {
+                Source = icon,
+                Width = 40,
+                Height = 40,
+                HorizontalAlignment = HorizontalAlignment.Left
+            });
+        }
+
+        content.Children.Add(new TextBlock
+        {
+            Text = _localizer.Get(descriptor.LabelKey),
+            FontWeight = FontWeight.SemiBold,
+            TextWrapping = TextWrapping.Wrap
+        });
+
+        if (!string.IsNullOrWhiteSpace(descriptor.HintKey))
+        {
+            content.Children.Add(new TextBlock
+            {
+                Text = _localizer.Get(descriptor.HintKey!),
+                Classes = { UiClasses.SecondaryText },
+                TextWrapping = TextWrapping.Wrap
+            });
+        }
+
+        if (descriptor.IsRecommended)
+        {
+            content.Children.Add(new TextBlock
+            {
+                Text = _localizer.Get(TranslationKeys.ExportFormatRecommended),
+                Classes = { UiClasses.SecondaryText },
+                FontWeight = FontWeight.SemiBold
+            });
+        }
+
+        card.Content = content;
+        card.Click += async (_, _) => await OnExportFormatSelectedAsync(descriptor.Format);
+        return card;
+    }
+
+    private string GetExportCategoryLabel(CvExportFormatCategory category) => category switch
+    {
+        CvExportFormatCategory.Documents => _localizer.Get(TranslationKeys.ExportCategoryDocuments),
+        CvExportFormatCategory.WebAndText => _localizer.Get(TranslationKeys.ExportCategoryWebAndText),
+        CvExportFormatCategory.Structured => _localizer.Get(TranslationKeys.ExportCategoryStructured),
+        _ => string.Empty
+    };
+
+    private async Task OnExportFormatSelectedAsync(CvExportFormat format)
+    {
+        SetExportModalVisible(false);
+        HideExportPostActions();
+
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
         {
@@ -820,39 +999,106 @@ public partial class MainWindow : Window
             return;
         }
 
-        var document = BuildExportDocument();
+        var suggestedFilename = CvExportFilenameHelper.SuggestFilename(
+            FirstNameTextBox.Text,
+            LastNameTextBox.Text,
+            format);
 
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(
-            new FilePickerSaveOptions
-            {
-                Title = _localizer.Get(TranslationKeys.ExportSaveDialogTitle),
-                SuggestedFileName = CvExportFilenameHelper.SuggestFilename(FirstNameTextBox.Text, LastNameTextBox.Text),
-                DefaultExtension = "pdf",
-                FileTypeChoices =
-                [
-                    new FilePickerFileType(_localizer.Get(TranslationKeys.ExportPdfFileType))
-                    {
-                        Patterns = ["*.pdf"],
-                        MimeTypes = ["application/pdf"]
-                    }
-                ]
-            });
+            CvExportFilePickerOptions.Create(format, _localizer, suggestedFilename));
 
         if (file is null)
         {
             return;
         }
 
+        var document = BuildExportDocument();
+        var source = BuildExportSourceData();
+
         try
         {
-            await using var stream = await file.OpenWriteAsync();
-            _cvPdfExporter.Export(document, stream);
-            ExportStatusTextBlock.Text = _localizer.Format(TranslationKeys.ExportedPdfTo, file.Name);
+            var localPath = file.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(localPath))
+            {
+                ExportStatusTextBlock.Text = _localizer.Get(TranslationKeys.ExportFailed);
+                return;
+            }
+
+            await using (var stream = File.Create(localPath))
+            {
+                var result = CvDocumentExporter.Export(document, source, format, stream);
+                if (!result.Success)
+                {
+                    ExportStatusTextBlock.Text = _localizer.Get(result.ErrorMessageKey ?? TranslationKeys.ExportFailed);
+                    return;
+                }
+            }
+
+            _lastExportedFilePath = localPath;
+            ExportStatusTextBlock.Text = _localizer.Format(TranslationKeys.ExportedTo, Path.GetFileName(localPath));
+            ShowExportPostActions();
         }
         catch
         {
-            ExportStatusTextBlock.Text = _localizer.Get(TranslationKeys.ExportFailed);
+            ExportStatusTextBlock.Text = _localizer.Format(
+                TranslationKeys.ExportFailedFormat,
+                _localizer.Get(CvExportFormatCatalog.Get(format).LabelKey));
         }
+    }
+
+    private void OnExportOpenFileClicked(object? sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrWhiteSpace(_lastExportedFilePath))
+        {
+            CvExportShellHelper.OpenFile(_lastExportedFilePath);
+        }
+    }
+
+    private void OnExportShowInFolderClicked(object? sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrWhiteSpace(_lastExportedFilePath))
+        {
+            CvExportShellHelper.RevealInFolder(_lastExportedFilePath);
+        }
+    }
+
+    private void ShowExportPostActions()
+    {
+        ExportPostActionPanel.IsVisible = !string.IsNullOrWhiteSpace(_lastExportedFilePath);
+    }
+
+    private void HideExportPostActions()
+    {
+        _lastExportedFilePath = null;
+        ExportPostActionPanel.IsVisible = false;
+    }
+
+    private CvExportSourceData BuildExportSourceData()
+    {
+        var personal = new PersonalInformationImport
+        {
+            FirstName = NormalizeValue(FirstNameTextBox.Text),
+            LastName = NormalizeValue(LastNameTextBox.Text),
+            ProfessionalTitle = NormalizeValue(ProfessionalTitleTextBox.Text),
+            Email = NormalizeValue(EmailTextBox.Text),
+            Phone = NormalizeValue(PhoneTextBox.Text),
+            Location = NormalizeValue(LocationTextBox.Text),
+            LinkedInUrl = NormalizeValue(LinkedInUrlTextBox.Text),
+            PortfolioUrl = NormalizeValue(PortfolioUrlTextBox.Text),
+            GitHubUrl = NormalizeValue(GitHubUrlTextBox.Text),
+            ShortSummary = ShortSummaryTextBox.Text?.Trim() ?? string.Empty
+        };
+
+        return CvExportSourceDataFactory.Create(
+            personal,
+            WorkExperienceSection.Entries,
+            EducationSection.Entries,
+            SkillsSection.Entries,
+            LanguagesSection.Entries,
+            CertificatesSection.Entries,
+            ProjectsSection.Entries,
+            LinksSection.Entries,
+            GetAdditionalInformationContent());
     }
 
     private void ApplyLocalization()
@@ -860,6 +1106,8 @@ public partial class MainWindow : Window
         HeaderSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.HeaderSubtitle);
         ToolTip.SetTip(UploadCvButton, _localizer.Get(TranslationKeys.OpenUploadCv));
         AutomationProperties.SetName(UploadCvButton, _localizer.Get(TranslationKeys.OpenUploadCv));
+        ToolTip.SetTip(OpenCreateNewCvButton, _localizer.Get(TranslationKeys.OpenCreateNewCv));
+        AutomationProperties.SetName(OpenCreateNewCvButton, _localizer.Get(TranslationKeys.OpenCreateNewCv));
         ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
         ToolTip.SetTip(OpenTemplatesButton, _localizer.Get(TranslationKeys.OpenTemplates));
         ToolTip.SetTip(OpenPreviewExpandButton, _localizer.Get(TranslationKeys.OpenExpandPreview));
@@ -886,6 +1134,10 @@ public partial class MainWindow : Window
         ReplaceCvConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmMessage);
         ReplaceCvConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
         ReplaceCvConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
+        NewCvConfirmTitleTextBlock.Text = _localizer.Get(TranslationKeys.NewCvConfirmTitle);
+        NewCvConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.NewCvConfirmMessage);
+        NewCvConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
+        NewCvConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
         ReplaceCvImportRetryButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
         AutomationProperties.SetName(CreateNewCvButton, _localizer.Get(TranslationKeys.IntroCreateNew));
         AutomationProperties.SetName(ImportCvButton, _localizer.Get(TranslationKeys.IntroImportPdf));
@@ -900,7 +1152,13 @@ public partial class MainWindow : Window
         GitHubUrlLabelTextBlock.Text = _localizer.Get(TranslationKeys.GitHubUrl);
         ShortSummaryLabelTextBlock.Text = _localizer.Get(TranslationKeys.ShortSummary);
         ShortSummaryTextBox.PlaceholderText = _localizer.Get(TranslationKeys.ShortSummaryPlaceholder);
-        ExportPdfButton.Content = _localizer.Get(TranslationKeys.ExportPdf);
+        ExportPdfButton.Content = _localizer.Get(TranslationKeys.Export);
+        ExportModalTitleTextBlock.Text = _localizer.Get(TranslationKeys.ExportModalTitle);
+        ExportModalSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.ExportModalSubtitle);
+        ExportModalTopCloseButton.Content = _localizer.Get(TranslationKeys.ExportModalClose);
+        ExportModalBottomCloseButton.Content = _localizer.Get(TranslationKeys.ExportModalClose);
+        ExportOpenFileButton.Content = _localizer.Get(TranslationKeys.ExportOpenFile);
+        ExportShowInFolderButton.Content = _localizer.Get(TranslationKeys.ExportShowInFolder);
         PreviewTitleTextBlock.Text = _localizer.Get(TranslationKeys.Preview);
         PreviewExpandTitleTextBlock.Text = _localizer.Get(TranslationKeys.PreviewExpandTitle);
         PreviewExpandTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
@@ -968,6 +1226,7 @@ public partial class MainWindow : Window
         {
             TemplatesModalOverlay.IsVisible = false;
             PreviewExpandModalOverlay.IsVisible = false;
+            ExportModalOverlay.IsVisible = false;
         }
 
         UpdateModalSizes();
@@ -980,6 +1239,7 @@ public partial class MainWindow : Window
         {
             SetupModalOverlay.IsVisible = false;
             PreviewExpandModalOverlay.IsVisible = false;
+            ExportModalOverlay.IsVisible = false;
         }
 
         UpdateModalSizes();
@@ -992,6 +1252,20 @@ public partial class MainWindow : Window
         {
             SetupModalOverlay.IsVisible = false;
             TemplatesModalOverlay.IsVisible = false;
+            ExportModalOverlay.IsVisible = false;
+        }
+
+        UpdateModalSizes();
+    }
+
+    private void SetExportModalVisible(bool isVisible)
+    {
+        ExportModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            SetupModalOverlay.IsVisible = false;
+            TemplatesModalOverlay.IsVisible = false;
+            PreviewExpandModalOverlay.IsVisible = false;
         }
 
         UpdateModalSizes();
@@ -1005,6 +1279,8 @@ public partial class MainWindow : Window
         TemplatesModalPanel.Height = Math.Max(TemplatesModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
         PreviewExpandModalPanel.Width = Math.Max(PreviewExpandModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
         PreviewExpandModalPanel.Height = Math.Max(PreviewExpandModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
+        ExportModalPanel.Width = Math.Max(ExportModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
+        ExportModalPanel.Height = Math.Max(ExportModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
     }
 
     private void UpdateValidationState(FieldValidationResult? validationResult = null)

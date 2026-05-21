@@ -13,6 +13,7 @@ public static class UiClasses
     public const string PrimaryButton = "re-vitae-primary";
     public const string SecondaryButton = "re-vitae-secondary";
     public const string TemplateCard = "re-vitae-template-card";
+    public const string ExportFormatCard = "re-vitae-export-format-card";
     public const string TemplateSelected = "selected";
     public const string FormField = "re-vitae-form-field";
     public const string Page = "re-vitae-page";
