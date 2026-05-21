@@ -4,6 +4,7 @@ public static class TranslationKeys
 {
     public const string HeaderSubtitle = "header.subtitle";
     public const string OpenSetup = "action.openSetup";
+    public const string OpenAbout = "action.openAbout";
     public const string OpenUploadCv = "action.openUploadCv";
     public const string OpenCreateNewCv = "action.openCreateNewCv";
     public const string OpenTemplates = "action.openTemplates";
@@ -100,6 +101,30 @@ public static class TranslationKeys
     public const string CleanTopHeaderDescription = "template.cleanTopHeader.description";
     public const string DarkSidebarAccent = "template.darkSidebarAccent.name";
     public const string DarkSidebarAccentDescription = "template.darkSidebarAccent.description";
+    public const string CenteredMinimal = "template.centeredMinimal.name";
+    public const string CenteredMinimalDescription = "template.centeredMinimal.description";
+    public const string PhotoLeftBand = "template.photoLeftBand.name";
+    public const string PhotoLeftBandDescription = "template.photoLeftBand.description";
+    public const string ExecutiveBlueSidebar = "template.executiveBlueSidebar.name";
+    public const string ExecutiveBlueSidebarDescription = "template.executiveBlueSidebar.description";
+    public const string PeachDesigner = "template.peachDesigner.name";
+    public const string PeachDesignerDescription = "template.peachDesigner.description";
+    public const string NavyProfileSplit = "template.navyProfileSplit.name";
+    public const string NavyProfileSplitDescription = "template.navyProfileSplit.description";
+    public const string ForestGreenSidebar = "template.forestGreenSidebar.name";
+    public const string ForestGreenSidebarDescription = "template.forestGreenSidebar.description";
+    public const string YellowSkillDots = "template.yellowSkillDots.name";
+    public const string YellowSkillDotsDescription = "template.yellowSkillDots.description";
+    public const string RoyalBlueSidebar = "template.royalBlueSidebar.name";
+    public const string RoyalBlueSidebarDescription = "template.royalBlueSidebar.description";
+    public const string OrangeTimeline = "template.orangeTimeline.name";
+    public const string OrangeTimelineDescription = "template.orangeTimeline.description";
+    public const string BlueAccentSummary = "template.blueAccentSummary.name";
+    public const string BlueAccentSummaryDescription = "template.blueAccentSummary.description";
+    public const string PillHeaderSplit = "template.pillHeaderSplit.name";
+    public const string PillHeaderSplitDescription = "template.pillHeaderSplit.description";
+    public const string NavyOverlapPhoto = "template.navyOverlapPhoto.name";
+    public const string NavyOverlapPhotoDescription = "template.navyOverlapPhoto.description";
     public const string Summary = "preview.summary";
     public const string Contact = "preview.contact";
     public const string ContactLinks = "preview.contactLinks";
@@ -484,6 +509,7 @@ public static class TranslationKeys
     [
         HeaderSubtitle,
         OpenSetup,
+        OpenAbout,
         OpenUploadCv,
         OpenCreateNewCv,
         OpenTemplates,
@@ -580,6 +606,30 @@ public static class TranslationKeys
         CleanTopHeaderDescription,
         DarkSidebarAccent,
         DarkSidebarAccentDescription,
+        CenteredMinimal,
+        CenteredMinimalDescription,
+        PhotoLeftBand,
+        PhotoLeftBandDescription,
+        ExecutiveBlueSidebar,
+        ExecutiveBlueSidebarDescription,
+        PeachDesigner,
+        PeachDesignerDescription,
+        NavyProfileSplit,
+        NavyProfileSplitDescription,
+        ForestGreenSidebar,
+        ForestGreenSidebarDescription,
+        YellowSkillDots,
+        YellowSkillDotsDescription,
+        RoyalBlueSidebar,
+        RoyalBlueSidebarDescription,
+        OrangeTimeline,
+        OrangeTimelineDescription,
+        BlueAccentSummary,
+        BlueAccentSummaryDescription,
+        PillHeaderSplit,
+        PillHeaderSplitDescription,
+        NavyOverlapPhoto,
+        NavyOverlapPhotoDescription,
         Summary,
         Contact,
         ContactLinks,

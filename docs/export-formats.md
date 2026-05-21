@@ -22,23 +22,23 @@ validation uses `CvExportPathHelper` in Core.
 
 ## Supported formats (15)
 
-| Category      | Format        | Extension(s)               | Writer / notes                                      |
-| ------------- | ------------- | -------------------------- | --------------------------------------------------- |
-| Documents     | PDF           | `.pdf`                     | QuestPDF (`ICvPdfExporter`) — template-aligned A4   |
-| Documents     | Word          | `.docx`                    | Open XML via `CvVisualExportWriter`                 |
-| Documents     | OpenDocument  | `.odt`                     | ODF ZIP + `content.xml`                             |
-| Documents     | Rich Text     | `.rtf`                     | RTF with Unicode                                    |
-| Web & text    | HTML          | `.html`                    | Self-contained HTML + embedded CSS                  |
-| Web & text    | Markdown      | `.md`                      | Semantic headings                                   |
-| Web & text    | Plain text    | `.txt`                     | Readable section blocks                             |
-| Web & text    | LaTeX         | `.tex`                     | Compilable `article` stub                           |
-| Structured    | ReVitae JSON  | `.revitae.json`            | v1 text-only; v2 adds optional embedded photo       |
-| Structured    | JSON Resume   | `.json`                    | Subset compatible with `JsonResumeMapper`           |
-| Structured    | YAML          | `.yaml`                    | JSON-equivalent tree (quoted scalars for `#`, `+`)  |
-| Structured    | Europass XML  | `_europass.xml` suffix     | Europass namespace                                  |
-| Structured    | HR-XML        | `_hrxml.xml` suffix        | HR-XML-like resume nodes                            |
-| Structured    | CSV           | `.csv`                     | Header + single personal row (mirrors import limit) |
-| Structured    | TSV           | `.tsv`                     | Tab-delimited personal row                          |
+| Category   | Format       | Extension(s)           | Writer / notes                                      |
+| ---------- | ------------ | ---------------------- | --------------------------------------------------- |
+| Documents  | PDF          | `.pdf`                 | QuestPDF (`ICvPdfExporter`) — template-aligned A4   |
+| Documents  | Word         | `.docx`                | Open XML via `CvVisualExportWriter`                 |
+| Documents  | OpenDocument | `.odt`                 | ODF ZIP + `content.xml`                             |
+| Documents  | Rich Text    | `.rtf`                 | RTF with Unicode                                    |
+| Web & text | HTML         | `.html`                | Self-contained HTML + embedded CSS                  |
+| Web & text | Markdown     | `.md`                  | Semantic headings                                   |
+| Web & text | Plain text   | `.txt`                 | Readable section blocks                             |
+| Web & text | LaTeX        | `.tex`                 | Compilable `article` stub                           |
+| Structured | ReVitae JSON | `.revitae.json`        | v1 text-only; v2 adds optional embedded photo       |
+| Structured | JSON Resume  | `.json`                | Subset compatible with `JsonResumeMapper`           |
+| Structured | YAML         | `.yaml`                | JSON-equivalent tree (quoted scalars for `#`, `+`)  |
+| Structured | Europass XML | `_europass.xml` suffix | Europass namespace                                  |
+| Structured | HR-XML       | `_hrxml.xml` suffix    | HR-XML-like resume nodes                            |
+| Structured | CSV          | `.csv`                 | Header + single personal row (mirrors import limit) |
+| Structured | TSV          | `.tsv`                 | Tab-delimited personal row                          |
 
 Filename defaults come from `CvExportFilenameHelper.SuggestFilename(first, last, format)`.
 JSON/XML variants disambiguate via extension or suffix (see catalog in
@@ -49,12 +49,12 @@ JSON/XML variants disambiguate via extension or suffix (see catalog in
 When a profile photo is uploaded in the form, `BuildExportDocument()` sets
 `CvExportDocument.PhotoPath` to the local stored copy:
 
-| Format | With photo | Without photo |
-| ------ | ---------- | ------------- |
-| PDF (all templates) | Embedded image in template slot | Sidebar templates show **initials avatar**; Clean Top Header stays text-only |
-| HTML | `<img>` data URI in header/sidebar region | No photo block |
-| DOCX | Inline image after name block | No image |
-| ODT | Best-effort (no dedicated photo slot in v1) | — |
+| Format              | With photo                                  | Without photo                                                                |
+| ------------------- | ------------------------------------------- | ---------------------------------------------------------------------------- |
+| PDF (all templates) | Embedded image in template slot             | Sidebar templates show **initials avatar**; Clean Top Header stays text-only |
+| HTML                | `<img>` data URI in header/sidebar region   | No photo block                                                               |
+| DOCX                | Inline image after name block               | No image                                                                     |
+| ODT                 | Best-effort (no dedicated photo slot in v1) | —                                                                            |
 
 Source images: JPEG/PNG/WebP up to **15 MB**; WebP is transcoded to JPEG in
 `ProfilePhotoStorage` for downstream writers. JPEG uploads are EXIF-orientation

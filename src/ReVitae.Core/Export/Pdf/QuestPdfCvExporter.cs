@@ -20,6 +20,18 @@ public sealed class QuestPdfCvExporter : ICvPdfExporter
             CvExportTemplateId.ModernSidebar => ModernSidebarPdfTemplate.Render(document),
             CvExportTemplateId.CleanTopHeader => CleanTopHeaderPdfTemplate.Render(document),
             CvExportTemplateId.DarkSidebarAccent => DarkSidebarAccentPdfTemplate.Render(document),
+            CvExportTemplateId.CenteredMinimal => CenteredMinimalPdfTemplate.Render(document),
+            CvExportTemplateId.PhotoLeftBand => PhotoLeftBandPdfTemplate.Render(document),
+            CvExportTemplateId.ExecutiveBlueSidebar => ExecutiveBlueSidebarPdfTemplate.Render(document),
+            CvExportTemplateId.PeachDesigner => PeachDesignerPdfTemplate.Render(document),
+            CvExportTemplateId.NavyProfileSplit => NavyProfileSplitPdfTemplate.Render(document),
+            CvExportTemplateId.ForestGreenSidebar => ForestGreenSidebarPdfTemplate.Render(document),
+            CvExportTemplateId.YellowSkillDots => YellowSkillDotsPdfTemplate.Render(document),
+            CvExportTemplateId.RoyalBlueSidebar => RoyalBlueSidebarPdfTemplate.Render(document),
+            CvExportTemplateId.OrangeTimeline => OrangeTimelinePdfTemplate.Render(document),
+            CvExportTemplateId.BlueAccentSummary => BlueAccentSummaryPdfTemplate.Render(document),
+            CvExportTemplateId.PillHeaderSplit => PillHeaderSplitPdfTemplate.Render(document),
+            CvExportTemplateId.NavyOverlapPhoto => NavyOverlapPhotoPdfTemplate.Render(document),
             _ => throw new ArgumentOutOfRangeException(nameof(document.TemplateId), document.TemplateId, null)
         };
     }

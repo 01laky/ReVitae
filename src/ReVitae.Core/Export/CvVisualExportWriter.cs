@@ -133,14 +133,7 @@ internal static class CvVisualExportWriter
 
     private static string BuildHtmlBody(CvExportDocument document)
     {
-        var accent = document.TemplateId switch
-        {
-            CvExportTemplateId.ClassicSidebar => "#F47C2C",
-            CvExportTemplateId.ModernSidebar => "#444444",
-            CvExportTemplateId.CleanTopHeader => "#2563EB",
-            CvExportTemplateId.DarkSidebarAccent => "#1F2937",
-            _ => "#2563EB"
-        };
+        var accent = CvExportTemplateCatalog.GetAccentColor(document.TemplateId);
 
         var sb = new StringBuilder();
         sb.AppendLine("<!DOCTYPE html>");

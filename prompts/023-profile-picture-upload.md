@@ -313,12 +313,12 @@ Follow prompt 006 placement rules. When no photo is uploaded, sidebar-style
 templates should show an **initials avatar fallback** instead of an empty photo
 frame (see below).
 
-| Template              | Photo placement                                                                  | No-photo behavior                                                               |
-| --------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Classic Sidebar       | top of left sidebar, above name                                                  | initials circle (e.g. `LK`) in photo slot; balanced sidebar                     |
-| Modern Sidebar        | top of **left** sidebar column (name stays in dark header band on the right)     | initials circle in photo slot; no hollow placeholder                            |
-| Clean Top Header      | optional small photo in blue header (when present)                               | text-only header when absent (no initials slot)                                 |
-| Dark Sidebar Accent   | circular photo near top of dark sidebar, above contact heading                   | initials circle styled for dark sidebar; no empty ring                          |
+| Template            | Photo placement                                                              | No-photo behavior                                           |
+| ------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Classic Sidebar     | top of left sidebar, above name                                              | initials circle (e.g. `LK`) in photo slot; balanced sidebar |
+| Modern Sidebar      | top of **left** sidebar column (name stays in dark header band on the right) | initials circle in photo slot; no hollow placeholder        |
+| Clean Top Header    | optional small photo in blue header (when present)                           | text-only header when absent (no initials slot)             |
+| Dark Sidebar Accent | circular photo near top of dark sidebar, above contact heading               | initials circle styled for dark sidebar; no empty ring      |
 
 ### Initials avatar fallback
 

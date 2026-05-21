@@ -83,6 +83,16 @@
                                                 Width="24"
                                                 Height="24" />
                 </Button>
+
+                <Button x:Name="OpenAboutButton"
+                        Classes="re-vitae-icon-button"
+                        Click="OnOpenAboutClicked"
+                        ToolTip.Tip="About"
+                        AutomationProperties.Name="About">
+                    <materialIcons:MaterialIcon Kind="InformationOutline"
+                                                Width="24"
+                                                Height="24" />
+                </Button>
             </StackPanel>
         </Grid>
 
@@ -395,10 +405,10 @@
               IsVisible="False">
             <Border x:Name="SetupModalPanel"
                     Classes="re-vitae-modal-panel"
-                    MaxWidth="1100"
-                    MaxHeight="800"
-                    MinWidth="360"
-                    MinHeight="280"
+                    MaxWidth="520"
+                    MaxHeight="400"
+                    MinWidth="320"
+                    MinHeight="200"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
                 <Grid RowDefinitions="Auto,*,Auto">
@@ -412,35 +422,20 @@
                                    VerticalAlignment="Center" />
                         <Button x:Name="SetupTopCloseButton"
                                 Grid.Column="1"
-                                Content="Close"
-                                Click="OnCloseSetupClicked" />
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnCloseSetupClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="20"
+                                                        Height="20" />
+                        </Button>
                     </Grid>
 
                     <StackPanel Grid.Row="1"
                                 Margin="0,14,0,0"
                                 Spacing="18"
                                 Classes="re-vitae-section-body">
-                        <StackPanel Spacing="8">
-                            <TextBlock x:Name="AboutTitleTextBlock"
-                                       Classes="re-vitae-app-title"
-                                       FontSize="18"
-                                       Text="About" />
-                            <TextBlock x:Name="AboutAppNameTextBlock"
-                                       FontWeight="SemiBold"
-                                       Text="ReVitae" />
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="6">
-                                <TextBlock x:Name="AboutVersionLabelTextBlock"
-                                           Classes="re-vitae-secondary"
-                                           Text="Version" />
-                                <TextBlock x:Name="AboutVersionValueTextBlock"
-                                           Text="0.1.0" />
-                            </StackPanel>
-                            <TextBlock x:Name="AboutEarlyPreviewTextBlock"
-                                       Classes="re-vitae-secondary"
-                                       Text="Early preview" />
-                        </StackPanel>
-
                         <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="LanguageLabelTextBlock"
                                        Text="Language" />
@@ -495,116 +490,19 @@
                                    VerticalAlignment="Center" />
                         <Button x:Name="TemplatesTopCloseButton"
                                 Grid.Column="1"
-                                Content="Close"
-                                Click="OnCloseTemplatesClicked" />
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnCloseTemplatesClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="20"
+                                                        Height="20" />
+                        </Button>
                     </Grid>
 
                     <ScrollViewer Grid.Row="1"
                                   Margin="0,14,0,0">
-                        <WrapPanel>
-                            <Button x:Name="ClassicSidebarTemplateButton"
-                                    Classes="re-vitae-template-card"
-                                    Click="OnSelectClassicSidebarTemplateClicked">
-                                <StackPanel Spacing="10">
-                                    <Border Classes="re-vitae-template-thumbnail">
-                                        <Grid ColumnDefinitions="36*,64*">
-                                            <Border Grid.Column="0"
-                                                    Background="#D8D8D8" />
-                                            <Border Grid.Column="1"
-                                                    Background="White" />
-                                        </Grid>
-                                    </Border>
-                                    <TextBlock x:Name="ClassicSidebarNameTextBlock"
-                                               Text="Classic Sidebar"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="ClassicSidebarDescriptionTextBlock"
-                                               Classes="re-vitae-secondary"
-                                               Text="Light sidebar with contact details and a clean content area." />
-                                    <TextBlock x:Name="ClassicSidebarSelectedTextBlock"
-                                               Classes="re-vitae-accent"
-                                               Text="Selected" />
-                                </StackPanel>
-                            </Button>
-
-                            <Button x:Name="ModernSidebarTemplateButton"
-                                    Classes="re-vitae-template-card"
-                                    Click="OnSelectModernSidebarTemplateClicked">
-                                <StackPanel Spacing="10">
-                                    <Border Classes="re-vitae-template-thumbnail">
-                                        <Grid ColumnDefinitions="34*,66*"
-                                              RowDefinitions="32*,68*">
-                                            <Border Grid.RowSpan="2"
-                                                    Background="#D7D7D7" />
-                                            <Border Grid.Column="1"
-                                                    Grid.Row="0"
-                                                    Background="#444444" />
-                                            <Border Grid.Column="1"
-                                                    Grid.Row="1"
-                                                    Background="White" />
-                                        </Grid>
-                                    </Border>
-                                    <TextBlock x:Name="ModernSidebarNameTextBlock"
-                                               Text="Modern Sidebar"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="ModernSidebarDescriptionTextBlock"
-                                               Classes="re-vitae-secondary"
-                                               Text="Compact sidebar with a dark name band and focused content." />
-                                    <TextBlock x:Name="ModernSidebarSelectedTextBlock"
-                                               Classes="re-vitae-accent"
-                                               Text="Selected" />
-                                </StackPanel>
-                            </Button>
-
-                            <Button x:Name="CleanTopHeaderTemplateButton"
-                                    Classes="re-vitae-template-card"
-                                    Click="OnSelectCleanTopHeaderTemplateClicked">
-                                <StackPanel Spacing="10">
-                                    <Border Classes="re-vitae-template-thumbnail">
-                                        <Grid RowDefinitions="39*,61*">
-                                            <Border Background="#5A9BD5" />
-                                            <Border Grid.Row="1"
-                                                    Background="White" />
-                                        </Grid>
-                                    </Border>
-                                    <TextBlock x:Name="CleanTopHeaderNameTextBlock"
-                                               Text="Clean Top Header"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="CleanTopHeaderDescriptionTextBlock"
-                                               Classes="re-vitae-secondary"
-                                               Text="Safe default with a full-width color header and simple sections." />
-                                    <TextBlock x:Name="CleanTopHeaderSelectedTextBlock"
-                                               Classes="re-vitae-accent"
-                                               Text="Selected" />
-                                </StackPanel>
-                            </Button>
-
-                            <Button x:Name="DarkSidebarTemplateButton"
-                                    Classes="re-vitae-template-card"
-                                    Click="OnSelectDarkSidebarTemplateClicked">
-                                <StackPanel Spacing="10">
-                                    <Border Classes="re-vitae-template-thumbnail">
-                                        <Grid ColumnDefinitions="34*,66*">
-                                            <Border Background="#2F3A45" />
-                                            <Grid Grid.Column="1"
-                                                  RowDefinitions="32*,68*">
-                                                <Border Background="#5B9BB0" />
-                                                <Border Grid.Row="1"
-                                                        Background="#F2F2F2" />
-                                            </Grid>
-                                        </Grid>
-                                    </Border>
-                                    <TextBlock x:Name="DarkSidebarAccentNameTextBlock"
-                                               Text="Dark Sidebar Accent"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DarkSidebarAccentDescriptionTextBlock"
-                                               Classes="re-vitae-secondary"
-                                               Text="Dark sidebar, colored header, and stronger visual personality." />
-                                    <TextBlock x:Name="DarkSidebarSelectedTextBlock"
-                                               Classes="re-vitae-accent"
-                                               Text="Selected" />
-                                </StackPanel>
-                            </Button>
-                        </WrapPanel>
+                        <WrapPanel x:Name="TemplateCardsWrapPanel" />
                     </ScrollViewer>
 
                     <Button x:Name="TemplatesBottomCloseButton"
@@ -742,8 +640,14 @@
                                    VerticalAlignment="Center" />
                         <Button x:Name="PreviewExpandTopCloseButton"
                                 Grid.Column="1"
-                                Content="Close"
-                                Click="OnClosePreviewExpandClicked" />
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnClosePreviewExpandClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="20"
+                                                        Height="20" />
+                        </Button>
                     </Grid>
 
                     <Border Grid.Row="1"
@@ -761,6 +665,85 @@
                             Content="Close"
                             HorizontalAlignment="Right"
                             Click="OnClosePreviewExpandClicked" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="AboutModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="AboutModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="480"
+                    MinWidth="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <TextBlock x:Name="AboutModalTitleTextBlock"
+                                   Classes="re-vitae-app-title"
+                                   FontSize="24"
+                                   Text="About"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="AboutModalTopCloseButton"
+                                Grid.Column="1"
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnCloseAboutClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="20"
+                                                        Height="20" />
+                        </Button>
+                    </Grid>
+
+                    <Border Grid.Row="1"
+                            Margin="0,20,0,0"
+                            Classes="re-vitae-app-card"
+                            HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="16"
+                                    HorizontalAlignment="Center">
+                            <TextBlock x:Name="AboutModalAppNameTextBlock"
+                                       Classes="re-vitae-app-title"
+                                       FontSize="32"
+                                       HorizontalAlignment="Center"
+                                       Text="ReVitae" />
+                            <TextBlock x:Name="AboutModalTaglineTextBlock"
+                                       Classes="re-vitae-subtitle"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       MaxWidth="360"
+                                       Text="Create a simple CV preview and export a plain PDF." />
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="8"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,4,0,0">
+                                <Border Padding="10,4"
+                                        CornerRadius="12"
+                                        Background="{DynamicResource MaterialThemeBackgroundBrush}"
+                                        BorderBrush="{DynamicResource MaterialDividerBrush}"
+                                        BorderThickness="1">
+                                    <TextBlock x:Name="AboutModalVersionTextBlock"
+                                               FontSize="13"
+                                               Text="Version 0.1.0" />
+                                </Border>
+                                <Border x:Name="AboutModalEarlyPreviewBadge"
+                                        Padding="10,4"
+                                        CornerRadius="12"
+                                        Background="{DynamicResource PrimaryHueMidBrush}"
+                                        IsVisible="False">
+                                    <TextBlock x:Name="AboutModalEarlyPreviewTextBlock"
+                                               FontSize="13"
+                                               Foreground="White"
+                                               FontWeight="SemiBold"
+                                               Text="Early preview" />
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>
@@ -792,8 +775,14 @@
                         </StackPanel>
                         <Button x:Name="ExportModalTopCloseButton"
                                 Grid.Column="1"
-                                Content="Close"
-                                Click="OnCloseExportModalClicked" />
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnCloseExportModalClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="20"
+                                                        Height="20" />
+                        </Button>
                     </Grid>
 
                     <ScrollViewer Grid.Row="1"

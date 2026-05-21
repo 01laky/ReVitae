@@ -45,15 +45,15 @@ code). Minimal conceptual schema:
 
 Fields align with `PersonalInformationImport`:
 
-| Field                                      | Notes                                             |
-| ------------------------------------------ | ------------------------------------------------- |
-| `firstName`, `lastName`                    | Split-name friendly                               |
-| `professionalTitle`                        | Job headline                                      |
-| `email`, `phone`, `location`               | Contact                                           |
-| `linkedInUrl`, `portfolioUrl`, `gitHubUrl` | Known URL slots                                   |
-| `shortSummary`                             | Profile blurb                                     |
-| `profilePhotoBase64`                       | v2 only — base64 image bytes                      |
-| `profilePhotoContentType`                  | v2 only — MIME type                               |
+| Field                                      | Notes                        |
+| ------------------------------------------ | ---------------------------- |
+| `firstName`, `lastName`                    | Split-name friendly          |
+| `professionalTitle`                        | Job headline                 |
+| `email`, `phone`, `location`               | Contact                      |
+| `linkedInUrl`, `portfolioUrl`, `gitHubUrl` | Known URL slots              |
+| `shortSummary`                             | Profile blurb                |
+| `profilePhotoBase64`                       | v2 only — base64 image bytes |
+| `profilePhotoContentType`                  | v2 only — MIME type          |
 
 Absolute filesystem paths (`profilePhotoPath`) are **never** serialized in export.
 Import writes decoded bytes to local app storage and sets runtime path only in memory.

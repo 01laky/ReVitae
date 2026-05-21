@@ -224,6 +224,16 @@ public partial class MainWindow : Window
         SetSetupModalVisible(true);
     }
 
+    private void OnOpenAboutClicked(object? sender, RoutedEventArgs e)
+    {
+        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
+        {
+            return;
+        }
+
+        SetAboutModalVisible(true);
+    }
+
     private void OnOpenTemplatesClicked(object? sender, RoutedEventArgs e)
     {
         if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
@@ -772,6 +782,11 @@ public partial class MainWindow : Window
         SetSetupModalVisible(false);
     }
 
+    private void OnCloseAboutClicked(object? sender, RoutedEventArgs e)
+    {
+        SetAboutModalVisible(false);
+    }
+
     private void OnCloseTemplatesClicked(object? sender, RoutedEventArgs e)
     {
         SetTemplatesModalVisible(false);
@@ -793,26 +808,6 @@ public partial class MainWindow : Window
         ApplyLocalization();
         UpdateValidationState();
         UpdatePreview();
-    }
-
-    private void OnSelectClassicSidebarTemplateClicked(object? sender, RoutedEventArgs e)
-    {
-        SelectTemplate(CvExportTemplateId.ClassicSidebar);
-    }
-
-    private void OnSelectModernSidebarTemplateClicked(object? sender, RoutedEventArgs e)
-    {
-        SelectTemplate(CvExportTemplateId.ModernSidebar);
-    }
-
-    private void OnSelectCleanTopHeaderTemplateClicked(object? sender, RoutedEventArgs e)
-    {
-        SelectTemplate(CvExportTemplateId.CleanTopHeader);
-    }
-
-    private void OnSelectDarkSidebarTemplateClicked(object? sender, RoutedEventArgs e)
-    {
-        SelectTemplate(CvExportTemplateId.DarkSidebarAccent);
     }
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
@@ -853,6 +848,10 @@ public partial class MainWindow : Window
         else if (SetupModalOverlay.IsVisible)
         {
             SetSetupModalVisible(false);
+        }
+        else if (AboutModalOverlay.IsVisible)
+        {
+            SetAboutModalVisible(false);
         }
         else if (PreviewExpandModalOverlay.IsVisible)
         {
@@ -1119,6 +1118,8 @@ public partial class MainWindow : Window
         AutomationProperties.SetName(OpenCreateNewCvButton, _localizer.Get(TranslationKeys.OpenCreateNewCv));
         ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
         ToolTip.SetTip(OpenTemplatesButton, _localizer.Get(TranslationKeys.OpenTemplates));
+        ToolTip.SetTip(OpenAboutButton, _localizer.Get(TranslationKeys.OpenAbout));
+        AutomationProperties.SetName(OpenAboutButton, _localizer.Get(TranslationKeys.OpenAbout));
         ToolTip.SetTip(OpenPreviewExpandButton, _localizer.Get(TranslationKeys.OpenExpandPreview));
         AutomationProperties.SetName(OpenPreviewExpandButton, _localizer.Get(TranslationKeys.OpenExpandPreview));
 
@@ -1167,41 +1168,39 @@ public partial class MainWindow : Window
         ExportPdfButton.Content = _localizer.Get(TranslationKeys.Export);
         ExportModalTitleTextBlock.Text = _localizer.Get(TranslationKeys.ExportModalTitle);
         ExportModalSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.ExportModalSubtitle);
-        ExportModalTopCloseButton.Content = _localizer.Get(TranslationKeys.ExportModalClose);
         ExportModalBottomCloseButton.Content = _localizer.Get(TranslationKeys.ExportModalClose);
+        var closeLabel = _localizer.Get(TranslationKeys.Close);
+        ToolTip.SetTip(ExportModalTopCloseButton, closeLabel);
+        AutomationProperties.SetName(ExportModalTopCloseButton, closeLabel);
         ExportOpenFileButton.Content = _localizer.Get(TranslationKeys.ExportOpenFile);
         ExportShowInFolderButton.Content = _localizer.Get(TranslationKeys.ExportShowInFolder);
         PreviewTitleTextBlock.Text = _localizer.Get(TranslationKeys.Preview);
         PreviewExpandTitleTextBlock.Text = _localizer.Get(TranslationKeys.PreviewExpandTitle);
-        PreviewExpandTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
-        PreviewExpandBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
+        ToolTip.SetTip(PreviewExpandTopCloseButton, closeLabel);
+        AutomationProperties.SetName(PreviewExpandTopCloseButton, closeLabel);
+        PreviewExpandBottomCloseButton.Content = closeLabel;
 
         SetupTitleTextBlock.Text = _localizer.Get(TranslationKeys.Setup);
-        AboutTitleTextBlock.Text = _localizer.Get(TranslationKeys.SetupAbout);
-        AboutAppNameTextBlock.Text = _localizer.Get(TranslationKeys.SetupAppName);
-        AboutVersionLabelTextBlock.Text = _localizer.Get(TranslationKeys.SetupVersion);
-        AboutVersionValueTextBlock.Text = AppVersion.Current;
-        AboutEarlyPreviewTextBlock.Text = _localizer.Get(TranslationKeys.SetupEarlyPreview);
-        AboutEarlyPreviewTextBlock.IsVisible = AppVersion.IsPreRelease;
-        SetupTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
-        SetupBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
+        ToolTip.SetTip(SetupTopCloseButton, closeLabel);
+        AutomationProperties.SetName(SetupTopCloseButton, closeLabel);
+        SetupBottomCloseButton.Content = closeLabel;
         LanguageLabelTextBlock.Text = _localizer.Get(TranslationKeys.Language);
 
+        AboutModalTitleTextBlock.Text = _localizer.Get(TranslationKeys.SetupAbout);
+        AboutModalAppNameTextBlock.Text = _localizer.Get(TranslationKeys.SetupAppName);
+        AboutModalTaglineTextBlock.Text = _localizer.Get(TranslationKeys.HeaderSubtitle);
+        AboutModalVersionTextBlock.Text =
+            $"{_localizer.Get(TranslationKeys.SetupVersion)} {AppVersion.Current}";
+        AboutModalEarlyPreviewTextBlock.Text = _localizer.Get(TranslationKeys.SetupEarlyPreview);
+        AboutModalEarlyPreviewBadge.IsVisible = AppVersion.IsPreRelease;
+        ToolTip.SetTip(AboutModalTopCloseButton, closeLabel);
+        AutomationProperties.SetName(AboutModalTopCloseButton, closeLabel);
+
         TemplatesTitleTextBlock.Text = _localizer.Get(TranslationKeys.Templates);
-        TemplatesTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
-        TemplatesBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
-        ClassicSidebarNameTextBlock.Text = _localizer.Get(TranslationKeys.ClassicSidebar);
-        ClassicSidebarDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.ClassicSidebarDescription);
-        ModernSidebarNameTextBlock.Text = _localizer.Get(TranslationKeys.ModernSidebar);
-        ModernSidebarDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.ModernSidebarDescription);
-        CleanTopHeaderNameTextBlock.Text = _localizer.Get(TranslationKeys.CleanTopHeader);
-        CleanTopHeaderDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.CleanTopHeaderDescription);
-        DarkSidebarAccentNameTextBlock.Text = _localizer.Get(TranslationKeys.DarkSidebarAccent);
-        DarkSidebarAccentDescriptionTextBlock.Text = _localizer.Get(TranslationKeys.DarkSidebarAccentDescription);
-        ClassicSidebarSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
-        ModernSidebarSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
-        CleanTopHeaderSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
-        DarkSidebarSelectedTextBlock.Text = _localizer.Get(TranslationKeys.Selected);
+        ToolTip.SetTip(TemplatesTopCloseButton, closeLabel);
+        AutomationProperties.SetName(TemplatesTopCloseButton, closeLabel);
+        TemplatesBottomCloseButton.Content = closeLabel;
+        RefreshTemplateCardLabels();
     }
 
     private void UpdatePreview()
@@ -1218,24 +1217,12 @@ public partial class MainWindow : Window
         SetTemplatesModalVisible(false);
     }
 
-    private void UpdateTemplateSelectionState()
-    {
-        ClassicSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.ClassicSidebar;
-        ModernSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.ModernSidebar;
-        CleanTopHeaderSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.CleanTopHeader;
-        DarkSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.DarkSidebarAccent;
-
-        ClassicSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.ClassicSidebar);
-        ModernSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.ModernSidebar);
-        CleanTopHeaderTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.CleanTopHeader);
-        DarkSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.DarkSidebarAccent);
-    }
-
     private void SetSetupModalVisible(bool isVisible)
     {
         SetupModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
+            AboutModalOverlay.IsVisible = false;
             TemplatesModalOverlay.IsVisible = false;
             PreviewExpandModalOverlay.IsVisible = false;
             ExportModalOverlay.IsVisible = false;
@@ -1244,12 +1231,25 @@ public partial class MainWindow : Window
         UpdateModalSizes();
     }
 
+    private void SetAboutModalVisible(bool isVisible)
+    {
+        AboutModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            SetupModalOverlay.IsVisible = false;
+            TemplatesModalOverlay.IsVisible = false;
+            PreviewExpandModalOverlay.IsVisible = false;
+            ExportModalOverlay.IsVisible = false;
+        }
+    }
+
     private void SetTemplatesModalVisible(bool isVisible)
     {
         TemplatesModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
             SetupModalOverlay.IsVisible = false;
+            AboutModalOverlay.IsVisible = false;
             PreviewExpandModalOverlay.IsVisible = false;
             ExportModalOverlay.IsVisible = false;
         }
@@ -1263,6 +1263,7 @@ public partial class MainWindow : Window
         if (isVisible)
         {
             SetupModalOverlay.IsVisible = false;
+            AboutModalOverlay.IsVisible = false;
             TemplatesModalOverlay.IsVisible = false;
             ExportModalOverlay.IsVisible = false;
         }
@@ -1276,6 +1277,7 @@ public partial class MainWindow : Window
         if (isVisible)
         {
             SetupModalOverlay.IsVisible = false;
+            AboutModalOverlay.IsVisible = false;
             TemplatesModalOverlay.IsVisible = false;
             PreviewExpandModalOverlay.IsVisible = false;
         }
@@ -1630,6 +1632,18 @@ public partial class MainWindow : Window
             CvExportTemplateId.ModernSidebar => BuildModernSidebarTemplate(document),
             CvExportTemplateId.CleanTopHeader => BuildCleanTopHeaderTemplate(document),
             CvExportTemplateId.DarkSidebarAccent => BuildDarkSidebarAccentTemplate(document),
+            CvExportTemplateId.CenteredMinimal => BuildCenteredMinimalTemplate(document),
+            CvExportTemplateId.PhotoLeftBand => BuildPhotoLeftBandTemplate(document),
+            CvExportTemplateId.ExecutiveBlueSidebar => BuildExecutiveBlueSidebarTemplate(document),
+            CvExportTemplateId.PeachDesigner => BuildPeachDesignerTemplate(document),
+            CvExportTemplateId.NavyProfileSplit => BuildNavyProfileSplitTemplate(document),
+            CvExportTemplateId.ForestGreenSidebar => BuildForestGreenSidebarTemplate(document),
+            CvExportTemplateId.YellowSkillDots => BuildYellowSkillDotsTemplate(document),
+            CvExportTemplateId.RoyalBlueSidebar => BuildRoyalBlueSidebarTemplate(document),
+            CvExportTemplateId.OrangeTimeline => BuildOrangeTimelineTemplate(document),
+            CvExportTemplateId.BlueAccentSummary => BuildBlueAccentSummaryTemplate(document),
+            CvExportTemplateId.PillHeaderSplit => BuildPillHeaderSplitTemplate(document),
+            CvExportTemplateId.NavyOverlapPhoto => BuildNavyOverlapPhotoTemplate(document),
             _ => throw new ArgumentOutOfRangeException(nameof(_selectedTemplate))
         };
     }

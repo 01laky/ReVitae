@@ -29,6 +29,41 @@ public static class CvPdfSectionContent
         ComposeLinks(column, linksSectionTitle, linksSectionContent);
     }
 
+    public static void ComposeWorkExperienceOnly(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeWorkExperience(column, document);
+    }
+
+    public static void ComposeEducationPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeEducation(column, document);
+    }
+
+    public static void ComposeProjectsPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeProjects(column, document);
+    }
+
+    public static void ComposeAdditionalInformationPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeAdditionalInformation(column, document);
+    }
+
+    public static void ComposeSkillsPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeSkills(column, document);
+    }
+
+    public static void ComposeLanguagesPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeLanguages(column, document);
+    }
+
+    public static void ComposeCertificatesPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeCertificates(column, document);
+    }
+
     private static void ComposeLinks(ColumnDescriptor column, string linksSectionTitle, string linksSectionContent)
     {
         if (string.IsNullOrWhiteSpace(linksSectionContent) || linksSectionContent == "-")
