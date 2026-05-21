@@ -24,7 +24,8 @@ internal static class CvFormatImporterRegistry
             [CvImportFormat.YamlCv] = new YamlCvFormatImporter(),
             [CvImportFormat.CsvTabular] = new TabularCvFormatImporter(),
             [CvImportFormat.EuropassXml] = new EuropassXmlCvFormatImporter(),
-            [CvImportFormat.HrXml] = new HrXmlCvFormatImporter()
+            [CvImportFormat.HrXml] = new HrXmlCvFormatImporter(),
+            [CvImportFormat.RasterImage] = new RasterImageCvFormatImporter()
         };
 
     public static ICvFormatImporter? Get(CvImportFormat format)

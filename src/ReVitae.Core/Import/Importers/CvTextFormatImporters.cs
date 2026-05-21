@@ -1,4 +1,5 @@
 using ReVitae.Core.Import.Extraction;
+using ReVitae.Core.Import.Ocr;
 using ReVitae.Core.Import.Pdf;
 
 namespace ReVitae.Core.Import.Importers;
@@ -11,7 +12,20 @@ public sealed class PdfCvFormatImporter : TextCvFormatImporterBase
     }
 
     public PdfCvFormatImporter()
-        : base(CvImportFormat.Pdf, new PdfTextExtractorAdapter(new PdfPigTextExtractor()))
+        : base(CvImportFormat.Pdf, CvOcrImportDefaults.CreateDefaultPdfExtractor())
+    {
+    }
+}
+
+public sealed class RasterImageCvFormatImporter : TextCvFormatImporterBase
+{
+    public RasterImageCvFormatImporter(ICvTextExtractor extractor)
+        : base(CvImportFormat.RasterImage, extractor)
+    {
+    }
+
+    public RasterImageCvFormatImporter()
+        : base(CvImportFormat.RasterImage, CvOcrImportDefaults.CreateDefaultImageExtractor())
     {
     }
 }

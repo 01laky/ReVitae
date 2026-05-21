@@ -28,7 +28,14 @@ internal static class CvImportFilePickerOptions
         "*.yaml",
         "*.yml",
         "*.csv",
-        "*.tsv"
+        "*.tsv",
+        "*.jpg",
+        "*.jpeg",
+        "*.png",
+        "*.webp",
+        "*.tif",
+        "*.tiff",
+        "*.bmp"
     ];
 
     private static readonly string[] DocumentPatterns =
@@ -46,7 +53,14 @@ internal static class CvImportFilePickerOptions
         "*.tex",
         "*.abw",
         "*.wps",
-        "*.pages"
+        "*.pages",
+        "*.jpg",
+        "*.jpeg",
+        "*.png",
+        "*.webp",
+        "*.tif",
+        "*.tiff",
+        "*.bmp"
     ];
 
     private static readonly string[] StructuredPatterns =

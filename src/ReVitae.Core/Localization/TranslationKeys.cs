@@ -504,6 +504,12 @@ public static class TranslationKeys
     public const string ImportWarningPartialDocumentContent = "import.warning.partialDocumentContent";
     public const string ImportWarningLatexPartiallyNormalized = "import.warning.latexPartiallyNormalized";
     public const string ImportWarningTabularMultipleRowsIgnored = "import.warning.tabularMultipleRowsIgnored";
+    public const string ImportRunningOcr = "import.running.ocr";
+    public const string ImportWarningOcrUsed = "import.warning.ocrUsed";
+    public const string ImportErrorOcrUnavailable = "import.error.ocrUnavailable";
+    public const string ImportErrorOcrFailed = "import.error.ocrFailed";
+    public const string ImportRasterImageFileType = "import.rasterImageFileType";
+    public const string ImportForceOcr = "import.forceOcr";
 
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
@@ -999,6 +1005,12 @@ public static class TranslationKeys
         ImportErrorFileTooLarge,
         ImportWarningPartialDocumentContent,
         ImportWarningLatexPartiallyNormalized,
-        ImportWarningTabularMultipleRowsIgnored
+        ImportWarningTabularMultipleRowsIgnored,
+        ImportRunningOcr,
+        ImportWarningOcrUsed,
+        ImportErrorOcrUnavailable,
+        ImportErrorOcrFailed,
+        ImportRasterImageFileType,
+        ImportForceOcr
     ];
 }

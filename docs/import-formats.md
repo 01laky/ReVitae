@@ -11,7 +11,8 @@ implementations registered from `CvDocumentImporter`.
 
 | User-facing types   | Detection                                             | Pipeline                                                              |
 | ------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
-| PDF                 | `.pdf`                                                | PdfPig → text normalization → section segmentation → field extraction |
+| PDF                 | `.pdf`                                                | PdfPig → quality gate → OCR fallback → text pipeline                  |
+| Raster images       | `.jpg`, `.png`, `.webp`, …                            | OCR → text pipeline                                                   |
 | Plain text          | `.txt`                                                | Encoding probe → text pipeline                                        |
 | Markdown            | `.md`, `.markdown`                                    | Markdig plaintext → text pipeline                                     |
 | HTML                | `.html`, `.htm`                                       | HtmlAgilityPack → text pipeline (+ hyperlink hints)                   |
@@ -84,7 +85,12 @@ rather than network or file disclosure.
 
 ## Exclusions & caveats
 
-- **Image-only PDFs / OCR:** not supported; extractor reports empty/unreadable text.
+- **Image-only PDFs:** when PdfPig text fails the quality gate, ReVitae attempts
+  local OCR (Tesseract) if installed. Requires `tessdata` (bundled or under
+  `%LocalAppData%/ReVitae/tessdata/`). OCR reading order may not preserve
+  multi-column layout — prefer `*.revitae.json` for round-trip.
+- **Raster images:** JPEG, PNG, WebP, TIFF, and BMP import via OCR when Tesseract
+  is available; otherwise `ImportErrorOcrUnavailable`.
 - **Password-protected Office/PDF:** rejected where libraries surface encryption.
 - **Perfect fidelity:** imports are **draft data**. Complex layouts (multi-column,
   text boxes, drawings) may collapse ordering or lose sidebar context.

@@ -7,4 +7,7 @@ public sealed record CvTextExtractionResult(
     string? ErrorMessageKey,
     IReadOnlyList<string>? HyperlinkUrls = null,
     IReadOnlyList<CvImportWarning>? Warnings = null,
-    int? PageCount = null);
+    int? PageCount = null,
+    CvTextAcquisitionStrategy? Strategy = null,
+    string? OcrEngineName = null,
+    string? OcrLanguages = null);

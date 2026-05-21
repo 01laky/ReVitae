@@ -386,6 +386,200 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
         }
     }
 
+    [Fact]
+    public void Extract_PrefersBestPersonNameOverFragmentedPdfHeaderNoise()
+    {
+        const string text = """
+            Email: 01laky@gmail.com
+            Phone: (+421) 944159982
+            Location: Turček, Slovakia 03848
+            / 2024 - 05 / 2026
+            and AI-assisted
+            and
+            flows using
+            Ladislav Kostolný
+            and backend systems across
+            commerce, cybersecurity,
+
+            Summary
+            -
+
+            Work Experience
+            full stack developer
+            s.r.o. · Kosice, Slovakia · Full-time · 01
+            Developed backend services.
+
+            Skills
+            General
+            Go · Intermediate
+            """;
+
+        var result = Extract(text);
+
+        Assert.Equal("Ladislav", result.Personal.FirstName);
+        Assert.Equal("Kostolný", result.Personal.LastName);
+        Assert.DoesNotContain("AI-assisted", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("integrating", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Extract_DoesNotUseContactSectionJobTextAsPersonName()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Contact
+            invoice system
+            MS SQL, ReactJS, .NET Core
+            TypeScript, Redis
+            Email: jane@example.com
+            Phone: (+421) 900 000 000
+
+            Skills
+            General
+            Docker · Intermediate
+            """;
+
+        var result = Extract(text);
+
+        Assert.Equal("Jane", result.Personal.FirstName);
+        Assert.Equal("Doe", result.Personal.LastName);
+        Assert.DoesNotContain("invoice", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Extract_MergesSplitSkillProficiencyLinesFromPdfFragmentation()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Skills
+            General
+            Node.js · Intermediate
+            NestJS · Intermediate
+            Microservices ·
+            Cybersecurity ·
+            Management ·
+            Intermediate
+            Intermediate
+            Intermediate
+            """;
+
+        var result = Extract(text);
+
+        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+        Assert.Equal(["Node.js", "NestJS", "Microservices", "Cybersecurity", "Management"], skills);
+    }
+
+    [Fact]
+    public void Extract_AssignsOrphanProficiencyToBareSkillNameLines()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Skills
+            General
+            Secure API Design
+            Intermediate
+            """;
+
+        var result = Extract(text);
+
+        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+        Assert.Equal(["Secure API Design"], skills);
+    }
+
+    [Fact]
+    public void Extract_ParsesMultipleWorkEntriesWithOrphanHeaderDateFragments()
+    {
+        const string text = """
+            Email: jane@example.com
+            / 2024 - 05 / 2026
+            / 2023 - 01 / 2024
+
+            Jane Doe
+            jane@example.com
+
+            Work Experience
+            full stack developer
+            Excalibur s.r.o. · Kosice, Slovakia · Full-time · 01
+            Developed backend services in Go.
+
+            full stack developer
+            Devcity s.r.o. · Prague, Czechia · Full-time · 03
+            Worked on web application development.
+            """;
+
+        var result = Extract(text);
+
+        Assert.Equal(2, result.WorkExperienceEntries.Count);
+
+        var excalibur = result.WorkExperienceEntries[0];
+        Assert.Equal("full stack developer", excalibur.JobTitle);
+        Assert.Equal("Excalibur s.r.o.", excalibur.Company);
+        Assert.Equal("Kosice, Slovakia", excalibur.Location);
+        Assert.Equal(1, excalibur.StartMonth);
+        Assert.Equal(2024, excalibur.StartYear);
+        Assert.Equal(5, excalibur.EndMonth);
+        Assert.Equal(2026, excalibur.EndYear);
+
+        var devcity = result.WorkExperienceEntries[1];
+        Assert.Equal("Devcity s.r.o.", devcity.Company);
+        Assert.Equal(3, devcity.StartMonth);
+        Assert.Equal(2023, devcity.StartYear);
+        Assert.Equal(1, devcity.EndMonth);
+        Assert.Equal(2024, devcity.EndYear);
+    }
+
+    [Fact]
+    public void Extract_ParsesTruncatedWorkMetaWithoutOrphanDatesAsSeparateEntries()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Work Experience
+            Senior full stack developer
+            Excalibur s.r.o. · Kosice, Slovakia · Full-time · 01 / 2024 - 05 / 2026
+            Built backend services.
+
+            Senior full stack developer
+            Devcity s.r.o. · Prague, Czechia · Full-time · 03 / 2023 - 01 / 2024
+            Delivered frontend modules.
+            """;
+
+        var result = Extract(text);
+
+        Assert.Equal(2, result.WorkExperienceEntries.Count);
+        Assert.Equal("Excalibur s.r.o.", result.WorkExperienceEntries[0].Company);
+        Assert.Equal("Devcity s.r.o.", result.WorkExperienceEntries[1].Company);
+        Assert.Equal(2024, result.WorkExperienceEntries[0].StartYear);
+        Assert.Equal(2023, result.WorkExperienceEntries[1].StartYear);
+    }
+
+    [Fact]
+    public void Extract_MergesDotPrefixedProficiencyFragments()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Skills
+            General
+            OAuth · Intermediate
+            RBAC · Intermediate
+            · Intermediate
+            """;
+
+        var result = Extract(text);
+
+        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+        Assert.Equal(["OAuth", "RBAC"], skills);
+    }
+
     private static CvImportResult Extract(string text)
     {
         return CvImportFieldExtractor.Extract(CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text)));

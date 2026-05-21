@@ -25,5 +25,6 @@ public enum CvImportFormat
     CsvTabular = 31,
 
     Wps = 40,
-    Pages = 41
+    Pages = 41,
+    RasterImage = 42
 }

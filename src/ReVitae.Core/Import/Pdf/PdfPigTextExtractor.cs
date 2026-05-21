@@ -1,3 +1,4 @@
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
@@ -8,24 +9,39 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
 {
     public PdfTextExtractionResult Extract(string filePath)
     {
+        CvImportDiagnosticsLogger.LogStep("pdfpig", $"Extract started: {Path.GetFileName(filePath)}");
+
         if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
+            CvImportDiagnosticsLogger.LogStep("pdfpig", "File not found");
             return new PdfTextExtractionResult(false, string.Empty, 0, TranslationKeys.ImportErrorFileNotFound);
         }
 
         try
         {
             using var document = PdfDocument.Open(filePath);
-            var pages = document.GetPages().ToArray();
-            var chunks = new List<string>();
-            var hyperlinkUrls = new List<string>();
+            CvImportDiagnosticsLogger.LogStep("pdfpig", $"Opened PDF: {document.NumberOfPages} page(s)");
 
-            foreach (var page in pages)
+            var mainChunks = new List<string>();
+            string? deferredSidebar = null;
+            var hyperlinkUrls = new List<string>();
+            var pageIndex = 0;
+
+            foreach (var page in document.GetPages())
             {
-                var pageText = ExtractPageText(page);
-                if (!string.IsNullOrWhiteSpace(pageText))
+                pageIndex++;
+                var (mainText, sidebarText) = ExtractPageColumns(page, pageIndex);
+                if (!string.IsNullOrWhiteSpace(mainText))
                 {
-                    chunks.Add(pageText);
+                    mainChunks.Add(mainText);
+                }
+
+                if (!string.IsNullOrWhiteSpace(sidebarText) && deferredSidebar is null)
+                {
+                    deferredSidebar = sidebarText;
+                    CvImportDiagnosticsLogger.LogStep(
+                        "pdfpig",
+                        $"Page {pageIndex}: deferred sidebar captured ({sidebarText.Length} chars)");
                 }
 
                 foreach (var hyperlink in page.GetHyperlinks())
@@ -43,62 +59,89 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
                 }
             }
 
+            var chunks = new List<string>(mainChunks);
+            if (!string.IsNullOrWhiteSpace(deferredSidebar))
+            {
+                chunks.Add(deferredSidebar);
+                CvImportDiagnosticsLogger.LogStep(
+                    "pdfpig",
+                    $"Appended deferred sidebar at end ({deferredSidebar.Length} chars)");
+            }
+
             var text = string.Join("\n\n", chunks).Trim();
             if (string.IsNullOrWhiteSpace(text))
             {
-                return new PdfTextExtractionResult(false, string.Empty, pages.Length, TranslationKeys.ImportErrorEmptyPdf);
+                CvImportDiagnosticsLogger.LogStep("pdfpig", "No extractable text — empty PDF");
+                return new PdfTextExtractionResult(false, string.Empty, document.NumberOfPages, TranslationKeys.ImportErrorEmptyPdf);
             }
 
-            return new PdfTextExtractionResult(true, text, pages.Length, null, hyperlinkUrls);
+            CvImportDiagnosticsLogger.LogStep(
+                "pdfpig",
+                $"Success: {text.Length} chars, {text.Count(c => !char.IsWhiteSpace(c))} non-whitespace, " +
+                $"mainChunks={mainChunks.Count}, hyperlinks={hyperlinkUrls.Count}");
+
+            return new PdfTextExtractionResult(true, text, document.NumberOfPages, null, hyperlinkUrls);
         }
         catch (UglyToad.PdfPig.Exceptions.PdfDocumentEncryptedException)
         {
+            CvImportDiagnosticsLogger.LogStep("pdfpig", "Password-protected PDF");
             return new PdfTextExtractionResult(false, string.Empty, 0, TranslationKeys.ImportErrorPasswordProtected);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            CvImportDiagnosticsLogger.LogStep("pdfpig", $"Extract failed: {ex.GetType().Name}: {ex.Message}");
             return new PdfTextExtractionResult(false, string.Empty, 0, TranslationKeys.ImportErrorUnreadablePdf);
         }
     }
 
-    private static string ExtractPageText(Page page)
+    private static (string MainText, string? SidebarText) ExtractPageColumns(Page page, int pageIndex)
     {
         var words = page.GetWords().ToArray();
-
         if (words.Length == 0)
         {
-            return page.Text;
+            var fallback = page.Text;
+            CvImportDiagnosticsLogger.LogStep(
+                "pdfpig",
+                $"Page {pageIndex}: no words, fallback page.Text ({fallback.Length} chars)");
+            return (fallback, null);
         }
 
-        var columns = SplitIntoColumns(words);
-        if (columns.Count == 2)
+        var columns = SplitIntoColumns(page, words);
+        if (columns.Count != 2)
         {
-            // Sidebar templates put skills/contact in the narrow column. Reading left-to-right
-            // places sidebar headers before main content and breaks section segmentation.
-            columns = columns
-                .OrderByDescending(ColumnWidth)
-                .ToArray();
+            var single = ExtractColumnText(columns[0]);
+            CvImportDiagnosticsLogger.LogStep(
+                "pdfpig",
+                $"Page {pageIndex}: single column, {words.Length} words → {single.Length} chars");
+            return (single, null);
         }
 
-        return string.Join("\n\n", columns.Select(ExtractColumnText).Where(text => !string.IsNullOrWhiteSpace(text)));
+        var ordered = columns.OrderByDescending(ColumnWidth).ToArray();
+        var main = ExtractColumnText(ordered[0]);
+        var sidebar = ExtractColumnText(ordered[1]);
+        CvImportDiagnosticsLogger.LogStep(
+            "pdfpig",
+            $"Page {pageIndex}: two columns — main={main.Length} chars, sidebar={sidebar.Length} chars " +
+            $"(splitX={page.Width * 0.34:F0})");
+        return (main, sidebar);
     }
 
     private static double ColumnWidth(IReadOnlyList<Word> words) =>
         words.Max(word => word.BoundingBox.Right) - words.Min(word => word.BoundingBox.Left);
 
-    private static IReadOnlyList<IReadOnlyList<Word>> SplitIntoColumns(IReadOnlyList<Word> words)
+    private static IReadOnlyList<IReadOnlyList<Word>> SplitIntoColumns(Page page, IReadOnlyList<Word> words)
     {
-        var minX = words.Min(word => word.BoundingBox.Left);
-        var maxX = words.Max(word => word.BoundingBox.Right);
-        var pageWidth = maxX - minX;
+        var pageWidth = page.Width;
         if (pageWidth < 80)
         {
             return [words];
         }
 
-        var splitX = minX + (pageWidth * 0.38);
-        var left = words.Where(word => word.BoundingBox.Left <= splitX).ToArray();
-        var right = words.Where(word => word.BoundingBox.Left > splitX).ToArray();
+        // ModernSidebar and similar templates use a ~34% left sidebar. Page-width split
+        // with word center keeps section headers like "Work Experience" on one line.
+        var splitX = pageWidth * 0.34;
+        var left = words.Where(word => WordCenterX(word) <= splitX).ToArray();
+        var right = words.Where(word => WordCenterX(word) > splitX).ToArray();
 
         if (left.Length >= 3 && right.Length >= 3)
         {
@@ -107,6 +150,9 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
 
         return [words];
     }
+
+    private static double WordCenterX(Word word) =>
+        (word.BoundingBox.Left + word.BoundingBox.Right) / 2;
 
     private static string ExtractColumnText(IReadOnlyList<Word> words)
     {

@@ -33,9 +33,11 @@ public static class CvImportFieldExtractor
         var context = new CvImportBuildContext();
         var personal = ExtractPersonalInformation(segmentation, context, hyperlinkUrls);
         var sidebarSkillTokens = CollectSidebarSkillTokens(GetBody(segmentation, CvImportSectionId.Skills));
+        var orphanWorkDateFragments = CollectOrphanWorkDateFragments(segmentation.HeaderBlock);
         var workExperience = ExtractWorkExperience(
             GetBody(segmentation, CvImportSectionId.WorkExperience),
-            sidebarSkillTokens);
+            sidebarSkillTokens,
+            orphanWorkDateFragments);
         var education = ExtractEducation(GetBody(segmentation, CvImportSectionId.Education), context);
         var skills = ExtractSkills(GetBody(segmentation, CvImportSectionId.Skills), context);
         var languages = ExtractLanguages(GetBody(segmentation, CvImportSectionId.Languages), context);
@@ -86,6 +88,7 @@ public static class CvImportFieldExtractor
             "\n",
             new[] { segmentation.HeaderBlock, contactBody }.Where(part => !string.IsNullOrWhiteSpace(part)));
         var headerLines = personalSource.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var nameHeaderLines = segmentation.HeaderBlock.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var personal = new PersonalInformationImport();
         var assignedUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -161,43 +164,31 @@ public static class CvImportFieldExtractor
             }
         }
 
-        var headerLooksLikeSummary = HeaderLooksLikeSummaryProse(headerLines);
+        var headerLooksLikeSummary = HeaderLooksLikeSummaryProse(nameHeaderLines);
 
-        if (!headerLooksLikeSummary && string.IsNullOrWhiteSpace(personal.FirstName))
+        if (headerLooksLikeSummary)
         {
-            foreach (var line in headerLines)
-            {
-                if (TryAssignPersonNameFromLine(line, personal, context, CvImportConfidence.Low))
-                {
-                    break;
-                }
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(personal.FirstName)
-            && segmentation.SectionBodies.TryGetValue(CvImportSectionId.Skills, out var skillsNameSource))
-        {
-            var skillLines = skillsNameSource.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            if (!TryAssignSplitPersonNameFromLines(skillLines, personal, context, CvImportConfidence.Medium))
-            {
-                foreach (var line in skillLines)
-                {
-                    if (TryAssignPersonNameFromLine(line, personal, context, CvImportConfidence.Medium))
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (!headerLooksLikeSummary && string.IsNullOrWhiteSpace(personal.FirstName))
-        {
-            TryAssignSplitPersonNameFromLines(headerLines, personal, context, CvImportConfidence.Medium);
+            TryAssignNameFromSkillsSection(segmentation, personal, context);
         }
 
         if (string.IsNullOrWhiteSpace(personal.FirstName))
         {
-            foreach (var line in headerLines)
+            TryAssignBestPersonNameFromLines(nameHeaderLines, personal, context, CvImportConfidence.Medium);
+        }
+
+        if (!headerLooksLikeSummary && string.IsNullOrWhiteSpace(personal.FirstName))
+        {
+            TryAssignNameFromSkillsSection(segmentation, personal, context);
+        }
+
+        if (!headerLooksLikeSummary && string.IsNullOrWhiteSpace(personal.FirstName))
+        {
+            TryAssignSplitPersonNameFromLines(nameHeaderLines, personal, context, CvImportConfidence.Medium);
+        }
+
+        if (string.IsNullOrWhiteSpace(personal.FirstName))
+        {
+            foreach (var line in nameHeaderLines)
             {
                 if (IsLikelyNameToken(line)
                     && !CvImportPatterns.Email.IsMatch(line)
@@ -211,18 +202,26 @@ public static class CvImportFieldExtractor
             }
         }
 
-        if (headerLines.Length > 1 && string.IsNullOrWhiteSpace(personal.ProfessionalTitle))
+        if (string.IsNullOrWhiteSpace(personal.FirstName))
+        {
+            TryAssignNameFromOtherSections(segmentation, personal, context);
+        }
+
+        if (nameHeaderLines.Length > 1 && string.IsNullOrWhiteSpace(personal.ProfessionalTitle))
         {
             var titleLineIndex = !string.IsNullOrWhiteSpace(personal.LastName)
-                && headerLines.Length > 2
-                && headerLines[1].Equals(personal.LastName, StringComparison.Ordinal)
+                && nameHeaderLines.Length > 2
+                && nameHeaderLines[1].Equals(personal.LastName, StringComparison.Ordinal)
                     ? 2
                     : 1;
-            var titleLine = headerLines[titleLineIndex];
-            if (!CvImportPatterns.Email.IsMatch(titleLine) && !CvImportPatterns.Url.IsMatch(titleLine))
+            if (titleLineIndex < nameHeaderLines.Length)
             {
-                personal.ProfessionalTitle = titleLine;
-                context.AddConfidence(MainPersonalInformationFieldKeys.ProfessionalTitle, CvImportConfidence.Medium);
+                var titleLine = nameHeaderLines[titleLineIndex];
+                if (!CvImportPatterns.Email.IsMatch(titleLine) && !CvImportPatterns.Url.IsMatch(titleLine))
+                {
+                    personal.ProfessionalTitle = titleLine;
+                    context.AddConfidence(MainPersonalInformationFieldKeys.ProfessionalTitle, CvImportConfidence.Medium);
+                }
             }
         }
 
@@ -238,7 +237,8 @@ public static class CvImportFieldExtractor
 
     private static IReadOnlyList<WorkExperienceEntry> ExtractWorkExperience(
         string body,
-        IReadOnlySet<string> sidebarSkillTokens)
+        IReadOnlySet<string> sidebarSkillTokens,
+        Queue<string> orphanWorkDateFragments)
     {
         if (string.IsNullOrWhiteSpace(body))
         {
@@ -269,7 +269,7 @@ public static class CvImportFieldExtractor
             }
             else
             {
-                TryParseLeadingWorkExperienceMetadata(lines, ref lineIndex, entry, out dateRange);
+                TryParseLeadingWorkExperienceMetadata(lines, ref lineIndex, entry, out dateRange, orphanWorkDateFragments);
             }
 
             if (!string.IsNullOrWhiteSpace(titleLine))
@@ -283,7 +283,7 @@ public static class CvImportFieldExtractor
             }
 
             if (lineIndex < lines.Length
-                && TryParseExportDelimitedMetaLine(lines[lineIndex], out var metaParts, out var metaDates))
+                && TryParseExportDelimitedMetaLine(lines[lineIndex], orphanWorkDateFragments, out var metaParts, out var metaDates))
             {
                 if (metaParts.Count >= 1 && string.IsNullOrWhiteSpace(entry.Company))
                 {
@@ -396,7 +396,7 @@ public static class CvImportFieldExtractor
                 var line = lines[lineIndex];
 
                 if (headerLines.Count == 1
-                    && TryParseExportDelimitedMetaLine(line, out var metaParts, out var metaDates))
+                    && TryParseExportDelimitedMetaLine(line, new Queue<string>(), out var metaParts, out var metaDates))
                 {
                     entry.Degree = headerLines[0];
                     entry.Institution = metaParts[0];
@@ -484,6 +484,7 @@ public static class CvImportFieldExtractor
             return [];
         }
 
+        body = MergeSplitReVitaeSkillLines(body);
         body = TrimReVitaeSkillBodyPrefix(body);
 
         var groups = new List<SkillsGroupEntry>();
@@ -616,10 +617,28 @@ public static class CvImportFieldExtractor
             && !DateRangeParser.TryParse(tail, out _);
     }
 
+    private static bool IsKnownSkillCategoryLabel(string category) =>
+        category.Equals("General", StringComparison.OrdinalIgnoreCase)
+        || category.Equals("Backend", StringComparison.OrdinalIgnoreCase)
+        || category.Equals("Frontend", StringComparison.OrdinalIgnoreCase)
+        || category.Equals("Programming", StringComparison.OrdinalIgnoreCase)
+        || category.Equals("DevOps", StringComparison.OrdinalIgnoreCase)
+        || category.Equals("Languages", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsPlausibleSkillCategory(string line)
     {
         var category = line.Trim();
         if (category.Length is < 2 or > 40)
+        {
+            return false;
+        }
+
+        if (IsKnownSkillCategoryLabel(category))
+        {
+            return true;
+        }
+
+        if (category.Contains(' ', StringComparison.Ordinal))
         {
             return false;
         }
@@ -630,6 +649,7 @@ public static class CvImportFieldExtractor
             && !LooksLikeWorkBleedLine(category)
             && !IsExportSubheadingLine(category)
             && !IsLikelyPersonNameLine(category)
+            && !IsPlausibleStandaloneSkillToken(category)
             && !Regex.IsMatch(
                 category,
                 @"^(Designed|Implemented|Built|Contributed|Collaborated|Delivered|Integrated|Worked|Senior|Project|Platforms|development|OAuth|focus|high|Uses)\b",
@@ -664,7 +684,7 @@ public static class CvImportFieldExtractor
         var entries = new List<LanguageEntry>();
         foreach (var line in body.Split('\n', StringSplitOptions.TrimEntries))
         {
-            if (string.IsNullOrWhiteSpace(line))
+            if (string.IsNullOrWhiteSpace(line) || IsLanguageProficiencySubline(line))
             {
                 continue;
             }
@@ -1002,11 +1022,12 @@ public static class CvImportFieldExtractor
         string[] lines,
         ref int lineIndex,
         WorkExperienceEntry entry,
-        out ParsedDateRange? dateRange)
+        out ParsedDateRange? dateRange,
+        Queue<string> orphanWorkDateFragments)
     {
         dateRange = null;
         if (lineIndex < lines.Length
-            && TryParseExportDelimitedMetaLine(lines[lineIndex], out var metaParts, out var metaDates))
+            && TryParseExportDelimitedMetaLine(lines[lineIndex], orphanWorkDateFragments, out var metaParts, out var metaDates))
         {
             if (metaParts.Count >= 1)
             {
@@ -1912,17 +1933,31 @@ public static class CvImportFieldExtractor
         }
 
         return metaLine.Contains('·')
-            && DateRangeParser.TryParseTrailingDateRange(metaLine, out _, out _);
+            && (DateRangeParser.TryParseTrailingDateRange(metaLine, out _, out _)
+                || metaLine.Contains("Full-time", StringComparison.OrdinalIgnoreCase)
+                || metaLine.Contains("Part-time", StringComparison.OrdinalIgnoreCase)
+                || metaLine.Contains(" s.r.o.", StringComparison.OrdinalIgnoreCase)
+                || metaLine.Contains(" a.s.", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool TryParseExportDelimitedMetaLine(
         string line,
+        Queue<string> orphanWorkDateFragments,
         out IReadOnlyList<string> parts,
         out ParsedDateRange dateRange)
     {
         parts = [];
         dateRange = new ParsedDateRange(null, null, null, null, false);
-        if (!DateRangeParser.TryParseTrailingDateRange(line, out dateRange, out var prefix))
+
+        var candidate = line;
+        if (!DateRangeParser.TryParseTrailingDateRange(candidate, out dateRange, out var prefix)
+            && TryCompletePartialWorkMetaLine(line, orphanWorkDateFragments, out candidate)
+            && !DateRangeParser.TryParseTrailingDateRange(candidate, out dateRange, out prefix))
+        {
+            return false;
+        }
+
+        if (!DateRangeParser.TryParseTrailingDateRange(candidate, out dateRange, out prefix))
         {
             return false;
         }
@@ -1985,6 +2020,143 @@ public static class CvImportFieldExtractor
             : body;
     }
 
+    private static string MergeSplitReVitaeSkillLines(string body)
+    {
+        var lines = body.Split('\n', StringSplitOptions.TrimEntries);
+        if (lines.Length == 0)
+        {
+            return body;
+        }
+
+        var proficiencyQueue = new Queue<string>();
+        var filtered = new List<string>();
+        foreach (var line in lines)
+        {
+            if (TryDequeueStandaloneSkillProficiency(line, out var proficiency))
+            {
+                proficiencyQueue.Enqueue(proficiency);
+                continue;
+            }
+
+            filtered.Add(line);
+        }
+
+        var merged = new List<string>();
+        foreach (var line in filtered)
+        {
+            var normalized = line;
+            if (normalized.Contains('·', StringComparison.Ordinal))
+            {
+                var trimmed = normalized.TrimEnd();
+                if (trimmed.EndsWith('·') && proficiencyQueue.Count > 0)
+                {
+                    normalized = trimmed + " " + proficiencyQueue.Dequeue();
+                }
+            }
+            else if (IsBareReVitaeSkillNameLine(normalized) && proficiencyQueue.Count > 0)
+            {
+                normalized = normalized + " · " + proficiencyQueue.Dequeue();
+            }
+
+            merged.Add(normalized);
+        }
+
+        return string.Join('\n', merged);
+    }
+
+    private static bool TryDequeueStandaloneSkillProficiency(string line, out string proficiency)
+    {
+        proficiency = string.Empty;
+        var token = line.Trim().TrimStart('·').Trim();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        if (token.Equals("Intermediate", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("Advanced", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("Beginner", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("Expert", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("Fluent", StringComparison.OrdinalIgnoreCase)
+            || Regex.IsMatch(token, @"^\d+\s+years?$", RegexOptions.IgnoreCase))
+        {
+            proficiency = token;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsBareReVitaeSkillNameLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)
+            || line.Contains('·', StringComparison.Ordinal)
+            || line.Contains(':', StringComparison.Ordinal)
+            || IsExportSubheadingLine(line)
+            || IsLikelyPersonNameLine(line)
+            || IsKnownSkillCategoryLabel(line)
+            || IsPlausibleSkillCategory(line))
+        {
+            return false;
+        }
+
+        return IsPlausibleSkillName(line);
+    }
+
+    private static Queue<string> CollectOrphanWorkDateFragments(string headerBlock)
+    {
+        var queue = new Queue<string>();
+        if (string.IsNullOrWhiteSpace(headerBlock))
+        {
+            return queue;
+        }
+
+        foreach (var line in headerBlock.Split('\n', StringSplitOptions.TrimEntries))
+        {
+            if (OrphanWorkDateFragment.IsMatch(line))
+            {
+                queue.Enqueue(line);
+            }
+        }
+
+        return queue;
+    }
+
+    private static bool TryCompletePartialWorkMetaLine(
+        string metaLine,
+        Queue<string> orphanWorkDateFragments,
+        out string completedLine)
+    {
+        completedLine = metaLine;
+        if (!metaLine.Contains('·', StringComparison.Ordinal) || orphanWorkDateFragments.Count == 0)
+        {
+            return false;
+        }
+
+        var lastSeparator = metaLine.LastIndexOf('·');
+        var trailing = metaLine[(lastSeparator + 1)..].Trim();
+        if (!int.TryParse(trailing, out var startMonth) || startMonth is < 1 or > 12)
+        {
+            return false;
+        }
+
+        var fragment = orphanWorkDateFragments.Dequeue();
+        var match = OrphanWorkDateFragment.Match(fragment);
+        if (!match.Success)
+        {
+            return false;
+        }
+
+        completedLine = metaLine[..lastSeparator].TrimEnd()
+            + " · "
+            + $"{startMonth:D2} / {match.Groups["startYear"].Value} – {match.Groups["endMonth"].Value} / {match.Groups["endYear"].Value}";
+        return true;
+    }
+
+    private static readonly Regex OrphanWorkDateFragment = new(
+        @"^/\s*(?<startYear>\d{4})\s*[–-]\s*(?<endMonth>\d{1,2})\s*/\s*(?<endYear>\d{4})\s*$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private static bool IsLikelyNamePart(string token)
     {
         token = token.Trim();
@@ -1994,6 +2166,11 @@ public static class CvImportFieldExtractor
         }
 
         if (!Regex.IsMatch(token, @"^[\p{L}][\p{L}\p{M}'-]*$"))
+        {
+            return false;
+        }
+
+        if (token.Length <= 3 && token.All(static c => !char.IsUpper(c)))
         {
             return false;
         }
@@ -2039,6 +2216,65 @@ public static class CvImportFieldExtractor
         company = string.Empty;
     }
 
+    private static void TryAssignBestPersonNameFromLines(
+        IReadOnlyList<string> lines,
+        PersonalInformationImport personal,
+        CvImportBuildContext context,
+        CvImportConfidence confidence)
+    {
+        string? bestLine = null;
+        var bestScore = int.MinValue;
+        foreach (var line in lines)
+        {
+            if (!IsLikelyPersonNameLine(line))
+            {
+                continue;
+            }
+
+            var score = ScorePersonNameLine(line);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestLine = line;
+            }
+        }
+
+        if (bestLine is not null)
+        {
+            TryAssignPersonNameFromLine(bestLine, personal, context, confidence);
+        }
+    }
+
+    private static int ScorePersonNameLine(string line)
+    {
+        var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var score = 0;
+        foreach (var part in parts)
+        {
+            if (part.Length >= 4)
+            {
+                score += 4;
+            }
+
+            if (part.Any(c => c > 127))
+            {
+                score += 15;
+            }
+
+            if (part.Contains('-', StringComparison.Ordinal))
+            {
+                score -= 4;
+            }
+
+            if (IsSkillStopWord(part) || IsLikelyTechNameToken(part))
+            {
+                score -= 10;
+            }
+        }
+
+        return score + Math.Min(line.Length, 40);
+    }
+
     private static bool TryAssignPersonNameFromLine(
         string line,
         PersonalInformationImport personal,
@@ -2057,6 +2293,71 @@ public static class CvImportFieldExtractor
         context.AddConfidence(MainPersonalInformationFieldKeys.LastName, confidence);
         return true;
     }
+
+    private static void TryAssignNameFromSkillsSection(
+        CvSegmentationResult segmentation,
+        PersonalInformationImport personal,
+        CvImportBuildContext context)
+    {
+        if (!segmentation.SectionBodies.TryGetValue(CvImportSectionId.Skills, out var skillsNameSource))
+        {
+            return;
+        }
+
+        var skillLines = skillsNameSource.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        TryAssignBestPersonNameFromLines(skillLines, personal, context, CvImportConfidence.Medium);
+        if (!string.IsNullOrWhiteSpace(personal.FirstName))
+        {
+            return;
+        }
+
+        TryAssignSplitPersonNameFromLines(skillLines, personal, context, CvImportConfidence.Medium);
+    }
+
+    private static void TryAssignNameFromOtherSections(
+        CvSegmentationResult segmentation,
+        PersonalInformationImport personal,
+        CvImportBuildContext context)
+    {
+        CvImportSectionId[] searchOrder =
+        [
+            CvImportSectionId.Contact,
+            CvImportSectionId.Skills,
+            CvImportSectionId.WorkExperience,
+            CvImportSectionId.Summary,
+        ];
+
+        foreach (var sectionId in searchOrder)
+        {
+            if (!segmentation.SectionBodies.TryGetValue(sectionId, out var body))
+            {
+                continue;
+            }
+
+            var lines = body.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var candidateLines = SelectNameSearchLines(sectionId, lines);
+            TryAssignBestPersonNameFromLines(candidateLines, personal, context, CvImportConfidence.Low);
+            if (!string.IsNullOrWhiteSpace(personal.FirstName))
+            {
+                context.Warnings.Add(new CvImportWarning(TranslationKeys.ImportWarningNameUncertain));
+                return;
+            }
+
+            TryAssignSplitPersonNameFromLines(candidateLines, personal, context, CvImportConfidence.Low);
+            if (!string.IsNullOrWhiteSpace(personal.FirstName))
+            {
+                context.Warnings.Add(new CvImportWarning(TranslationKeys.ImportWarningNameUncertain));
+                return;
+            }
+        }
+    }
+
+    private static string[] SelectNameSearchLines(CvImportSectionId sectionId, string[] lines) =>
+        sectionId switch
+        {
+            CvImportSectionId.WorkExperience or CvImportSectionId.Skills or CvImportSectionId.Contact => lines,
+            _ => lines.Take(25).ToArray(),
+        };
 
     private static bool TryAssignSplitPersonNameFromLines(
         IReadOnlyList<string> lines,
@@ -2120,7 +2421,7 @@ public static class CvImportFieldExtractor
             return false;
         }
 
-        if (Regex.IsMatch(line, @"\b(Developer|Engineer|Manager|Director|years|experience|Full|Stack|Senior|Junior)\b", RegexOptions.IgnoreCase))
+        if (Regex.IsMatch(line, @"\b(Developer|Engineer|Manager|Director|years|experience|Full|Stack|Senior|Junior|Privileged|Access|Management|Platform|Copilot|Excalibur|OAuth|Cybersecurity|Microservices|integrating|Designed|Developed|Contributed|Implemented|Delivered|Building|frontend|backend|product|standards|technical|authentication)\b", RegexOptions.IgnoreCase))
         {
             return false;
         }
@@ -2252,6 +2553,22 @@ public static class CvImportFieldExtractor
         var created = new SkillsGroupEntry { Category = defaultCategory };
         groups.Add(created);
         return created;
+    }
+
+    private static bool IsLanguageProficiencySubline(string line)
+    {
+        var labeled = CvImportPatterns.LabeledValue.Match(line.Trim());
+        if (!labeled.Success)
+        {
+            return false;
+        }
+
+        var label = labeled.Groups["label"].Value.Trim();
+        return label.Equals("Reading", StringComparison.OrdinalIgnoreCase)
+            || label.Equals("Writing", StringComparison.OrdinalIgnoreCase)
+            || label.Equals("Speaking", StringComparison.OrdinalIgnoreCase)
+            || label.Equals("Listening", StringComparison.OrdinalIgnoreCase)
+            || label.Equals("Translation", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void MapLanguageProficiency(string token, LanguageEntry entry, CvImportBuildContext context)

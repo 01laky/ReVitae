@@ -30,11 +30,18 @@ public static class CvDocumentImporter
         }
 
         var formatGuess = CvImportFormatDetector.DetectFormat(filePath);
+        CvImportDiagnosticsLogger.BeginSession(filePath, formatGuess, payloadLength);
+        CvImportDiagnosticsLogger.LogStep("router", $"Detected format: {formatGuess}");
+
         var driver = CvFormatImporterRegistry.Get(formatGuess);
         if (driver is null)
         {
+            CvImportDiagnosticsLogger.LogFailure("format detection", "Unsupported format.");
+            CvImportDiagnosticsLogger.EndSession(success: false);
             return CvImportResult.Failed(TranslationKeys.ImportErrorUnsupportedFormat);
         }
+
+        CvImportDiagnosticsLogger.LogStep("router", $"Importer: {driver.GetType().Name}");
 
         CvImportResult response;
 
@@ -42,16 +49,26 @@ public static class CvDocumentImporter
         {
             response = driver.Import(filePath);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            response = CvImportResult.Failed(TranslationKeys.ImportErrorUnreadableDocument);
+            CvImportDiagnosticsLogger.LogFailure("importer", $"{ex.GetType().Name}: {ex.Message}");
+            CvImportDiagnosticsLogger.EndSession(success: false);
+            return CvImportResult.Failed(TranslationKeys.ImportErrorUnreadableDocument);
         }
 
         if (!response.Success)
         {
+            CvImportDiagnosticsLogger.LogFailure("import result", response.ErrorMessageKey);
+            CvImportDiagnosticsLogger.EndSession(success: false);
             return CvImportResult.Failed(NormalizeKey(response.ErrorMessageKey));
         }
 
+        if (driver is not TextCvFormatImporterBase)
+        {
+            CvImportDiagnosticsLogger.LogStructuredResult(response);
+        }
+
+        CvImportDiagnosticsLogger.EndSession(success: true);
         return response;
     }
 

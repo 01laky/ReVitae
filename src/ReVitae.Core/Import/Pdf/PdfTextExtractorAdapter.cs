@@ -14,6 +14,7 @@ public sealed class PdfTextExtractorAdapter(IPdfTextExtractor inner) : ICvTextEx
             legacy.ErrorMessageKey,
             legacy.HyperlinkUrls,
             Warnings: null,
-            legacy.PageCount);
+            legacy.PageCount,
+            legacy.Success ? CvTextAcquisitionStrategy.PdfTextLayer : null);
     }
 }

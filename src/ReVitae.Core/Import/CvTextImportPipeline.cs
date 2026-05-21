@@ -15,19 +15,35 @@ public static class CvTextImportPipeline
         IReadOnlyList<CvImportWarning>? extractionWarnings = null)
     {
         var normalized = CvTextNormalizer.Normalize(rawText);
+        CvImportDiagnosticsLogger.LogStep(
+            "text-pipeline",
+            $"Normalize: raw={rawText.Length} chars → normalized={normalized.Length} chars");
+
         if (string.IsNullOrWhiteSpace(normalized))
         {
+            CvImportDiagnosticsLogger.LogStep("text-pipeline", "Normalized text empty — aborting");
             return CvImportResult.Failed(TranslationKeys.ImportErrorEmptyDocument);
         }
 
         var segmentation = CvSectionSegmenter.Segment(normalized);
+        CvImportDiagnosticsLogger.LogStep(
+            "text-pipeline",
+            $"Segmented: {segmentation.SectionBodies.Count} section(s), " +
+            $"header={segmentation.HeaderBlock.Length} chars, warnings={segmentation.Warnings.Count}");
         var result = CvImportFieldExtractor.Extract(segmentation, hyperlinkUrls);
+        CvImportDiagnosticsLogger.LogStep(
+            "text-pipeline",
+            $"Extract: success={result.Success}, work={result.WorkExperienceEntries.Count}, " +
+            $"education={result.EducationEntries.Count}, skills={result.SkillsGroups.Count}");
         if (!result.Success)
         {
+            CvImportDiagnosticsLogger.LogTextPipeline(rawText, segmentation, result);
             return CvImportResult.Failed(TranslationKeys.ImportErrorNoStructuredData);
         }
 
-        return MergePrefixes(result, extractionWarnings, segmentation.Warnings);
+        var merged = MergePrefixes(result, extractionWarnings, segmentation.Warnings);
+        CvImportDiagnosticsLogger.LogTextPipeline(rawText, segmentation, merged);
+        return merged;
     }
 
     /// <remarks>Prepends extractor warnings ahead of segmentation and field warnings without changing duplicates.</remarks>

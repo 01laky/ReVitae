@@ -432,7 +432,7 @@ public sealed class CvImportFieldExtractorEdgeCaseTests
         Assert.Contains(result.FieldConfidences, confidence =>
             confidence.FieldKey == "email" && confidence.Confidence == CvImportConfidence.High);
         Assert.Contains(result.FieldConfidences, confidence =>
-            confidence.FieldKey == "firstName" && confidence.Confidence == CvImportConfidence.Low);
+            confidence.FieldKey == "firstName" && confidence.Confidence == CvImportConfidence.Medium);
     }
 
     [Fact]

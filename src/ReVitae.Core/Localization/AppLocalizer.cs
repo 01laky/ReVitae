@@ -521,7 +521,13 @@ public sealed class AppLocalizer
         [TranslationKeys.ImportErrorFileTooLarge] = "This file is too large to import. Maximum size is 25 MB.",
         [TranslationKeys.ImportWarningPartialDocumentContent] = "Some document content could not be imported.",
         [TranslationKeys.ImportWarningLatexPartiallyNormalized] = "LaTeX markup was simplified before parsing.",
-        [TranslationKeys.ImportWarningTabularMultipleRowsIgnored] = "Only the first row of the table was imported."
+        [TranslationKeys.ImportWarningTabularMultipleRowsIgnored] = "Only the first row of the table was imported.",
+        [TranslationKeys.ImportRunningOcr] = "Recognizing text from image…",
+        [TranslationKeys.ImportWarningOcrUsed] = "This file was read using OCR. Please review all fields carefully.",
+        [TranslationKeys.ImportErrorOcrUnavailable] = "OCR is not available on this system.",
+        [TranslationKeys.ImportErrorOcrFailed] = "Could not recognize text in this image or scan.",
+        [TranslationKeys.ImportRasterImageFileType] = "Images (JPEG, PNG, …)",
+        [TranslationKeys.ImportForceOcr] = "Import as scan (OCR)"
     };
 
     private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> TranslationOverlays =

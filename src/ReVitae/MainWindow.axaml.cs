@@ -392,6 +392,20 @@ public partial class MainWindow : Window
         UploadCvButton.IsEnabled = false;
         OpenCreateNewCvButton.IsEnabled = false;
 
+        void OnImportProgress(string translationKey)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                SetImportProgressUiVisible(
+                    true,
+                    _localizer.Get(translationKey),
+                    useIntroProgressUi,
+                    useReplaceProgressUi);
+            });
+        }
+
+        CvImportProgress.StatusChanged += OnImportProgress;
+
         try
         {
             var importResult = await Task.Run(() => CvDocumentImporter.Import(filePath));
@@ -422,6 +436,7 @@ public partial class MainWindow : Window
             }
 
             ApplyCvImportResult(importResult);
+            ShowImportWarnings(importResult);
 
             if (useIntroProgressUi)
             {
@@ -434,10 +449,14 @@ public partial class MainWindow : Window
 
             UpdatePreview();
             UpdateValidationState();
-            ExportStatusTextBlock.Text = string.Empty;
+            if (!HasOcrImportWarning(importResult))
+            {
+                ExportStatusTextBlock.Text = string.Empty;
+            }
         }
         finally
         {
+            CvImportProgress.StatusChanged -= OnImportProgress;
             _isImportInProgress = false;
             if (useIntroProgressUi)
             {
@@ -679,6 +698,19 @@ public partial class MainWindow : Window
 
         ApplyImportConfidence(result.FieldConfidences);
     }
+
+    private void ShowImportWarnings(CvImportResult result)
+    {
+        var ocrWarning = result.Warnings.FirstOrDefault(warning =>
+            warning.MessageKey == TranslationKeys.ImportWarningOcrUsed);
+        if (ocrWarning is not null)
+        {
+            ExportStatusTextBlock.Text = _localizer.Get(ocrWarning.MessageKey);
+        }
+    }
+
+    private static bool HasOcrImportWarning(CvImportResult result) =>
+        result.Warnings.Any(warning => warning.MessageKey == TranslationKeys.ImportWarningOcrUsed);
 
     private void ApplyPersonalInformationImport(PersonalInformationImport personal)
     {

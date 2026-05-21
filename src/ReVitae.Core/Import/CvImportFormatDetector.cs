@@ -44,6 +44,14 @@ public static class CvImportFormatDetector
                 return CvImportFormat.Wps;
             case ".pages":
                 return CvImportFormat.Pages;
+            case ".jpg":
+            case ".jpeg":
+            case ".png":
+            case ".webp":
+            case ".tif":
+            case ".tiff":
+            case ".bmp":
+                return CvImportFormat.RasterImage;
             case ".csv":
             case ".tsv":
                 return CvImportFormat.CsvTabular;

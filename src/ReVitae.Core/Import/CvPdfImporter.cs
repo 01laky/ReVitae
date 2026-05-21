@@ -10,7 +10,7 @@ public sealed class CvPdfImporter
     private readonly PdfCvFormatImporter _pdf;
 
     public CvPdfImporter()
-        : this(new Pdf.PdfPigTextExtractor())
+        : this(CvOcrImportDefaults.CreateDefaultPdfExtractor())
     {
     }
 
