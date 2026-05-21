@@ -225,15 +225,7 @@ public static class CvImportFieldExtractor
             }
             else
             {
-                for (var index = 1; index < Math.Min(lines.Length, 4); index++)
-                {
-                    if (DateRangeParser.TryParse(lines[index], out var candidateDates))
-                    {
-                        dateRange = candidateDates;
-                        lineIndex = index + 1;
-                        break;
-                    }
-                }
+                TryParseLeadingWorkExperienceMetadata(lines, ref lineIndex, entry, out dateRange);
             }
 
             if (!string.IsNullOrWhiteSpace(titleLine))
@@ -265,7 +257,18 @@ public static class CvImportFieldExtractor
 
                 if (line.StartsWith("Technologies:", StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.Technologies = line["Technologies:".Length..].Trim();
+                    entry.Technologies = MergeTechnologies(entry.Technologies, line["Technologies:".Length..].Trim());
+                    continue;
+                }
+
+                if (LooksLikeTechnologyList(line))
+                {
+                    entry.Technologies = MergeTechnologies(entry.Technologies, line);
+                    continue;
+                }
+
+                if (LooksLikeSidebarSkillToken(line) || IsRepeatedJobTitleLine(line, entry.JobTitle))
+                {
                     continue;
                 }
 
@@ -686,6 +689,150 @@ public static class CvImportFieldExtractor
     private static string GetBody(CvSegmentationResult segmentation, CvImportSectionId sectionId)
     {
         return segmentation.SectionBodies.TryGetValue(sectionId, out var body) ? body : string.Empty;
+    }
+
+    private static void TryParseLeadingWorkExperienceMetadata(
+        string[] lines,
+        ref int lineIndex,
+        WorkExperienceEntry entry,
+        out ParsedDateRange? dateRange)
+    {
+        dateRange = null;
+        if (lineIndex >= lines.Length)
+        {
+            return;
+        }
+
+        if (DateRangeParser.TryParse(lines[lineIndex], out var directDate))
+        {
+            dateRange = directDate;
+            lineIndex++;
+            return;
+        }
+
+        if (lineIndex + 1 < lines.Length
+            && LooksLikeLocationLine(lines[lineIndex])
+            && DateRangeParser.TryParse(lines[lineIndex + 1], out var dateAfterLocation))
+        {
+            entry.Location = lines[lineIndex];
+            dateRange = dateAfterLocation;
+            lineIndex += 2;
+            return;
+        }
+
+        for (var index = lineIndex; index < Math.Min(lines.Length, lineIndex + 3); index++)
+        {
+            if (!DateRangeParser.TryParse(lines[index], out var candidateDates))
+            {
+                continue;
+            }
+
+            if (index > lineIndex && LooksLikeLocationLine(lines[lineIndex]))
+            {
+                entry.Location = lines[lineIndex];
+            }
+
+            dateRange = candidateDates;
+            lineIndex = index + 1;
+            return;
+        }
+    }
+
+    private static bool LooksLikeLocationLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line) || LooksLikeWorkEntryHeader(line))
+        {
+            return false;
+        }
+
+        if (DateRangeParser.TryParse(line, out _))
+        {
+            return false;
+        }
+
+        if (line.StartsWith("- ", StringComparison.Ordinal)
+            || line.StartsWith("Technologies:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!line.Contains(','))
+        {
+            return false;
+        }
+
+        var parts = line.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return parts.Length == 2 && LooksLikeCityCountryPair(parts[0], parts[1]);
+    }
+
+    private static bool LooksLikeTechnologyList(string line)
+    {
+        if (!line.Contains(','))
+        {
+            return false;
+        }
+
+        var parts = SplitCommaList(line).ToArray();
+        if (parts.Length < 2 || parts.Any(part => part.Length is < 1 or > 40))
+        {
+            return false;
+        }
+
+        if (parts.Length == 2 && LooksLikeCityCountryPair(parts[0], parts[1]))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool LooksLikeCityCountryPair(string city, string country)
+    {
+        return city.Length >= 2
+            && country.Length >= 3
+            && char.IsLetter(city[0])
+            && char.IsLetter(country[0])
+            && !city.Any(char.IsDigit)
+            && !country.Any(char.IsDigit)
+            && !city.Contains('.')
+            && !country.Contains('.')
+            && !country.Contains('#')
+            && !city.Contains('#');
+    }
+
+    private static bool LooksLikeSidebarSkillToken(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)
+            || line.Contains(' ')
+            || line.Contains('.')
+            || line.Contains(',')
+            || line.Contains(':'))
+        {
+            return false;
+        }
+
+        return line.Length <= 30;
+    }
+
+    private static bool IsRepeatedJobTitleLine(string line, string jobTitle)
+    {
+        return !string.IsNullOrWhiteSpace(jobTitle)
+            && line.Equals(jobTitle, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string MergeTechnologies(string existing, string additional)
+    {
+        if (string.IsNullOrWhiteSpace(existing))
+        {
+            return additional.Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(additional))
+        {
+            return existing.Trim();
+        }
+
+        return $"{existing.Trim()}, {additional.Trim()}";
     }
 
     private static IEnumerable<string> SplitBlocks(string body)

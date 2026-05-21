@@ -317,6 +317,7 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
         private readonly int _index;
         private readonly ValidationFieldRegistry _validationRegistry = new();
         private AppLocalizer _localizer;
+        private bool _isLoadingFromEntry;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
         private readonly TextBlock _errorBadgeTextBlock;
@@ -572,17 +573,25 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
 
         private void LoadFromEntry()
         {
-            _institutionTextBox.Text = _entry.Institution;
-            _degreeTextBox.Text = _entry.Degree;
-            _fieldOfStudyTextBox.Text = _entry.FieldOfStudy;
-            _locationTextBox.Text = _entry.Location;
-            _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
-            _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
-            _currentlyStudyingCheckBox.IsChecked = _entry.IsCurrentlyStudying;
-            _gradeTextBox.Text = _entry.Grade;
-            _descriptionTextBox.Text = _entry.Description;
-            _institutionUrlTextBox.Text = _entry.InstitutionUrl;
-            RefreshDegreeTypeItems();
+            _isLoadingFromEntry = true;
+            try
+            {
+                _institutionTextBox.Text = _entry.Institution;
+                _degreeTextBox.Text = _entry.Degree;
+                _fieldOfStudyTextBox.Text = _entry.FieldOfStudy;
+                _locationTextBox.Text = _entry.Location;
+                _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
+                _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
+                _currentlyStudyingCheckBox.IsChecked = _entry.IsCurrentlyStudying;
+                _gradeTextBox.Text = _entry.Grade;
+                _descriptionTextBox.Text = _entry.Description;
+                _institutionUrlTextBox.Text = _entry.InstitutionUrl;
+                RefreshDegreeTypeItems();
+            }
+            finally
+            {
+                _isLoadingFromEntry = false;
+            }
         }
 
         private void SyncToEntry()
@@ -604,6 +613,11 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
 
         private void OnFieldChanged(object? sender, EventArgs e)
         {
+            if (_isLoadingFromEntry)
+            {
+                return;
+            }
+
             SyncToEntry();
             _expandableSection.Title = _entry.BuildHeaderSummary(_localizer.Get(TranslationKeys.EducationPresent));
             UpdateEndDateVisibility();

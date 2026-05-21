@@ -3,7 +3,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-489%20passing-brightgreen)](https://github.com/01laky/ReVitae)
+[![Tests](https://img.shields.io/badge/tests-490%20passing-brightgreen)](https://github.com/01laky/ReVitae)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.

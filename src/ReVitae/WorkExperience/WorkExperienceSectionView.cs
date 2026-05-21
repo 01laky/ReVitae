@@ -321,6 +321,7 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
         private readonly ValidationFieldRegistry _fieldRegistry = new();
         private ValidationTouchTracker _touchTracker;
         private AppLocalizer _localizer;
+        private bool _isLoadingFromEntry;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
         private readonly TextBlock _errorBadgeTextBlock;
@@ -628,17 +629,25 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
 
         private void LoadFromEntry()
         {
-            _jobTitleTextBox.Text = _entry.JobTitle;
-            _companyTextBox.Text = _entry.Company;
-            _locationTextBox.Text = _entry.Location;
-            _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
-            _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
-            _currentlyWorkingCheckBox.IsChecked = _entry.IsCurrentlyWorking;
-            _descriptionTextBox.Text = _entry.Description;
-            _achievementsTextBox.Text = _entry.Achievements;
-            _technologiesTextBox.Text = _entry.Technologies;
-            _companyUrlTextBox.Text = _entry.CompanyUrl;
-            RefreshEmploymentTypeItems();
+            _isLoadingFromEntry = true;
+            try
+            {
+                _jobTitleTextBox.Text = _entry.JobTitle;
+                _companyTextBox.Text = _entry.Company;
+                _locationTextBox.Text = _entry.Location;
+                _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
+                _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
+                _currentlyWorkingCheckBox.IsChecked = _entry.IsCurrentlyWorking;
+                _descriptionTextBox.Text = _entry.Description;
+                _achievementsTextBox.Text = _entry.Achievements;
+                _technologiesTextBox.Text = _entry.Technologies;
+                _companyUrlTextBox.Text = _entry.CompanyUrl;
+                RefreshEmploymentTypeItems();
+            }
+            finally
+            {
+                _isLoadingFromEntry = false;
+            }
         }
 
         private void SyncToEntry()
@@ -660,6 +669,11 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
 
         private void OnFieldChanged(object? sender, EventArgs e)
         {
+            if (_isLoadingFromEntry)
+            {
+                return;
+            }
+
             SyncToEntry();
             _expandableSection.Title = _entry.BuildHeaderSummary(_localizer.Get(TranslationKeys.WorkExperiencePresent));
             UpdateEndDateVisibility();

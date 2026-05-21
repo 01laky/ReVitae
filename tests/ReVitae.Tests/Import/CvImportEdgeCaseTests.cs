@@ -152,6 +152,31 @@ public sealed class DateRangeParserEdgeCaseTests
 public sealed class CvImportFieldExtractorEdgeCaseTests
 {
     [Fact]
+    public void Extract_ParsesWorkExperienceLocationBeforeDateLine()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Work Experience
+            Excalibur s.r.o. - Senior full stack developer
+            Kosice, Slovakia
+            01/2024 - 05/2026
+            Developed backend services in Go and Node.js.
+            """;
+
+        var result = Extract(text);
+        var entry = Assert.Single(result.WorkExperienceEntries);
+
+        Assert.Equal("Senior full stack developer", entry.JobTitle);
+        Assert.Equal("Excalibur s.r.o.", entry.Company);
+        Assert.Equal("Kosice, Slovakia", entry.Location);
+        Assert.Equal(5, entry.EndMonth);
+        Assert.Equal(2026, entry.EndYear);
+        Assert.Contains("Developed backend services", entry.Description, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Extract_ParsesWorkExperienceWithBulletsTechnologiesAndDateLineBelowHeader()
     {
         const string text = """

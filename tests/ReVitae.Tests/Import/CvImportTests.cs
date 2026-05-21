@@ -201,6 +201,7 @@ public sealed class CvPdfImporterTests
             Prague, Czechia
             03/2022 - 12/2022
             ReactJS, TypeScript, .NET Core
+            Project www.vinisto.cz
             D Education and Training
             06/2006
             High School of Electrical Engineering
@@ -216,6 +217,29 @@ public sealed class CvPdfImporterTests
         Assert.Equal("01laky@gmail.com", result.Personal.Email);
         Assert.Equal("(+421) 944159982", result.Personal.Phone);
         Assert.Equal(3, result.WorkExperienceEntries.Count);
+
+        var excalibur = result.WorkExperienceEntries[0];
+        Assert.Equal("Senior full stack developer", excalibur.JobTitle);
+        Assert.Equal("Excalibur s.r.o.", excalibur.Company);
+        Assert.Equal("Kosice, Slovakia", excalibur.Location);
+        Assert.Equal(1, excalibur.StartMonth);
+        Assert.Equal(2024, excalibur.StartYear);
+        Assert.Equal(5, excalibur.EndMonth);
+        Assert.Equal(2026, excalibur.EndYear);
+        Assert.Contains("Developed backend services", excalibur.Description, StringComparison.Ordinal);
+
+        var devcity = result.WorkExperienceEntries[1];
+        Assert.Equal("Prague, Czechia", devcity.Location);
+        Assert.Equal(3, devcity.StartMonth);
+        Assert.Equal(2023, devcity.StartYear);
+        Assert.Equal(1, devcity.EndMonth);
+        Assert.Equal(2024, devcity.EndYear);
+        Assert.Contains("web application development", devcity.Description, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("PostgreSQL", devcity.Description, StringComparison.Ordinal);
+
+        var merkatos = result.WorkExperienceEntries[2];
+        Assert.Equal("ReactJS, TypeScript, .NET Core", merkatos.Technologies);
+        Assert.Equal("Project www.vinisto.cz", merkatos.Description);
     }
 
     [Fact]

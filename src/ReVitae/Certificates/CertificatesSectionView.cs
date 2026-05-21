@@ -397,6 +397,7 @@ public sealed class CertificatesSectionView : UserControl, IValidationNavigableS
         private readonly CertificateEntry _entry;
         private readonly ValidationFieldRegistry _fieldRegistry = new();
         private AppLocalizer _localizer;
+        private bool _isLoadingFromEntry;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
         private readonly TextBlock _errorBadgeTextBlock;
@@ -598,13 +599,21 @@ public sealed class CertificatesSectionView : UserControl, IValidationNavigableS
 
         private void LoadFromEntry()
         {
-            _nameTextBox.Text = _entry.Name;
-            _issuerAutoComplete.Text = _entry.Issuer;
-            _issueDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.IssueMonth, _entry.IssueYear);
-            _expirationDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.ExpirationMonth, _entry.ExpirationYear);
-            _credentialIdTextBox.Text = _entry.CredentialId;
-            _credentialUrlTextBox.Text = _entry.CredentialUrl;
-            _descriptionTextBox.Text = _entry.Description;
+            _isLoadingFromEntry = true;
+            try
+            {
+                _nameTextBox.Text = _entry.Name;
+                _issuerAutoComplete.Text = _entry.Issuer;
+                _issueDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.IssueMonth, _entry.IssueYear);
+                _expirationDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.ExpirationMonth, _entry.ExpirationYear);
+                _credentialIdTextBox.Text = _entry.CredentialId;
+                _credentialUrlTextBox.Text = _entry.CredentialUrl;
+                _descriptionTextBox.Text = _entry.Description;
+            }
+            finally
+            {
+                _isLoadingFromEntry = false;
+            }
         }
 
         private void SyncToEntry()
@@ -620,6 +629,11 @@ public sealed class CertificatesSectionView : UserControl, IValidationNavigableS
 
         private void OnFieldChanged(object? sender, EventArgs e)
         {
+            if (_isLoadingFromEntry)
+            {
+                return;
+            }
+
             SyncToEntry();
             _expandableSection.Title = _entry.BuildHeaderSummary();
             UpdateCharacterCounters();

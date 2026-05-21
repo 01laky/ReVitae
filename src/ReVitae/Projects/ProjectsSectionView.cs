@@ -398,6 +398,7 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
         private ValidationTouchTracker _touchTracker;
         private readonly ValidationFieldRegistry _validationRegistry = new();
         private AppLocalizer _localizer;
+        private bool _isLoadingFromEntry;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
         private readonly TextBlock _errorBadgeTextBlock;
@@ -701,15 +702,23 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
 
         private void LoadFromEntry()
         {
-            _nameTextBox.Text = _entry.Name;
-            _roleTextBox.Text = _entry.Role;
-            _organizationTextBox.Text = _entry.Organization;
-            _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
-            _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
-            _currentlyActiveCheckBox.IsChecked = _entry.IsCurrentlyActive;
-            _projectUrlTextBox.Text = _entry.ProjectUrl;
-            _highlightsTextBox.Text = _entry.Highlights;
-            _descriptionTextBox.Text = _entry.Description;
+            _isLoadingFromEntry = true;
+            try
+            {
+                _nameTextBox.Text = _entry.Name;
+                _roleTextBox.Text = _entry.Role;
+                _organizationTextBox.Text = _entry.Organization;
+                _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
+                _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
+                _currentlyActiveCheckBox.IsChecked = _entry.IsCurrentlyActive;
+                _projectUrlTextBox.Text = _entry.ProjectUrl;
+                _highlightsTextBox.Text = _entry.Highlights;
+                _descriptionTextBox.Text = _entry.Description;
+            }
+            finally
+            {
+                _isLoadingFromEntry = false;
+            }
         }
 
         private void SyncToEntry()
@@ -727,6 +736,11 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
 
         private void OnFieldChanged(object? sender, EventArgs e)
         {
+            if (_isLoadingFromEntry)
+            {
+                return;
+            }
+
             SyncToEntry();
             UpdateHeaderTitle();
             UpdateEndDateVisibility();
