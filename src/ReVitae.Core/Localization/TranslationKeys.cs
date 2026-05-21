@@ -260,6 +260,47 @@ public static class TranslationKeys
     public const string ValidationLanguagesCertificateMax = "validation.languages.certificate.max";
     public const string ValidationLanguagesDuplicateLanguage = "validation.languages.duplicateLanguage";
 
+    public const string Certificates = "form.certificates";
+    public const string CertificatesEmptyHint = "certificates.emptyHint";
+    public const string CertificatesAdd = "certificates.add";
+    public const string CertificatesDuplicate = "certificates.duplicate";
+    public const string CertificatesRemove = "certificates.remove";
+    public const string CertificatesSortByDate = "certificates.sortByDate";
+    public const string CertificatesName = "certificates.field.name";
+    public const string CertificatesIssuer = "certificates.field.issuer";
+    public const string CertificatesIssueDate = "certificates.field.issueDate";
+    public const string CertificatesExpirationDate = "certificates.field.expirationDate";
+    public const string CertificatesIssueMonth = "certificates.field.issueMonth";
+    public const string CertificatesIssueYear = "certificates.field.issueYear";
+    public const string CertificatesExpirationMonth = "certificates.field.expirationMonth";
+    public const string CertificatesExpirationYear = "certificates.field.expirationYear";
+    public const string CertificatesCredentialId = "certificates.field.credentialId";
+    public const string CertificatesCredentialUrl = "certificates.field.credentialUrl";
+    public const string CertificatesDescription = "certificates.field.description";
+    public const string CertificatesDragToReorder = "certificates.dragToReorder";
+    public const string CertificatesExpand = "certificates.expand";
+    public const string CertificatesCollapse = "certificates.collapse";
+    public const string CertificatesValidationErrors = "certificates.validationErrors";
+    public const string PreviewCertificates = "preview.certificates";
+    public const string PreviewValidUntil = "preview.validUntil";
+    public const string PreviewCredentialId = "preview.credentialId";
+    public const string PreviewCredentialUrl = "preview.credentialUrl";
+    public const string ValidationCertificatesNameRequired = "validation.certificates.name.required";
+    public const string ValidationCertificatesNameMax = "validation.certificates.name.max";
+    public const string ValidationCertificatesIssuerRequired = "validation.certificates.issuer.required";
+    public const string ValidationCertificatesIssuerMax = "validation.certificates.issuer.max";
+    public const string ValidationCertificatesIssueMonthRequired = "validation.certificates.issueMonth.required";
+    public const string ValidationCertificatesIssueMonthInvalid = "validation.certificates.issueMonth.invalid";
+    public const string ValidationCertificatesIssueYearRequired = "validation.certificates.issueYear.required";
+    public const string ValidationCertificatesIssueYearInvalid = "validation.certificates.issueYear.invalid";
+    public const string ValidationCertificatesExpirationMonthInvalid = "validation.certificates.expirationMonth.invalid";
+    public const string ValidationCertificatesExpirationYearInvalid = "validation.certificates.expirationYear.invalid";
+    public const string ValidationCertificatesCredentialIdMax = "validation.certificates.credentialId.max";
+    public const string ValidationCertificatesCredentialUrlMax = "validation.certificates.credentialUrl.max";
+    public const string ValidationCertificatesCredentialUrlFormat = "validation.certificates.credentialUrl.format";
+    public const string ValidationCertificatesDescriptionMax = "validation.certificates.description.max";
+    public const string ValidationCertificatesIssueAfterExpiration = "validation.certificates.issueAfterExpiration";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -514,6 +555,46 @@ public static class TranslationKeys
         ValidationLanguagesProficiencyInvalid,
         ValidationLanguagesCefrInvalid,
         ValidationLanguagesCertificateMax,
-        ValidationLanguagesDuplicateLanguage
+        ValidationLanguagesDuplicateLanguage,
+        Certificates,
+        CertificatesEmptyHint,
+        CertificatesAdd,
+        CertificatesDuplicate,
+        CertificatesRemove,
+        CertificatesSortByDate,
+        CertificatesName,
+        CertificatesIssuer,
+        CertificatesIssueDate,
+        CertificatesExpirationDate,
+        CertificatesIssueMonth,
+        CertificatesIssueYear,
+        CertificatesExpirationMonth,
+        CertificatesExpirationYear,
+        CertificatesCredentialId,
+        CertificatesCredentialUrl,
+        CertificatesDescription,
+        CertificatesDragToReorder,
+        CertificatesExpand,
+        CertificatesCollapse,
+        CertificatesValidationErrors,
+        PreviewCertificates,
+        PreviewValidUntil,
+        PreviewCredentialId,
+        PreviewCredentialUrl,
+        ValidationCertificatesNameRequired,
+        ValidationCertificatesNameMax,
+        ValidationCertificatesIssuerRequired,
+        ValidationCertificatesIssuerMax,
+        ValidationCertificatesIssueMonthRequired,
+        ValidationCertificatesIssueMonthInvalid,
+        ValidationCertificatesIssueYearRequired,
+        ValidationCertificatesIssueYearInvalid,
+        ValidationCertificatesExpirationMonthInvalid,
+        ValidationCertificatesExpirationYearInvalid,
+        ValidationCertificatesCredentialIdMax,
+        ValidationCertificatesCredentialUrlMax,
+        ValidationCertificatesCredentialUrlFormat,
+        ValidationCertificatesDescriptionMax,
+        ValidationCertificatesIssueAfterExpiration
     ];
 }
