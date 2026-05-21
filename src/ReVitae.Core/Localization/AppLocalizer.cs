@@ -390,7 +390,27 @@ public sealed class AppLocalizer
         [TranslationKeys.AdditionalInformationEmptyHint] = "Use this section for interests, volunteering, publications, or other notes that do not belong elsewhere.",
         [TranslationKeys.AdditionalInformationContent] = "Content",
         [TranslationKeys.PreviewAdditionalInformation] = "Additional Information",
-        [TranslationKeys.ValidationAdditionalInformationContentMax] = "Content must be 3000 characters or fewer."
+        [TranslationKeys.ValidationAdditionalInformationContentMax] = "Content must be 3000 characters or fewer.",
+        [TranslationKeys.IntroTitle] = "Welcome to ReVitae",
+        [TranslationKeys.IntroSubtitle] = "Create a new CV from scratch or import an existing PDF to get started faster.",
+        [TranslationKeys.IntroHelper] = "PDF import works best with text-based CVs. Scanned image-only PDFs are not supported yet.",
+        [TranslationKeys.IntroCreateNew] = "Create new CV",
+        [TranslationKeys.IntroImportPdf] = "Import from PDF",
+        [TranslationKeys.IntroReadingPdf] = "Reading PDF…",
+        [TranslationKeys.IntroParsingCv] = "Parsing CV…",
+        [TranslationKeys.IntroImportRetry] = "Try import again",
+        [TranslationKeys.ImportPdfFileType] = "PDF files",
+        [TranslationKeys.ImportErrorFileNotFound] = "The selected PDF file could not be found.",
+        [TranslationKeys.ImportErrorEmptyPdf] = "The PDF does not contain extractable text.",
+        [TranslationKeys.ImportErrorUnreadablePdf] = "The PDF could not be read.",
+        [TranslationKeys.ImportErrorPasswordProtected] = "Password-protected PDFs are not supported.",
+        [TranslationKeys.ImportErrorNoStructuredData] = "No usable CV content could be extracted from the PDF.",
+        [TranslationKeys.ImportWarningNoSectionsDetected] = "No CV sections were detected. Content was placed into Additional Information.",
+        [TranslationKeys.ImportWarningNameUncertain] = "The candidate name could not be parsed confidently.",
+        [TranslationKeys.ImportWarningWorkExperiencePartial] = "Some work experience entries may be incomplete.",
+        [TranslationKeys.ImportWarningUnmappedTextAppended] = "Some text could not be mapped and was appended to Additional Information.",
+        [TranslationKeys.ImportWarningPersonalLinksDuplicatedSkipped] = "A URL already stored in personal information was skipped in Links.",
+        [TranslationKeys.ImportDefaultSkillsCategory] = "General"
     };
 
     private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> TranslationOverlays =

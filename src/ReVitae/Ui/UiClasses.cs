@@ -30,4 +30,5 @@ public static class UiClasses
     public const string CounterText = "re-vitae-counter";
     public const string SkillChip = "re-vitae-skill-chip";
     public const string SkillChipPanel = "re-vitae-skill-chip-panel";
+    public const string ImportHint = "re-vitae-import-hint";
 }

@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Material.Icons;
 using ReVitae.Controls;
 using ReVitae.Core.Cv.Languages;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using ReVitae.Ui;
@@ -28,6 +29,7 @@ public sealed class LanguagesSectionView : UserControl
     private readonly List<LanguageEntry> _entries = [];
     private readonly Dictionary<string, LanguageEntryCard> _cardsById = new(StringComparer.Ordinal);
     private string? _dragSourceEntryId;
+    private bool _suppressEntriesChanged;
     private int? _pendingDropIndex;
     private IPointer? _capturedPointer;
 
@@ -89,6 +91,45 @@ public sealed class LanguagesSectionView : UserControl
         }
     }
 
+    public void ReplaceEntries(IReadOnlyList<LanguageEntry> entries, bool expandSection = true)
+    {
+        _suppressEntriesChanged = true;
+        try
+        {
+            _entries.Clear();
+            _entries.AddRange(entries);
+            _section.IsExpanded = expandSection;
+            RebuildEntryCards();
+            foreach (var entry in _entries)
+            {
+                if (_cardsById.TryGetValue(entry.Id, out var card))
+                {
+                    card.SetExpanded(entry.HasUserInput());
+                }
+            }
+        }
+        finally
+        {
+            _suppressEntriesChanged = false;
+        }
+
+        EntriesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
+
+    public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+    {
+        foreach (var (entryId, card) in _cardsById)
+        {
+            var entryConfidences = confidences
+                .Where(confidence => LanguagesFieldKeys.TryParseEntryId(confidence.FieldKey, out var parsedId, out _)
+                    && parsedId == entryId)
+                .ToArray();
+            card.ApplyImportConfidence(entryConfidences);
+        }
+    }
+
     public void AddEntry(LanguageEntry? entry = null, int? insertIndex = null)
     {
         var newEntry = entry ?? new LanguageEntry();
@@ -96,7 +137,15 @@ public sealed class LanguagesSectionView : UserControl
         index = Math.Clamp(index, 0, _entries.Count);
         _entries.Insert(index, newEntry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
+    }
+
+    private void NotifyEntriesChanged()
+    {
+        if (!_suppressEntriesChanged)
+        {
+            EntriesChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     internal void BeginEntryDrag(string entryId)
@@ -131,7 +180,7 @@ public sealed class LanguagesSectionView : UserControl
         foreach (var entry in _entries)
         {
             var card = new LanguageEntryCard(this, entry, _localizer);
-            card.Changed += (_, _) => EntriesChanged?.Invoke(this, EventArgs.Empty);
+            card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
                 var sourceIndex = _entries.FindIndex(item => item.Id == sourceEntry.Id);
@@ -144,7 +193,7 @@ public sealed class LanguagesSectionView : UserControl
             {
                 _entries.RemoveAll(item => item.Id == sourceEntry.Id);
                 RebuildEntryCards();
-                EntriesChanged?.Invoke(this, EventArgs.Empty);
+                NotifyEntriesChanged();
             };
 
             _cardsById[entry.Id] = card;
@@ -196,7 +245,7 @@ public sealed class LanguagesSectionView : UserControl
 
         _entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private int? FindDropIndex(Point position)
@@ -250,6 +299,7 @@ public sealed class LanguagesSectionView : UserControl
         private readonly ComboBox _speakingComboBox;
         private readonly ComboBox _listeningComboBox;
         private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
         public LanguageEntryCard(LanguagesSectionView sectionView, LanguageEntry entry, AppLocalizer localizer)
@@ -301,6 +351,8 @@ public sealed class LanguagesSectionView : UserControl
             _writingComboBox = CreateOptionalProficiencyComboBox();
             _speakingComboBox = CreateOptionalProficiencyComboBox();
             _listeningComboBox = CreateOptionalProficiencyComboBox();
+
+            RegisterImportConfidenceField(LanguagesFieldKeys.Certificate, _certificateTextBox);
 
             var duplicateButton = new Button();
             duplicateButton.Classes.Add(UiClasses.SecondaryButton);
@@ -390,6 +442,13 @@ public sealed class LanguagesSectionView : UserControl
         public event EventHandler<LanguageEntry>? RemoveRequested;
 
         public Border RootBorder { get; }
+
+        public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
+
+        public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+        {
+            ImportConfidenceHelper.ApplyToFields(_importConfidenceFields, confidences);
+        }
 
         public void ApplyLocalization(AppLocalizer localizer)
         {
@@ -610,6 +669,12 @@ public sealed class LanguagesSectionView : UserControl
             RootBorder.Opacity = 0.75;
             _sectionView.BeginEntryDrag(_entry.Id);
             _sectionView.CaptureDragPointer(e.Pointer);
+        }
+
+        private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
+        {
+            _importConfidenceFields[LanguagesFieldKeys.Build(_entry.Id, fieldName)] = textBox;
+            textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
         private static TextBox CreateTextBox(EventHandler<RoutedEventArgs> onChanged)

@@ -203,8 +203,10 @@
 
             <Border Grid.Column="1"
                     Classes="re-vitae-app-card">
-                <StackPanel Classes="re-vitae-preview-chrome">
-                    <Grid Classes="re-vitae-section-header"
+                <Grid RowDefinitions="Auto,*"
+                      RowSpacing="14">
+                    <Grid Grid.Row="0"
+                          Classes="re-vitae-section-header"
                           ColumnDefinitions="Auto,*,Auto">
                         <Border Grid.Column="0"
                                 Classes="re-vitae-section-header-spacer" />
@@ -224,11 +226,101 @@
                                                         Height="22" />
                         </Button>
                     </Grid>
-                    <Border Classes="re-vitae-preview-surface">
-                        <ScrollViewer Classes="re-vitae-preview-scroll">
+                    <Border Grid.Row="1"
+                            Classes="re-vitae-preview-surface">
+                        <ScrollViewer Classes="re-vitae-preview-scroll"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto">
                             <ContentControl x:Name="PreviewContentControl" />
                         </ScrollViewer>
                     </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="IntroModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="True">
+            <Border x:Name="IntroModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="560"
+                    MinWidth="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="16"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="IntroTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="24"
+                               Text="Welcome to ReVitae" />
+                    <TextBlock x:Name="IntroSubtitleTextBlock"
+                               Classes="re-vitae-secondary"
+                               TextWrapping="Wrap"
+                               Text="Create a new CV from scratch or import an existing PDF to get started faster." />
+                    <TextBlock x:Name="IntroHelperTextBlock"
+                               Classes="re-vitae-secondary"
+                               TextWrapping="Wrap"
+                               Text="PDF import works best with text-based CVs. Scanned image-only PDFs are not supported yet." />
+
+                    <StackPanel x:Name="IntroActionsPanel"
+                                Spacing="10">
+                        <Button x:Name="CreateNewCvButton"
+                                Classes="re-vitae-primary"
+                                HorizontalAlignment="Stretch"
+                                Click="OnCreateNewCvClicked"
+                                AutomationProperties.Name="Create new CV">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="10"
+                                        HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FilePlus"
+                                                            Width="20"
+                                                            Height="20" />
+                                <TextBlock x:Name="CreateNewCvButtonTextBlock"
+                                           Text="Create new CV"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="ImportPdfButton"
+                                Classes="re-vitae-secondary"
+                                HorizontalAlignment="Stretch"
+                                Click="OnImportPdfClicked"
+                                AutomationProperties.Name="Import from PDF">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="10"
+                                        HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FileUpload"
+                                                            Width="20"
+                                                            Height="20" />
+                                <TextBlock x:Name="ImportPdfButtonTextBlock"
+                                           Text="Import from PDF"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel x:Name="IntroProgressPanel"
+                                Spacing="8"
+                                IsVisible="False">
+                        <TextBlock x:Name="IntroProgressTextBlock"
+                                   Classes="re-vitae-secondary"
+                                   Text="Reading PDF…" />
+                        <ProgressBar IsIndeterminate="True"
+                                     Height="4" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="IntroErrorTextBlock"
+                               Classes="re-vitae-error"
+                               TextWrapping="Wrap"
+                               IsVisible="False" />
+
+                    <Button x:Name="IntroRetryImportButton"
+                            Classes="re-vitae-secondary"
+                            Content="Try import again"
+                            HorizontalAlignment="Left"
+                            IsVisible="False"
+                            Click="OnImportPdfClicked" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -469,15 +561,15 @@
                                 Click="OnClosePreviewExpandClicked" />
                     </Grid>
 
-                    <StackPanel Grid.Row="1"
-                                VerticalAlignment="Stretch"
-                                Classes="re-vitae-preview-chrome">
-                        <Border Classes="re-vitae-preview-surface">
-                            <ScrollViewer Classes="re-vitae-preview-scroll">
-                                <ContentControl x:Name="PreviewExpandContentControl" />
-                            </ScrollViewer>
-                        </Border>
-                    </StackPanel>
+                    <Border Grid.Row="1"
+                            Margin="0,14,0,14"
+                            Classes="re-vitae-preview-surface">
+                        <ScrollViewer Classes="re-vitae-preview-scroll"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto">
+                            <ContentControl x:Name="PreviewExpandContentControl" />
+                        </ScrollViewer>
+                    </Border>
 
                     <Button x:Name="PreviewExpandBottomCloseButton"
                             Grid.Row="2"

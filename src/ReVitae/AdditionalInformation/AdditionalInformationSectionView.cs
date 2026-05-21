@@ -4,10 +4,12 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using ReVitae.Controls;
 using ReVitae.Core.Cv.AdditionalInformation;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using ReVitae.Ui;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ReVitae.AdditionalInformation;
@@ -21,6 +23,7 @@ public sealed class AdditionalInformationSectionView : UserControl
     private readonly TextBlock _contentErrorTextBlock;
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly AdditionalInformationContent _content = new();
+    private bool _suppressContentChanged;
 
     public AdditionalInformationSectionView()
     {
@@ -96,11 +99,45 @@ public sealed class AdditionalInformationSectionView : UserControl
         _contentErrorTextBlock.Text = string.Join(Environment.NewLine, errors);
     }
 
+    public void SetContent(string content, bool expandSection = true)
+    {
+        _suppressContentChanged = true;
+        try
+        {
+            _content.Content = content;
+            _contentTextBox.Text = content;
+            _section.IsExpanded = expandSection;
+            UpdateCharacterCounter();
+        }
+        finally
+        {
+            _suppressContentChanged = false;
+        }
+
+        ContentChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
+
+    public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+    {
+        var contentConfidence = confidences.FirstOrDefault(
+            confidence => confidence.FieldKey == AdditionalInformationFieldKeys.Content);
+        if (contentConfidence is not null)
+        {
+            ImportConfidenceHelper.Apply(_contentTextBox, contentConfidence.Confidence);
+        }
+    }
+
     private void OnContentChanged(object? sender, TextChangedEventArgs e)
     {
+        _contentTextBox.Classes.Remove(UiClasses.ImportHint);
         _content.Content = _contentTextBox.Text ?? string.Empty;
         UpdateCharacterCounter();
-        ContentChanged?.Invoke(this, EventArgs.Empty);
+        if (!_suppressContentChanged)
+        {
+            ContentChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void UpdateCharacterCounter()

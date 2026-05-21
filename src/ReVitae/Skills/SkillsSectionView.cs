@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Material.Icons;
 using ReVitae.Controls;
 using ReVitae.Core.Cv.Skills;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using ReVitae.Ui;
@@ -34,6 +35,7 @@ public sealed class SkillsSectionView : UserControl
     private string? _pendingSkillDropGroupId;
     private int? _pendingSkillDropIndex;
     private IPointer? _capturedPointer;
+    private bool _suppressEntriesChanged;
 
     public SkillsSectionView()
     {
@@ -101,6 +103,37 @@ public sealed class SkillsSectionView : UserControl
         }
     }
 
+    public void ReplaceEntries(IReadOnlyList<SkillsGroupEntry> entries, bool expandSection = true)
+    {
+        _suppressEntriesChanged = true;
+        try
+        {
+            _entries.Clear();
+            _entries.AddRange(entries);
+            _section.IsExpanded = expandSection;
+            RebuildEntryCards();
+            foreach (var entry in _entries)
+            {
+                if (_cardsById.TryGetValue(entry.Id, out var card))
+                {
+                    card.SetExpanded(entry.HasUserInput());
+                }
+            }
+        }
+        finally
+        {
+            _suppressEntriesChanged = false;
+        }
+
+        EntriesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
+
+    public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+    {
+    }
+
     public void AddEntry(SkillsGroupEntry? entry = null, int? insertIndex = null)
     {
         var newEntry = entry ?? new SkillsGroupEntry();
@@ -108,7 +141,15 @@ public sealed class SkillsSectionView : UserControl
         index = Math.Clamp(index, 0, _entries.Count);
         _entries.Insert(index, newEntry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
+    }
+
+    private void NotifyEntriesChanged()
+    {
+        if (!_suppressEntriesChanged)
+        {
+            EntriesChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     internal void BeginSkillDrag(string groupId, string skillId)
@@ -190,7 +231,7 @@ public sealed class SkillsSectionView : UserControl
         targetGroup.Skills.Insert(insertIndex, skill);
 
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private void RebuildEntryCards()
@@ -202,7 +243,7 @@ public sealed class SkillsSectionView : UserControl
         {
             var entry = _entries[index];
             var card = new SkillsGroupCard(this, entry, _localizer);
-            card.Changed += (_, _) => EntriesChanged?.Invoke(this, EventArgs.Empty);
+            card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
                 var sourceIndex = _entries.FindIndex(item => item.Id == sourceEntry.Id);
@@ -215,7 +256,7 @@ public sealed class SkillsSectionView : UserControl
             {
                 _entries.RemoveAll(item => item.Id == sourceEntry.Id);
                 RebuildEntryCards();
-                EntriesChanged?.Invoke(this, EventArgs.Empty);
+                NotifyEntriesChanged();
             };
 
             _cardsById[entry.Id] = card;
@@ -247,7 +288,7 @@ public sealed class SkillsSectionView : UserControl
 
         _entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private void OnEntriesPanelPointerMoved(object? sender, PointerEventArgs e)
@@ -508,6 +549,12 @@ public sealed class SkillsSectionView : UserControl
         public event EventHandler<SkillsGroupEntry>? RemoveRequested;
 
         public Border RootBorder { get; }
+
+        public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
+
+        public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+        {
+        }
 
         public WrapPanel SkillsDropPanel => _skillsPanel;
 

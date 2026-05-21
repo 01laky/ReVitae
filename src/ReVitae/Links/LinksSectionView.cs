@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Material.Icons;
 using ReVitae.Controls;
 using ReVitae.Core.Cv.Links;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using ReVitae.Ui;
@@ -27,6 +28,7 @@ public sealed class LinksSectionView : UserControl
     private readonly List<LinkEntry> _entries = [];
     private readonly Dictionary<string, LinkEntryCard> _cardsById = new(StringComparer.Ordinal);
     private string? _dragSourceEntryId;
+    private bool _suppressEntriesChanged;
     private int? _pendingDropIndex;
     private IPointer? _capturedPointer;
 
@@ -88,6 +90,45 @@ public sealed class LinksSectionView : UserControl
         }
     }
 
+    public void ReplaceEntries(IReadOnlyList<LinkEntry> entries, bool expandSection = true)
+    {
+        _suppressEntriesChanged = true;
+        try
+        {
+            _entries.Clear();
+            _entries.AddRange(entries);
+            _section.IsExpanded = expandSection;
+            RebuildEntryCards();
+            foreach (var entry in _entries)
+            {
+                if (_cardsById.TryGetValue(entry.Id, out var card))
+                {
+                    card.SetExpanded(entry.HasUserInput());
+                }
+            }
+        }
+        finally
+        {
+            _suppressEntriesChanged = false;
+        }
+
+        EntriesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
+
+    public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+    {
+        foreach (var (entryId, card) in _cardsById)
+        {
+            var entryConfidences = confidences
+                .Where(confidence => LinksFieldKeys.TryParseEntryId(confidence.FieldKey, out var parsedId, out _)
+                    && parsedId == entryId)
+                .ToArray();
+            card.ApplyImportConfidence(entryConfidences);
+        }
+    }
+
     public void AddEntry(LinkEntry? entry = null, int? insertIndex = null)
     {
         var newEntry = entry ?? new LinkEntry();
@@ -95,7 +136,15 @@ public sealed class LinksSectionView : UserControl
         index = Math.Clamp(index, 0, _entries.Count);
         _entries.Insert(index, newEntry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
+    }
+
+    private void NotifyEntriesChanged()
+    {
+        if (!_suppressEntriesChanged)
+        {
+            EntriesChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     internal void BeginEntryDrag(string entryId)
@@ -130,7 +179,7 @@ public sealed class LinksSectionView : UserControl
         foreach (var entry in _entries)
         {
             var card = new LinkEntryCard(this, entry, _localizer);
-            card.Changed += (_, _) => EntriesChanged?.Invoke(this, EventArgs.Empty);
+            card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
                 var sourceIndex = _entries.FindIndex(item => item.Id == sourceEntry.Id);
@@ -143,7 +192,7 @@ public sealed class LinksSectionView : UserControl
             {
                 _entries.RemoveAll(item => item.Id == sourceEntry.Id);
                 RebuildEntryCards();
-                EntriesChanged?.Invoke(this, EventArgs.Empty);
+                NotifyEntriesChanged();
             };
 
             _cardsById[entry.Id] = card;
@@ -195,7 +244,7 @@ public sealed class LinksSectionView : UserControl
 
         _entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private int? FindDropIndex(Point position)
@@ -244,6 +293,7 @@ public sealed class LinksSectionView : UserControl
         private readonly TextBox _noteTextBox;
         private readonly TextBlock _noteCounterTextBlock;
         private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
         public LinkEntryCard(LinksSectionView sectionView, LinkEntry entry, AppLocalizer localizer)
@@ -285,6 +335,9 @@ public sealed class LinksSectionView : UserControl
             _urlTextBox = CreateTextBox(OnFieldChanged);
             _noteTextBox = CreateTextBox(OnFieldChanged);
             _noteCounterTextBlock = CreateCounterTextBlock();
+
+            RegisterImportConfidenceField(LinksFieldKeys.Url, _urlTextBox);
+            RegisterImportConfidenceField(LinksFieldKeys.Note, _noteTextBox);
 
             var duplicateButton = new Button();
             duplicateButton.Classes.Add(UiClasses.SecondaryButton);
@@ -341,6 +394,13 @@ public sealed class LinksSectionView : UserControl
         public event EventHandler<LinkEntry>? RemoveRequested;
 
         public Border RootBorder { get; }
+
+        public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
+
+        public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+        {
+            ImportConfidenceHelper.ApplyToFields(_importConfidenceFields, confidences);
+        }
 
         public void ApplyLocalization(AppLocalizer localizer)
         {
@@ -446,6 +506,12 @@ public sealed class LinksSectionView : UserControl
             RootBorder.Opacity = 0.75;
             _sectionView.BeginEntryDrag(_entry.Id);
             _sectionView.CaptureDragPointer(e.Pointer);
+        }
+
+        private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
+        {
+            _importConfidenceFields[LinksFieldKeys.Build(_entry.Id, fieldName)] = textBox;
+            textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
         private static TextBox CreateTextBox(EventHandler<RoutedEventArgs> onChanged)

@@ -8,6 +8,7 @@ using Material.Icons;
 using ReVitae.Controls;
 using ReVitae.Core.Cv.Projects;
 using ReVitae.Core.Cv.Skills;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using ReVitae.Ui;
@@ -30,6 +31,7 @@ public sealed class ProjectsSectionView : UserControl
     private readonly List<ProjectEntry> _entries = [];
     private readonly Dictionary<string, ProjectEntryCard> _cardsById = new(StringComparer.Ordinal);
     private string? _dragSourceEntryId;
+    private bool _suppressEntriesChanged;
     private int? _pendingDropIndex;
     private IPointer? _capturedPointer;
 
@@ -106,6 +108,45 @@ public sealed class ProjectsSectionView : UserControl
         }
     }
 
+    public void ReplaceEntries(IReadOnlyList<ProjectEntry> entries, bool expandSection = true)
+    {
+        _suppressEntriesChanged = true;
+        try
+        {
+            _entries.Clear();
+            _entries.AddRange(entries);
+            _section.IsExpanded = expandSection;
+            RebuildEntryCards();
+            foreach (var entry in _entries)
+            {
+                if (_cardsById.TryGetValue(entry.Id, out var card))
+                {
+                    card.SetExpanded(entry.HasUserInput());
+                }
+            }
+        }
+        finally
+        {
+            _suppressEntriesChanged = false;
+        }
+
+        EntriesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
+
+    public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+    {
+        foreach (var (entryId, card) in _cardsById)
+        {
+            var entryConfidences = confidences
+                .Where(confidence => ProjectsFieldKeys.TryParseEntryId(confidence.FieldKey, out var parsedId, out _)
+                    && parsedId == entryId)
+                .ToArray();
+            card.ApplyImportConfidence(entryConfidences);
+        }
+    }
+
     public void AddEntry(ProjectEntry? entry = null, int? insertIndex = null)
     {
         var newEntry = entry ?? new ProjectEntry();
@@ -113,7 +154,15 @@ public sealed class ProjectsSectionView : UserControl
         index = Math.Clamp(index, 0, _entries.Count);
         _entries.Insert(index, newEntry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
+    }
+
+    private void NotifyEntriesChanged()
+    {
+        if (!_suppressEntriesChanged)
+        {
+            EntriesChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     internal void BeginEntryDrag(string entryId)
@@ -148,7 +197,7 @@ public sealed class ProjectsSectionView : UserControl
         foreach (var entry in _entries)
         {
             var card = new ProjectEntryCard(this, entry, _localizer);
-            card.Changed += (_, _) => EntriesChanged?.Invoke(this, EventArgs.Empty);
+            card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
                 var sourceIndex = _entries.FindIndex(item => item.Id == sourceEntry.Id);
@@ -161,7 +210,7 @@ public sealed class ProjectsSectionView : UserControl
             {
                 _entries.RemoveAll(item => item.Id == sourceEntry.Id);
                 RebuildEntryCards();
-                EntriesChanged?.Invoke(this, EventArgs.Empty);
+                NotifyEntriesChanged();
             };
 
             _cardsById[entry.Id] = card;
@@ -177,7 +226,7 @@ public sealed class ProjectsSectionView : UserControl
         _entries.Clear();
         _entries.AddRange(sorted);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private void OnEntriesPanelPointerMoved(object? sender, PointerEventArgs e)
@@ -222,7 +271,7 @@ public sealed class ProjectsSectionView : UserControl
 
         _entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private int? FindDropIndex(Point position)
@@ -284,6 +333,7 @@ public sealed class ProjectsSectionView : UserControl
         private readonly TextBlock _highlightsCounterTextBlock;
         private readonly TextBlock _descriptionCounterTextBlock;
         private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
         public ProjectEntryCard(ProjectsSectionView sectionView, ProjectEntry entry, AppLocalizer localizer)
@@ -344,6 +394,16 @@ public sealed class ProjectsSectionView : UserControl
             _descriptionTextBox = CreateMultilineTextBox(OnFieldChanged);
             _highlightsCounterTextBlock = CreateCounterTextBlock();
             _descriptionCounterTextBlock = CreateCounterTextBlock();
+
+            RegisterImportConfidenceField(ProjectsFieldKeys.Name, _nameTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.Role, _roleTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.Organization, _organizationTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.StartYear, _startYearTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.EndYear, _endYearTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.ProjectUrl, _projectUrlTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.BulkTechnologies, _bulkTechnologiesTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.Highlights, _highlightsTextBox);
+            RegisterImportConfidenceField(ProjectsFieldKeys.Description, _descriptionTextBox);
 
             var addTechnologyButton = new Button();
             addTechnologyButton.Classes.Add(UiClasses.SecondaryButton);
@@ -451,6 +511,13 @@ public sealed class ProjectsSectionView : UserControl
         public event EventHandler<ProjectEntry>? RemoveRequested;
 
         public Border RootBorder { get; }
+
+        public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
+
+        public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+        {
+            ImportConfidenceHelper.ApplyToFields(_importConfidenceFields, confidences);
+        }
 
         public void ApplyLocalization(AppLocalizer localizer)
         {
@@ -782,6 +849,12 @@ public sealed class ProjectsSectionView : UserControl
             };
             comboBox.SelectionChanged += onChanged;
             return comboBox;
+        }
+
+        private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
+        {
+            _importConfidenceFields[ProjectsFieldKeys.Build(_entry.Id, fieldName)] = textBox;
+            textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
         private static int? ParseYear(string? text)

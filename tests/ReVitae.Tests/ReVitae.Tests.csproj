@@ -22,4 +22,11 @@
     <ProjectReference Include="..\..\src\ReVitae.Core\ReVitae.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Import\Fixtures\Pdf\*.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Import\Fixtures\Pdf\%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
 </Project>

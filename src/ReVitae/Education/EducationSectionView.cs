@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Material.Icons;
 using ReVitae.Controls;
 using ReVitae.Core.Cv.Education;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 using ReVitae.Ui;
@@ -29,6 +30,7 @@ public sealed class EducationSectionView : UserControl
     private readonly List<EducationEntry> _entries = [];
     private readonly Dictionary<string, EducationEntryCard> _cardsById = new(StringComparer.Ordinal);
     private string? _dragSourceEntryId;
+    private bool _suppressEntriesChanged;
 
     public EducationSectionView()
     {
@@ -104,6 +106,45 @@ public sealed class EducationSectionView : UserControl
         }
     }
 
+    public void ReplaceEntries(IReadOnlyList<EducationEntry> entries, bool expandSection = true)
+    {
+        _suppressEntriesChanged = true;
+        try
+        {
+            _entries.Clear();
+            _entries.AddRange(entries);
+            _section.IsExpanded = expandSection;
+            RebuildEntryCards();
+            foreach (var entry in _entries)
+            {
+                if (_cardsById.TryGetValue(entry.Id, out var card))
+                {
+                    card.SetExpanded(entry.HasUserInput());
+                }
+            }
+        }
+        finally
+        {
+            _suppressEntriesChanged = false;
+        }
+
+        EntriesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
+
+    public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+    {
+        foreach (var (entryId, card) in _cardsById)
+        {
+            var entryConfidences = confidences
+                .Where(confidence => EducationFieldKeys.TryParseEntryId(confidence.FieldKey, out var parsedId, out _)
+                    && parsedId == entryId)
+                .ToArray();
+            card.ApplyImportConfidence(entryConfidences);
+        }
+    }
+
     public void AddEntry(EducationEntry? entry = null, int? insertIndex = null)
     {
         var newEntry = entry ?? new EducationEntry();
@@ -111,7 +152,15 @@ public sealed class EducationSectionView : UserControl
         index = Math.Clamp(index, 0, _entries.Count);
         _entries.Insert(index, newEntry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
+    }
+
+    private void NotifyEntriesChanged()
+    {
+        if (!_suppressEntriesChanged)
+        {
+            EntriesChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void RebuildEntryCards()
@@ -123,7 +172,7 @@ public sealed class EducationSectionView : UserControl
         {
             var entry = _entries[index];
             var card = new EducationEntryCard(entry, _localizer, index);
-            card.Changed += (_, _) => EntriesChanged?.Invoke(this, EventArgs.Empty);
+            card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
                 var sourceIndex = _entries.FindIndex(item => item.Id == sourceEntry.Id);
@@ -136,7 +185,7 @@ public sealed class EducationSectionView : UserControl
             {
                 _entries.RemoveAll(item => item.Id == sourceEntry.Id);
                 RebuildEntryCards();
-                EntriesChanged?.Invoke(this, EventArgs.Empty);
+                NotifyEntriesChanged();
             };
             card.DragStarted += (_, entryId) => _dragSourceEntryId = entryId;
             card.DragEnded += (_, _) =>
@@ -159,7 +208,7 @@ public sealed class EducationSectionView : UserControl
         _entries.Clear();
         _entries.AddRange(sorted);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private void MoveEntryToIndex(string? sourceEntryId, int targetIndex)
@@ -184,7 +233,7 @@ public sealed class EducationSectionView : UserControl
 
         _entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
         RebuildEntryCards();
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
+        NotifyEntriesChanged();
     }
 
     private sealed class EducationEntryCard
@@ -210,6 +259,7 @@ public sealed class EducationSectionView : UserControl
         private readonly TextBox _institutionUrlTextBox;
         private readonly TextBlock _descriptionCounterTextBlock;
         private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
         public EducationEntryCard(EducationEntry entry, AppLocalizer localizer, int index)
@@ -263,6 +313,16 @@ public sealed class EducationSectionView : UserControl
             _descriptionTextBox = CreateMultilineTextBox(OnFieldChanged);
             _institutionUrlTextBox = CreateTextBox(OnFieldChanged);
             _descriptionCounterTextBlock = CreateCounterTextBlock();
+
+            RegisterImportConfidenceField(EducationFieldKeys.Institution, _institutionTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.Degree, _degreeTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.FieldOfStudy, _fieldOfStudyTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.Location, _locationTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.StartYear, _startYearTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.EndYear, _endYearTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.Grade, _gradeTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.Description, _descriptionTextBox);
+            RegisterImportConfidenceField(EducationFieldKeys.InstitutionUrl, _institutionUrlTextBox);
 
             var duplicateButton = new Button();
             duplicateButton.Classes.Add(UiClasses.SecondaryButton);
@@ -340,6 +400,13 @@ public sealed class EducationSectionView : UserControl
         public event EventHandler<int>? DropTargetEntered;
 
         public Border RootBorder { get; }
+
+        public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
+
+        public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+        {
+            ImportConfidenceHelper.ApplyToFields(_importConfidenceFields, confidences);
+        }
 
         public void ApplyLocalization(AppLocalizer localizer)
         {
@@ -572,6 +639,12 @@ public sealed class EducationSectionView : UserControl
             };
             comboBox.SelectionChanged += onChanged;
             return comboBox;
+        }
+
+        private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
+        {
+            _importConfidenceFields[EducationFieldKeys.Build(_entry.Id, fieldName)] = textBox;
+            textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
         private static int? ParseYear(string? text)

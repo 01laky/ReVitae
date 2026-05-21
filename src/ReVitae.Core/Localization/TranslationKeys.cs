@@ -378,6 +378,27 @@ public static class TranslationKeys
     public const string PreviewAdditionalInformation = "preview.additionalInformation";
     public const string ValidationAdditionalInformationContentMax = "validation.additionalInformation.content.max";
 
+    public const string IntroTitle = "intro.title";
+    public const string IntroSubtitle = "intro.subtitle";
+    public const string IntroHelper = "intro.helper";
+    public const string IntroCreateNew = "intro.createNew";
+    public const string IntroImportPdf = "intro.importPdf";
+    public const string IntroReadingPdf = "intro.readingPdf";
+    public const string IntroParsingCv = "intro.parsingCv";
+    public const string IntroImportRetry = "intro.importRetry";
+    public const string ImportPdfFileType = "import.pdfFileType";
+    public const string ImportErrorFileNotFound = "import.error.fileNotFound";
+    public const string ImportErrorEmptyPdf = "import.error.emptyPdf";
+    public const string ImportErrorUnreadablePdf = "import.error.unreadablePdf";
+    public const string ImportErrorPasswordProtected = "import.error.passwordProtected";
+    public const string ImportErrorNoStructuredData = "import.error.noStructuredData";
+    public const string ImportWarningNoSectionsDetected = "import.warning.noSectionsDetected";
+    public const string ImportWarningNameUncertain = "import.warning.nameUncertain";
+    public const string ImportWarningWorkExperiencePartial = "import.warning.workExperiencePartial";
+    public const string ImportWarningUnmappedTextAppended = "import.warning.unmappedTextAppended";
+    public const string ImportWarningPersonalLinksDuplicatedSkipped = "import.warning.personalLinksDuplicatedSkipped";
+    public const string ImportDefaultSkillsCategory = "import.defaultSkillsCategory";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -746,6 +767,26 @@ public static class TranslationKeys
         AdditionalInformationEmptyHint,
         AdditionalInformationContent,
         PreviewAdditionalInformation,
-        ValidationAdditionalInformationContentMax
+        ValidationAdditionalInformationContentMax,
+        IntroTitle,
+        IntroSubtitle,
+        IntroHelper,
+        IntroCreateNew,
+        IntroImportPdf,
+        IntroReadingPdf,
+        IntroParsingCv,
+        IntroImportRetry,
+        ImportPdfFileType,
+        ImportErrorFileNotFound,
+        ImportErrorEmptyPdf,
+        ImportErrorUnreadablePdf,
+        ImportErrorPasswordProtected,
+        ImportErrorNoStructuredData,
+        ImportWarningNoSectionsDetected,
+        ImportWarningNameUncertain,
+        ImportWarningWorkExperiencePartial,
+        ImportWarningUnmappedTextAppended,
+        ImportWarningPersonalLinksDuplicatedSkipped,
+        ImportDefaultSkillsCategory
     ];
 }

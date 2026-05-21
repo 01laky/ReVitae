@@ -68,6 +68,7 @@
         <Setter Property="Background" Value="{DynamicResource MaterialThemeBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
         <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="ClipToBounds" Value="True" />
     </Style>
 
     <Style Selector="TextBlock.re-vitae-accent">
@@ -141,7 +142,8 @@
     </Style>
 
     <Style Selector="ScrollViewer.re-vitae-preview-scroll">
-        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 
     <Style Selector="Border.re-vitae-preview-surface > ScrollViewer.re-vitae-preview-scroll ContentControl">
@@ -208,5 +210,10 @@
 
     <Style Selector="WrapPanel.re-vitae-skill-chip-panel">
         <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+
+    <Style Selector="TextBox.re-vitae-import-hint">
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
     </Style>
 </Styles>

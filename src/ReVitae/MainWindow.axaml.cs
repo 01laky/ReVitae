@@ -15,8 +15,10 @@ using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
+using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Ui;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -40,7 +42,9 @@ public partial class MainWindow : Window
     private readonly ProjectsCollectionValidator _projectsValidator = new();
     private readonly LinksCollectionValidator _linksValidator = new();
     private readonly AdditionalInformationValidator _additionalInformationValidator = new();
+    private readonly CvPdfImporter _cvPdfImporter = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
+    private bool _isImportInProgress;
     private bool _isUpdatingLanguageSelection;
     private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
 
@@ -211,19 +215,221 @@ public partial class MainWindow : Window
 
     private void OnOpenSetupClicked(object? sender, RoutedEventArgs e)
     {
+        if (IntroModalOverlay.IsVisible)
+        {
+            return;
+        }
+
         SetSetupModalVisible(true);
     }
 
     private void OnOpenTemplatesClicked(object? sender, RoutedEventArgs e)
     {
+        if (IntroModalOverlay.IsVisible)
+        {
+            return;
+        }
+
         UpdateTemplateSelectionState();
         SetTemplatesModalVisible(true);
     }
 
     private void OnOpenPreviewExpandClicked(object? sender, RoutedEventArgs e)
     {
+        if (IntroModalOverlay.IsVisible)
+        {
+            return;
+        }
+
         UpdatePreview();
         SetPreviewExpandModalVisible(true);
+    }
+
+    private void OnCreateNewCvClicked(object? sender, RoutedEventArgs e)
+    {
+        SetIntroModalVisible(false);
+    }
+
+    private async void OnImportPdfClicked(object? sender, RoutedEventArgs e)
+    {
+        if (_isImportInProgress)
+        {
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel?.StorageProvider is null)
+        {
+            ShowIntroImportError(_localizer.Get(TranslationKeys.ExportFilePickerUnavailable));
+            return;
+        }
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+            new FilePickerOpenOptions
+            {
+                Title = _localizer.Get(TranslationKeys.IntroImportPdf),
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType(_localizer.Get(TranslationKeys.ImportPdfFileType))
+                    {
+                        Patterns = ["*.pdf"]
+                    }
+                ]
+            });
+
+        if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath)
+        {
+            ResetIntroImportState();
+            return;
+        }
+
+        _isImportInProgress = true;
+        SetIntroImportProgressVisible(true, _localizer.Get(TranslationKeys.IntroReadingPdf));
+        IntroErrorTextBlock.IsVisible = false;
+        IntroRetryImportButton.IsVisible = false;
+
+        try
+        {
+            var importResult = await Task.Run(() => _cvPdfImporter.ImportFromPdf(filePath));
+            SetIntroImportProgressVisible(true, _localizer.Get(TranslationKeys.IntroParsingCv));
+
+            if (!importResult.Success)
+            {
+                ShowIntroImportError(_localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadablePdf));
+                return;
+            }
+
+            ApplyCvImportResult(importResult);
+            SetIntroModalVisible(false);
+            UpdatePreview();
+            UpdateValidationState();
+            ExportStatusTextBlock.Text = string.Empty;
+        }
+        finally
+        {
+            _isImportInProgress = false;
+            SetIntroImportProgressVisible(false, string.Empty);
+        }
+    }
+
+    private void ApplyCvImportResult(CvImportResult result)
+    {
+        ApplyPersonalInformationImport(result.Personal);
+        WorkExperienceSection.ReplaceEntries(
+            result.WorkExperienceEntries,
+            IsSectionExpanded(result, CvImportSectionId.WorkExperience));
+        EducationSection.ReplaceEntries(
+            result.EducationEntries,
+            IsSectionExpanded(result, CvImportSectionId.Education));
+        SkillsSection.ReplaceEntries(
+            result.SkillsGroups,
+            IsSectionExpanded(result, CvImportSectionId.Skills));
+        LanguagesSection.ReplaceEntries(
+            result.LanguageEntries,
+            IsSectionExpanded(result, CvImportSectionId.Languages));
+        CertificatesSection.ReplaceEntries(
+            result.CertificateEntries,
+            IsSectionExpanded(result, CvImportSectionId.Certificates));
+        ProjectsSection.ReplaceEntries(
+            result.ProjectEntries,
+            IsSectionExpanded(result, CvImportSectionId.Projects));
+        LinksSection.ReplaceEntries(
+            result.LinkEntries,
+            IsSectionExpanded(result, CvImportSectionId.Links));
+        AdditionalInformationSection.SetContent(
+            result.AdditionalInformationContent,
+            IsSectionExpanded(result, CvImportSectionId.AdditionalInformation));
+
+        PersonalInformationSection.IsExpanded = IsSectionExpanded(result, CvImportSectionId.PersonalInformation);
+
+        ApplyImportConfidence(result.FieldConfidences);
+    }
+
+    private void ApplyPersonalInformationImport(PersonalInformationImport personal)
+    {
+        FirstNameTextBox.Text = personal.FirstName;
+        LastNameTextBox.Text = personal.LastName;
+        ProfessionalTitleTextBox.Text = personal.ProfessionalTitle;
+        EmailTextBox.Text = personal.Email;
+        PhoneTextBox.Text = personal.Phone;
+        LocationTextBox.Text = personal.Location;
+        LinkedInUrlTextBox.Text = personal.LinkedInUrl;
+        PortfolioUrlTextBox.Text = personal.PortfolioUrl;
+        GitHubUrlTextBox.Text = personal.GitHubUrl;
+        ShortSummaryTextBox.Text = personal.ShortSummary;
+    }
+
+    private void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+    {
+        ImportConfidenceHelper.ApplyToFields(
+            new Dictionary<string, TextBox>(StringComparer.Ordinal)
+            {
+                [MainPersonalInformationFieldKeys.FirstName] = FirstNameTextBox,
+                [MainPersonalInformationFieldKeys.LastName] = LastNameTextBox,
+                [MainPersonalInformationFieldKeys.ProfessionalTitle] = ProfessionalTitleTextBox,
+                [MainPersonalInformationFieldKeys.Email] = EmailTextBox,
+                [MainPersonalInformationFieldKeys.Phone] = PhoneTextBox,
+                [MainPersonalInformationFieldKeys.Location] = LocationTextBox,
+                [MainPersonalInformationFieldKeys.LinkedInUrl] = LinkedInUrlTextBox,
+                [MainPersonalInformationFieldKeys.PortfolioUrl] = PortfolioUrlTextBox,
+                [MainPersonalInformationFieldKeys.GitHubUrl] = GitHubUrlTextBox,
+                [MainPersonalInformationFieldKeys.ShortSummary] = ShortSummaryTextBox
+            },
+            confidences);
+
+        WorkExperienceSection.ApplyImportConfidence(confidences);
+        EducationSection.ApplyImportConfidence(confidences);
+        SkillsSection.ApplyImportConfidence(confidences);
+        LanguagesSection.ApplyImportConfidence(confidences);
+        CertificatesSection.ApplyImportConfidence(confidences);
+        ProjectsSection.ApplyImportConfidence(confidences);
+        LinksSection.ApplyImportConfidence(confidences);
+        AdditionalInformationSection.ApplyImportConfidence(confidences);
+    }
+
+    private static bool IsSectionExpanded(CvImportResult result, CvImportSectionId sectionId)
+    {
+        return result.SectionHasData.TryGetValue(sectionId, out var hasData) && hasData;
+    }
+
+    private void SetIntroModalVisible(bool isVisible)
+    {
+        IntroModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            ResetIntroImportState();
+        }
+    }
+
+    private void ResetIntroImportState()
+    {
+        IntroActionsPanel.IsVisible = true;
+        IntroProgressPanel.IsVisible = false;
+        IntroErrorTextBlock.IsVisible = false;
+        IntroRetryImportButton.IsVisible = false;
+        CreateNewCvButton.IsEnabled = true;
+        ImportPdfButton.IsEnabled = true;
+    }
+
+    private void SetIntroImportProgressVisible(bool isVisible, string message)
+    {
+        IntroActionsPanel.IsVisible = !isVisible;
+        IntroProgressPanel.IsVisible = isVisible;
+        IntroProgressTextBlock.Text = message;
+        CreateNewCvButton.IsEnabled = !isVisible;
+        ImportPdfButton.IsEnabled = !isVisible;
+    }
+
+    private void ShowIntroImportError(string message)
+    {
+        IntroErrorTextBlock.Text = message;
+        IntroErrorTextBlock.IsVisible = true;
+        IntroRetryImportButton.IsVisible = true;
+        IntroActionsPanel.IsVisible = true;
+        IntroProgressPanel.IsVisible = false;
+        CreateNewCvButton.IsEnabled = true;
+        ImportPdfButton.IsEnabled = true;
     }
 
     private void OnCloseSetupClicked(object? sender, RoutedEventArgs e)
@@ -277,6 +483,11 @@ public partial class MainWindow : Window
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key != Key.Escape)
+        {
+            return;
+        }
+
+        if (IntroModalOverlay.IsVisible)
         {
             return;
         }
@@ -370,6 +581,14 @@ public partial class MainWindow : Window
         ProjectsSection.SetLocalizer(_localizer);
         LinksSection.SetLocalizer(_localizer);
         AdditionalInformationSection.SetLocalizer(_localizer);
+        IntroTitleTextBlock.Text = _localizer.Get(TranslationKeys.IntroTitle);
+        IntroSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.IntroSubtitle);
+        IntroHelperTextBlock.Text = _localizer.Get(TranslationKeys.IntroHelper);
+        CreateNewCvButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroCreateNew);
+        ImportPdfButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroImportPdf);
+        IntroRetryImportButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
+        AutomationProperties.SetName(CreateNewCvButton, _localizer.Get(TranslationKeys.IntroCreateNew));
+        AutomationProperties.SetName(ImportPdfButton, _localizer.Get(TranslationKeys.IntroImportPdf));
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
         LastNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.LastName);
         ProfessionalTitleLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfessionalTitle);
@@ -1135,8 +1354,9 @@ public partial class MainWindow : Window
         AddCustomLinksSection(body, data);
         AddAdditionalInformationSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Digital), BuildLines(_localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
-        Grid.SetRow(WrapContentPanel(body), 1);
-        content.Children.Add(WrapContentPanel(body));
+        var wrappedBody = WrapContentPanel(body);
+        Grid.SetRow(wrappedBody, 1);
+        content.Children.Add(wrappedBody);
 
         root.Children.Add(CreateSidebarPanel(Brush.Parse("#D7D7D7"), sidebarContent));
         Grid.SetColumn(content, 1);
