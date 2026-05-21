@@ -5,4 +5,5 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 dotnet restore ReVitae.sln
+./scripts/verify-version.sh
 dotnet test ReVitae.sln --configuration Release --no-restore

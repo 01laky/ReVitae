@@ -1,9 +1,10 @@
 # ReVitae
 
+[![App](https://img.shields.io/badge/app-0.1.0-blue)](https://github.com/01laky/ReVitae/releases)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-515%20passing-brightgreen)](https://github.com/01laky/ReVitae)
+[![Tests](https://img.shields.io/badge/tests-531%20passing-brightgreen)](https://github.com/01laky/ReVitae)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -112,6 +113,20 @@ validation UI, intro and replace PDF import flows, template preview, and
 template-based PDF export are in place. The next major product areas are local
 persistence, richer export formats, and smarter import/recommendation features.
 
+### Versioning
+
+ReVitae uses three different version concepts:
+
+- **App version** (`0.1.0`): the ReVitae product release shown in Setup → About,
+  README app badge, `Version.props`, and Git tags such as `v0.1.0`.
+- **Tech-stack badges**: framework/platform versions such as `.NET 10` and
+  `Avalonia 12`.
+- **Dependency package versions**: NuGet package versions declared in `.csproj`
+  files (QuestPDF, PdfPig, Material.Avalonia, etc.).
+
+To cut a release, update `Version.props`, `CHANGELOG.md`, and the README app
+badge, then run `./scripts/verify-version.sh` before tagging.
+
 ## Roadmap
 
 Planned areas:
@@ -187,7 +202,7 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–018)
+  Implementation prompts and product increments (001–020)
 
 docs/
   Product concept and planning notes

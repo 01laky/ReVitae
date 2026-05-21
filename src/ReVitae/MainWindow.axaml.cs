@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Media;
+using ReVitae.Core;
 using ReVitae.Core.Cv;
 using ReVitae.Core.Cv.AdditionalInformation;
 using ReVitae.Core.Cv.Certificates;
@@ -912,7 +913,12 @@ public partial class MainWindow : Window
         PreviewExpandBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
 
         SetupTitleTextBlock.Text = _localizer.Get(TranslationKeys.Setup);
-        SetupPlaceholderTextBlock.Text = _localizer.Get(TranslationKeys.SetupPlaceholder);
+        AboutTitleTextBlock.Text = _localizer.Get(TranslationKeys.SetupAbout);
+        AboutAppNameTextBlock.Text = _localizer.Get(TranslationKeys.SetupAppName);
+        AboutVersionLabelTextBlock.Text = _localizer.Get(TranslationKeys.SetupVersion);
+        AboutVersionValueTextBlock.Text = AppVersion.Current;
+        AboutEarlyPreviewTextBlock.Text = _localizer.Get(TranslationKeys.SetupEarlyPreview);
+        AboutEarlyPreviewTextBlock.IsVisible = AppVersion.IsPreRelease;
         SetupTopCloseButton.Content = _localizer.Get(TranslationKeys.Close);
         SetupBottomCloseButton.Content = _localizer.Get(TranslationKeys.Close);
         LanguageLabelTextBlock.Text = _localizer.Get(TranslationKeys.Language);

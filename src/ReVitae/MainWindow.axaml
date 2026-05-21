@@ -361,10 +361,28 @@
 
                     <StackPanel Grid.Row="1"
                                 Margin="0,14,0,0"
+                                Spacing="18"
                                 Classes="re-vitae-section-body">
-                        <TextBlock x:Name="SetupPlaceholderTextBlock"
-                                   Classes="re-vitae-secondary"
-                                   Text="Setup options will be added in a future step." />
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="AboutTitleTextBlock"
+                                       Classes="re-vitae-app-title"
+                                       FontSize="18"
+                                       Text="About" />
+                            <TextBlock x:Name="AboutAppNameTextBlock"
+                                       FontWeight="SemiBold"
+                                       Text="ReVitae" />
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="6">
+                                <TextBlock x:Name="AboutVersionLabelTextBlock"
+                                           Classes="re-vitae-secondary"
+                                           Text="Version" />
+                                <TextBlock x:Name="AboutVersionValueTextBlock"
+                                           Text="0.1.0" />
+                            </StackPanel>
+                            <TextBlock x:Name="AboutEarlyPreviewTextBlock"
+                                       Classes="re-vitae-secondary"
+                                       Text="Early preview" />
+                        </StackPanel>
 
                         <StackPanel Classes="re-vitae-form-field">
                             <TextBlock x:Name="LanguageLabelTextBlock"

@@ -29,7 +29,10 @@ public static class TranslationKeys
     public const string Preview = "preview.title";
     public const string PreviewExpandTitle = "modal.previewExpand.title";
     public const string Setup = "modal.setup.title";
-    public const string SetupPlaceholder = "modal.setup.placeholder";
+    public const string SetupAbout = "modal.setup.about";
+    public const string SetupAppName = "modal.setup.appName";
+    public const string SetupVersion = "modal.setup.version";
+    public const string SetupEarlyPreview = "modal.setup.earlyPreview";
     public const string Templates = "modal.templates.title";
     public const string Close = "action.close";
     public const string Language = "setup.language";
@@ -439,7 +442,10 @@ public static class TranslationKeys
         Preview,
         PreviewExpandTitle,
         Setup,
-        SetupPlaceholder,
+        SetupAbout,
+        SetupAppName,
+        SetupVersion,
+        SetupEarlyPreview,
         Templates,
         Close,
         Language,
