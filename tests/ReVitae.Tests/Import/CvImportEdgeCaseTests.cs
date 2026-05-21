@@ -578,7 +578,7 @@ public sealed class CvPdfImporterEdgeCaseTests
         var result = new CvPdfImporter().ImportFromText(" \n \t ");
 
         Assert.False(result.Success);
-        Assert.Equal(TranslationKeys.ImportErrorEmptyPdf, result.ErrorMessageKey);
+        Assert.Equal(TranslationKeys.ImportErrorEmptyDocument, result.ErrorMessageKey);
     }
 
     [Fact]

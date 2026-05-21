@@ -19,6 +19,7 @@ using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Export;
 using ReVitae.Core.Export.Pdf;
 using ReVitae.Core.Import;
+using ReVitae.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Controls;
 using ReVitae.Core.Validation;
@@ -55,7 +56,6 @@ public partial class MainWindow : Window
     private readonly ProjectsCollectionValidator _projectsValidator = new();
     private readonly LinksCollectionValidator _linksValidator = new();
     private readonly AdditionalInformationValidator _additionalInformationValidator = new();
-    private readonly CvPdfImporter _cvPdfImporter = new();
     private readonly ICvPdfExporter _cvPdfExporter = new QuestPdfCvExporter();
     private readonly ValidationTouchTracker _validationTouchTracker = new();
     private readonly ValidationFieldRegistry _personalValidationRegistry = new();
@@ -262,7 +262,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        await ImportCvFromPdfAsync(replaceExisting: false, useIntroProgressUi: false, useReplaceProgressUi: true);
+        await ImportCvFromFileAsync(replaceExisting: false, useIntroProgressUi: false, useReplaceProgressUi: true);
     }
 
     private void OnReplaceCvConfirmCancelClicked(object? sender, RoutedEventArgs e)
@@ -273,20 +273,20 @@ public partial class MainWindow : Window
     private async void OnReplaceCvConfirmOkClicked(object? sender, RoutedEventArgs e)
     {
         SetReplaceCvConfirmModalVisible(false);
-        await ImportCvFromPdfAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
+        await ImportCvFromFileAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
     }
 
     private async void OnReplaceCvImportRetryClicked(object? sender, RoutedEventArgs e)
     {
-        await ImportCvFromPdfAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
+        await ImportCvFromFileAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
     }
 
-    private async void OnImportPdfClicked(object? sender, RoutedEventArgs e)
+    private async void OnImportCvClicked(object? sender, RoutedEventArgs e)
     {
-        await ImportCvFromPdfAsync(replaceExisting: false, useIntroProgressUi: true, useReplaceProgressUi: false);
+        await ImportCvFromFileAsync(replaceExisting: false, useIntroProgressUi: true, useReplaceProgressUi: false);
     }
 
-    private async Task ImportCvFromPdfAsync(bool replaceExisting, bool useIntroProgressUi, bool useReplaceProgressUi)
+    private async Task ImportCvFromFileAsync(bool replaceExisting, bool useIntroProgressUi, bool useReplaceProgressUi)
     {
         if (_isImportInProgress)
         {
@@ -309,7 +309,7 @@ public partial class MainWindow : Window
         }
 
         var filePickerTitle = useIntroProgressUi
-            ? _localizer.Get(TranslationKeys.IntroImportPdf)
+            ? _localizer.Get(TranslationKeys.ImportCvFilePickerTitle)
             : _localizer.Get(TranslationKeys.UploadCvFilePickerTitle);
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(
@@ -317,13 +317,7 @@ public partial class MainWindow : Window
             {
                 Title = filePickerTitle,
                 AllowMultiple = false,
-                FileTypeFilter =
-                [
-                    new FilePickerFileType(_localizer.Get(TranslationKeys.ImportPdfFileType))
-                    {
-                        Patterns = ["*.pdf"]
-                    }
-                ]
+                FileTypeFilter = CvImportFilePickerOptions.CreateFileTypeFilter(_localizer)
             });
 
         if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath)
@@ -358,7 +352,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var importResult = await Task.Run(() => _cvPdfImporter.ImportFromPdf(filePath));
+            var importResult = await Task.Run(() => CvDocumentImporter.Import(filePath));
             SetImportProgressUiVisible(
                 true,
                 _localizer.Get(TranslationKeys.IntroParsingCv),
@@ -367,7 +361,7 @@ public partial class MainWindow : Window
 
             if (!importResult.Success)
             {
-                var errorMessage = _localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadablePdf);
+                var errorMessage = _localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadableDocument);
                 if (useIntroProgressUi)
                 {
                     ShowIntroImportError(errorMessage);
@@ -688,7 +682,7 @@ public partial class MainWindow : Window
         IntroErrorTextBlock.IsVisible = false;
         IntroRetryImportButton.IsVisible = false;
         CreateNewCvButton.IsEnabled = true;
-        ImportPdfButton.IsEnabled = true;
+        ImportCvButton.IsEnabled = true;
     }
 
     private void SetIntroImportProgressVisible(bool isVisible, string message)
@@ -697,7 +691,7 @@ public partial class MainWindow : Window
         IntroProgressPanel.IsVisible = isVisible;
         IntroProgressTextBlock.Text = message;
         CreateNewCvButton.IsEnabled = !isVisible;
-        ImportPdfButton.IsEnabled = !isVisible;
+        ImportCvButton.IsEnabled = !isVisible;
     }
 
     private void ShowIntroImportError(string message)
@@ -708,7 +702,7 @@ public partial class MainWindow : Window
         IntroActionsPanel.IsVisible = true;
         IntroProgressPanel.IsVisible = false;
         CreateNewCvButton.IsEnabled = true;
-        ImportPdfButton.IsEnabled = true;
+        ImportCvButton.IsEnabled = true;
     }
 
     private void OnCloseSetupClicked(object? sender, RoutedEventArgs e)
@@ -886,7 +880,7 @@ public partial class MainWindow : Window
         IntroSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.IntroSubtitle);
         IntroHelperTextBlock.Text = _localizer.Get(TranslationKeys.IntroHelper);
         CreateNewCvButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroCreateNew);
-        ImportPdfButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroImportPdf);
+        ImportCvButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroImportPdf);
         IntroRetryImportButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
         ReplaceCvConfirmTitleTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmTitle);
         ReplaceCvConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmMessage);
@@ -894,7 +888,7 @@ public partial class MainWindow : Window
         ReplaceCvConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
         ReplaceCvImportRetryButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
         AutomationProperties.SetName(CreateNewCvButton, _localizer.Get(TranslationKeys.IntroCreateNew));
-        AutomationProperties.SetName(ImportPdfButton, _localizer.Get(TranslationKeys.IntroImportPdf));
+        AutomationProperties.SetName(ImportCvButton, _localizer.Get(TranslationKeys.IntroImportPdf));
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
         LastNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.LastName);
         ProfessionalTitleLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfessionalTitle);

@@ -264,11 +264,11 @@
                     <TextBlock x:Name="IntroSubtitleTextBlock"
                                Classes="re-vitae-secondary"
                                TextWrapping="Wrap"
-                               Text="Create a new CV from scratch or import an existing PDF to get started faster." />
+                               Text="Create a new CV from scratch or import an existing file to get started faster." />
                     <TextBlock x:Name="IntroHelperTextBlock"
                                Classes="re-vitae-secondary"
                                TextWrapping="Wrap"
-                               Text="PDF import works best with text-based CVs. Scanned image-only PDFs are not supported yet." />
+                               Text="Works with PDF, Word, OpenDocument, RTF, text, Markdown, HTML, JSON, XML, and other common CV files. Scanned or image-only PDFs are not supported." />
 
                     <StackPanel x:Name="IntroActionsPanel"
                                 Spacing="10">
@@ -289,19 +289,19 @@
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="ImportPdfButton"
+                        <Button x:Name="ImportCvButton"
                                 Classes="re-vitae-secondary"
                                 HorizontalAlignment="Stretch"
-                                Click="OnImportPdfClicked"
-                                AutomationProperties.Name="Import from PDF">
+                                Click="OnImportCvClicked"
+                                AutomationProperties.Name="Import existing CV">
                             <StackPanel Orientation="Horizontal"
                                         Spacing="10"
                                         HorizontalAlignment="Center">
                                 <materialIcons:MaterialIcon Kind="FileUpload"
                                                             Width="20"
                                                             Height="20" />
-                                <TextBlock x:Name="ImportPdfButtonTextBlock"
-                                           Text="Import from PDF"
+                                <TextBlock x:Name="ImportCvButtonTextBlock"
+                                           Text="Import existing CV"
                                            VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
@@ -312,7 +312,7 @@
                                 IsVisible="False">
                         <TextBlock x:Name="IntroProgressTextBlock"
                                    Classes="re-vitae-secondary"
-                                   Text="Reading PDF…" />
+                                   Text="Reading document…" />
                         <ProgressBar IsIndeterminate="True"
                                      Height="4" />
                     </StackPanel>
@@ -327,7 +327,7 @@
                             Content="Try import again"
                             HorizontalAlignment="Left"
                             IsVisible="False"
-                            Click="OnImportPdfClicked" />
+                            Click="OnImportCvClicked" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -578,7 +578,7 @@
                     <TextBlock x:Name="ReplaceCvConfirmMessageTextBlock"
                                Classes="re-vitae-secondary"
                                TextWrapping="Wrap"
-                               Text="Importing a new PDF will replace all current CV data. Do you want to continue?" />
+                               Text="Importing a new file will replace all current CV data. Do you want to continue?" />
                     <StackPanel Orientation="Horizontal"
                                 Spacing="10"
                                 HorizontalAlignment="Right">
@@ -609,7 +609,7 @@
                             Classes="re-vitae-section-body">
                     <TextBlock x:Name="ReplaceCvImportProgressTextBlock"
                                Classes="re-vitae-secondary"
-                               Text="Reading PDF…" />
+                               Text="Reading document…" />
                     <ProgressBar IsIndeterminate="True"
                                  Height="4" />
                     <TextBlock x:Name="ReplaceCvImportErrorTextBlock"

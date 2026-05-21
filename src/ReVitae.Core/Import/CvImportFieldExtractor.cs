@@ -327,7 +327,7 @@ public static class CvImportFieldExtractor
         }
 
         var entries = new List<EducationEntry>();
-        foreach (var block in SplitBlocks(body))
+        foreach (var block in SplitEducationBlocks(body))
         {
             var lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (lines.Length == 0)
@@ -361,18 +361,18 @@ public static class CvImportFieldExtractor
                     break;
                 }
 
-                if (string.IsNullOrWhiteSpace(entry.Location) && LooksLikeLocationLine(line))
+                if (string.IsNullOrWhiteSpace(entry.Location) && LooksLikeLocationLine(line) && headerLines.Count == 0)
                 {
                     entry.Location = line;
                     continue;
                 }
 
-                headerLines.Add(line);
-                if (headerLines.Count >= 2)
+                if (headerLines.Count > 0 && LooksLikeEducationDescriptionLine(line))
                 {
-                    lineIndex++;
                     break;
                 }
+
+                headerLines.Add(line);
             }
 
             AssignEducationHeader(entry, headerLines);
@@ -403,7 +403,7 @@ public static class CvImportFieldExtractor
                 entry.Description = string.Join('\n', lines.Skip(lineIndex)).Trim();
             }
 
-            if (entry.HasUserInput())
+            if (entry.HasUserInput() && !LooksLikeGarbageEducationEntry(entry))
             {
                 entries.Add(entry);
             }
@@ -885,6 +885,29 @@ public static class CvImportFieldExtractor
             return;
         }
 
+        if (headerLines.Count >= 2)
+        {
+            var combined = string.Join(" ", headerLines);
+            if (ShouldTreatAsSingleInstitution(headerLines, combined))
+            {
+                entry.Institution = combined;
+                entry.Degree = InferDefaultDegreeLabel(combined);
+                InferDegreeType(entry, combined);
+                return;
+            }
+
+            if (headerLines.Count >= 3
+                && LooksLikeExplicitDegreeLine(headerLines[0])
+                && LooksLikeInstitutionName(headerLines[^1]))
+            {
+                entry.Degree = headerLines[0];
+                entry.FieldOfStudy = headerLines[1];
+                entry.Institution = headerLines[2];
+                InferDegreeType(entry, headerLines[2]);
+                return;
+            }
+        }
+
         if (headerLines.Count == 1)
         {
             var line = headerLines[0];
@@ -1050,7 +1073,201 @@ public static class CvImportFieldExtractor
             || line.Contains("gymnaz", StringComparison.OrdinalIgnoreCase)
             || line.Contains("gymnáz", StringComparison.OrdinalIgnoreCase)
             || line.Contains("stredna skola", StringComparison.OrdinalIgnoreCase)
-            || line.Contains("stredná škola", StringComparison.OrdinalIgnoreCase);
+            || line.Contains("stredná škola", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("electrical engineering", StringComparison.OrdinalIgnoreCase)
+            || line.Contains(" and training", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool LooksLikeExplicitDegreeLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return false;
+        }
+
+        return line.Contains("bachelor", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("master", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("bsc", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("msc", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("phd", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("doctor", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("diploma", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("ing.", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("bc.", StringComparison.OrdinalIgnoreCase)
+            || line.StartsWith("BSc ", StringComparison.OrdinalIgnoreCase)
+            || line.StartsWith("MSc ", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool ShouldTreatAsSingleInstitution(IReadOnlyList<string> headerLines, string combined)
+    {
+        if (headerLines.Any(line => line.StartsWith("and ", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        if (headerLines.Count >= 2 && LooksLikeExplicitDegreeLine(headerLines[0]))
+        {
+            if (headerLines.Count >= 3 && LooksLikeInstitutionName(headerLines[^1]))
+            {
+                return false;
+            }
+
+            if (headerLines.Count == 2 && IsStandaloneInstitutionLine(headerLines[1]))
+            {
+                return false;
+            }
+        }
+
+        if (LooksLikeInstitutionName(combined))
+        {
+            return true;
+        }
+
+        if (headerLines.Count >= 2 && LooksLikeIncompleteInstitutionLine(headerLines[0]))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsStandaloneInstitutionLine(string line)
+    {
+        return line.Contains("university", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("college", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("institute", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("academy", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool LooksLikeIncompleteInstitutionLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return false;
+        }
+
+        if (LooksLikeInstitutionName(line))
+        {
+            return false;
+        }
+
+        if (line.EndsWith(" of", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return System.Text.RegularExpressions.Regex.IsMatch(
+            line,
+            @"(?i)\b(high school|school|university|college|academy)\s+of\s+[\p{L}\s]+$")
+            && !System.Text.RegularExpressions.Regex.IsMatch(
+                line,
+                @"(?i)\b(engineering|training|technology|management|sciences|informatics)\b");
+    }
+
+    private static bool LooksLikeEducationDescriptionLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return false;
+        }
+
+        return line.Length > 80
+            || (line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 12
+                && !LooksLikeInstitutionName(line));
+    }
+
+    private static bool LooksLikeGarbageEducationEntry(EducationEntry entry)
+    {
+        if (entry.Degree.StartsWith("and ", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (entry.Institution.Equals("Engineering", StringComparison.OrdinalIgnoreCase)
+            && !entry.Degree.Contains("school", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<string> SplitEducationBlocks(string body)
+    {
+        var rawBlocks = body
+            .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+        if (rawBlocks.Count <= 1)
+        {
+            return rawBlocks;
+        }
+
+        var merged = new List<string> { rawBlocks[0] };
+        for (var index = 1; index < rawBlocks.Count; index++)
+        {
+            if (LooksLikeEducationContinuationBlock(rawBlocks[index], merged[^1]))
+            {
+                merged[^1] = merged[^1] + '\n' + rawBlocks[index];
+            }
+            else
+            {
+                merged.Add(rawBlocks[index]);
+            }
+        }
+
+        return merged;
+    }
+
+    private static bool LooksLikeEducationContinuationBlock(string block, string previousBlock)
+    {
+        var lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (lines.Length == 0)
+        {
+            return false;
+        }
+
+        var firstLine = lines[0];
+        if (DateRangeParser.TryParse(firstLine, out _))
+        {
+            return false;
+        }
+
+        if (LooksLikeExplicitDegreeLine(firstLine))
+        {
+            return false;
+        }
+
+        if (firstLine.StartsWith("and ", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var lastPreviousLine = GetLastMeaningfulLine(previousBlock);
+        if (LooksLikeIncompleteInstitutionLine(lastPreviousLine))
+        {
+            return true;
+        }
+
+        return lines.All(line => !DateRangeParser.TryParse(line, out _) && !LooksLikeLocationLine(line))
+            && lines.All(line => line.Length < 80)
+            && !lines.Any(LooksLikeExplicitDegreeLine)
+            && HasEducationEntryAnchor(previousBlock);
+    }
+
+    private static bool HasEducationEntryAnchor(string block)
+    {
+        var lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return lines.Any(line => DateRangeParser.TryParse(line, out _))
+            || lines.Any(LooksLikeInstitutionName)
+            || lines.Any(LooksLikeIncompleteInstitutionLine);
+    }
+
+    private static string GetLastMeaningfulLine(string block)
+    {
+        return block
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .LastOrDefault() ?? string.Empty;
     }
 
     private static string InferDefaultDegreeLabel(string institutionOrTitle)

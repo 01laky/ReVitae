@@ -354,13 +354,13 @@ Do not add a separate export-validation summary panel.
 
 Handle these export failures explicitly:
 
-| Case | Expected behavior |
-| --- | --- |
-| invalid form | block export, existing validation UX |
-| file picker unavailable | show `export.filePickerUnavailable` |
-| user cancels save dialog | no status/error message |
-| PDF generation throws | show localized `export.failed`, do not crash |
-| stream write/I/O failure | show localized `export.failed` |
+| Case                              | Expected behavior                                                          |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| invalid form                      | block export, existing validation UX                                       |
+| file picker unavailable           | show `export.filePickerUnavailable`                                        |
+| user cancels save dialog          | no status/error message                                                    |
+| PDF generation throws             | show localized `export.failed`, do not crash                               |
+| stream write/I/O failure          | show localized `export.failed`                                             |
 | empty document after sanitization | still allowed if personal info exists; do not export completely empty file |
 
 Log or capture exception details internally if the project already has a pattern

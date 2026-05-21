@@ -1,48 +1,36 @@
+using ReVitae.Core.Import.Extraction;
+using ReVitae.Core.Import.Importers;
 using ReVitae.Core.Import.Pdf;
-using ReVitae.Core.Localization;
 
 namespace ReVitae.Core.Import;
 
+/// <summary>Backward-compatible helper that previously handled PDF‑only onboarding flows.</summary>
 public sealed class CvPdfImporter
 {
-    private readonly IPdfTextExtractor _pdfTextExtractor;
+    private readonly PdfCvFormatImporter _pdf;
 
     public CvPdfImporter()
-        : this(new PdfPigTextExtractor())
+        : this(new Pdf.PdfPigTextExtractor())
     {
     }
 
-    public CvPdfImporter(IPdfTextExtractor pdfTextExtractor)
+    public CvPdfImporter(Pdf.IPdfTextExtractor extractor)
+        : this(new PdfTextExtractorAdapter(extractor))
     {
-        _pdfTextExtractor = pdfTextExtractor;
+    }
+
+    internal CvPdfImporter(ICvTextExtractor pdfExtractor)
+    {
+        _pdf = new PdfCvFormatImporter(pdfExtractor);
     }
 
     public CvImportResult ImportFromPdf(string filePath)
     {
-        var extraction = _pdfTextExtractor.Extract(filePath);
-        if (!extraction.Success)
-        {
-            return CvImportResult.Failed(extraction.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadablePdf);
-        }
-
-        return ImportFromText(extraction.Text, extraction.HyperlinkUrls ?? []);
+        return _pdf.Import(filePath);
     }
 
     public CvImportResult ImportFromText(string rawText, IReadOnlyList<string>? hyperlinkUrls = null)
     {
-        var normalized = CvTextNormalizer.Normalize(rawText);
-        if (string.IsNullOrWhiteSpace(normalized))
-        {
-            return CvImportResult.Failed(TranslationKeys.ImportErrorEmptyPdf);
-        }
-
-        var segmentation = CvSectionSegmenter.Segment(normalized);
-        var result = CvImportFieldExtractor.Extract(segmentation, hyperlinkUrls);
-        if (!result.Success)
-        {
-            return CvImportResult.Failed(TranslationKeys.ImportErrorNoStructuredData);
-        }
-
-        return result;
+        return CvTextImportPipeline.Import(rawText, hyperlinkUrls);
     }
 }

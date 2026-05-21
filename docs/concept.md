@@ -100,25 +100,32 @@ Future export formats may include:
 
 ## Current Implementation Status
 
-As of early 2026, the desktop app already includes much of the Phase 1 builder
-experience:
+As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expanded import:
 
-- all planned structured CV sections in the form,
-- live preview across four built-in templates,
-- plain PDF export of entered data,
-- startup intro modal with create-new or import-from-PDF,
-- header action to upload another PDF with replace confirmation when the form
-  is not empty,
-- local deterministic PDF text extraction and parsing (no AI required),
-- inline field validation with section badges and export scroll-to-first-error,
-- internationalization across supported UI languages,
-- import confidence hints on uncertain parsed fields.
+- All structured CV sections in the form with validation and badges,
+- Live preview across four built-in templates,
+- Template-aligned QuestPDF export,
+- Startup intro modal (**create new** or **import CV**) and header **replace import**
+  confirmation when data already exists,
+- **Multi-format deterministic import** (`CvDocumentImporter`): PDF; TXT/Markdown/HTML;
+  DOC/DOCX; ODT/RTF; additional converters (AbiWord, Pages, WPS, LaTeX); Json Resume;
+  native `.revitae.json`; YAML CV interchange; CSV/TSV tabular rows; Europass / HR‑XML-style XML when detected — all mapped locally without AI,
+- Shared **25 MB** guardrails and **XXE-safe XML** parsing via `SecureXmlReaderFactory`,
+- Inline field validation with export scroll-to-first-error,
+- Internationalization across supported UI languages,
+- Import confidence hints on uncertain parsed fields.
+- Robust education parsing for PDF layout artifacts (institution names split
+  across blank lines merge into a single entry).
+
+Documentation:
+
+- [`docs/import-formats.md`](import-formats.md) format matrix & exclusions,
+- [`docs/revitae-project-json.md`](revitae-project-json.md) native interchange schema.
 
 Still open for later phases:
 
-- local save/load of CV projects,
-- template-based PDF export,
-- additional import formats such as DOCX or TXT,
+- durable save/load UX beyond interchange JSON files,
+- broader export surfaces (standalone DOCX/HTML bundles),
 - static CV quality hints,
 - optional AI-assisted import and recommendations,
 - installers or packaged binaries for each supported platform.

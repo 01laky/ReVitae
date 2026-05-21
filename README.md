@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-531%20passing-brightgreen)](https://github.com/01laky/ReVitae)
+[![Tests](https://img.shields.io/badge/tests-608%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -15,16 +15,18 @@ wrestling with formatting.
 
 ```mermaid
 flowchart TD
-    start(["Start fresh or import a PDF"])
+    start(["Start fresh or import a CV file"])
+    ingest["Detect format • enforce 25 MB limit • extract text or structured data"]
     sections["Fill structured CV sections"]
-    replace["Upload another PDF with replace confirmation"]
+    replace["Import another file with replace confirmation"]
     templates["Switch preview templates anytime"]
     export(["Export a polished PDF"])
 
-    start --> sections --> templates --> export
-    sections --> replace --> sections
+    start --> ingest --> sections --> templates --> export
+    sections --> replace --> ingest --> sections
 
     style start fill:#eef2ff,stroke:#512BD4,stroke-width:2px,color:#1e1b4b
+    style ingest fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#713f12
     style sections fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
     style replace fill:#fff7ed,stroke:#ea580c,stroke-width:1.5px,color:#7c2d12
     style templates fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
@@ -39,7 +41,7 @@ Most CV workflows mix content and layout together. ReVitae separates them.
 - Templates can change without losing content.
 - Imported data stays editable.
 - The app runs locally by default.
-- PDF import is treated as a draft, not as magic.
+- Imported documents are treated as drafts, not as magic.
 
 ## Current Highlights
 
@@ -60,19 +62,31 @@ ReVitae includes dedicated form sections for the core CV content:
 Each section has focused validation, repeatable entries where needed, live
 preview updates, localized UI text, and inline field-level error messages.
 
-### PDF Import
+### CV import (multi-format)
 
-On startup, ReVitae lets you either create a new CV or import an existing PDF.
-You can also upload another PDF later from the header toolbar. If the form already
-contains data, the app asks for confirmation before replacing the current CV.
+On startup, ReVitae lets you create a new CV or **import an existing document**.
+You can import again later from the header toolbar; if the form already holds
+data, the app asks for confirmation before replacing the current CV.
 
-The importer extracts text locally, applies deterministic parsing rules, and
-populates the structured form directly. Sections with imported data are expanded
-for review, while empty sections are collapsed. Low-confidence imported fields
-are highlighted for manual review.
+Imports run entirely **locally** behind `CvDocumentImporter`: the correct parser
+is chosen from the file extension (with lightweight JSON/XML sniffing where
+needed), a **25 MB** size guard applies before extraction, and structured or
+flattened text is mapped into the same deterministic CV pipeline used for PDFs.
 
-The import flow currently supports text-based PDFs. Scanned image-only PDFs and
-OCR are not supported yet.
+**Supported categories today** include PDF; plain text; Markdown and HTML;
+DOC/DOCX; ODT and RTF; several additional legacy/desktop formats (AbiWord,
+Pages, WPS, LaTeX); Json Resume and **native ReVitae JSON** (`*.revitae.json`);
+YAML interchange; CSV/TSV header rows; and Europass / HR‑XML‑style resumes when
+XML heuristics match. See [`docs/import-formats.md`](docs/import-formats.md) for
+the full matrix, limits, XXE-safe XML handling, and exclusions.
+
+Parsed sections expand for review, empty sections stay collapsed, and
+low-confidence fields remain highlighted exactly like PDF drafts. The shared text
+pipeline merges PDF layout artifacts such as institution names split across blank
+lines (for example `High School of Electrical` / `and Training` / `Engineering`).
+
+**Not supported:** scanned image-only PDFs without OCR, password-protected files,
+and perfect layout fidelity from rich desktop publishing constructs.
 
 ### Template Preview and PDF Export
 
@@ -109,9 +123,11 @@ control:
 ## Product Status
 
 ReVitae is an active early-stage desktop app. The structured CV form, inline
-validation UI, intro and replace PDF import flows, template preview, and
-template-based PDF export are in place. The next major product areas are local
-persistence, richer export formats, and smarter import/recommendation features.
+validation UI, template preview, template-based PDF export, and **multi-format CV
+import** (prompt **021**) through `CvDocumentImporter` are in place. Intro /
+replace flows cover PDF plus the additional structured and text-native formats
+listed above. Next major themes remain **local persistence**, richer exports
+beyond PDF, and smarter CV guidance / optional AI-assisted workflows.
 
 ### Versioning
 
@@ -131,9 +147,9 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 
 Planned areas:
 
-- Save and load local CV projects
+- Save and load local CV projects (native `.revitae.json` interchange is documented in [`docs/revitae-project-json.md`](docs/revitae-project-json.md))
 - More export formats such as DOCX or HTML
-- More import formats such as DOCX or TXT
+- OCR / scanned PDF improvements and richer layout-aware parsing
 - Static CV quality hints
 - Optional AI-assisted import and recommendations
 - Installer/package builds for supported platforms
@@ -144,8 +160,10 @@ Planned areas:
 - Avalonia UI
 - Material.Avalonia
 - PdfPig for local PDF text extraction
+- DocumentFormat.OpenXml, NPOI, Markdig, HtmlAgilityPack, YamlDotNet, RtfPipe,
+  and related libraries for multi-format CV import surfaces
 - QuestPDF for template-based PDF export
-- xUnit for tests
+- xUnit for tests (including targeted import edge-case suites under `tests/ReVitae.Tests/Import/`)
 - markdownlint and C# build checks
 
 ## Development
@@ -202,10 +220,10 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–020)
+  Implementation prompts and product increments (001–021)
 
 docs/
-  Product concept and planning notes
+  Product concept, interchange schemas (`import-formats.md`, `revitae-project-json.md`), planning notes
 ```
 
 ## Design Principles

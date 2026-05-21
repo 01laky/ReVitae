@@ -400,6 +400,7 @@ public static class TranslationKeys
     public const string ReplaceCvConfirmTitle = "modal.replaceCvConfirm.title";
     public const string ReplaceCvConfirmMessage = "modal.replaceCvConfirm.message";
     public const string UploadCvFilePickerTitle = "import.uploadCvFilePickerTitle";
+    public const string ImportCvFilePickerTitle = "import.importCvFilePickerTitle";
     public const string ImportPdfFileType = "import.pdfFileType";
     public const string ImportErrorFileNotFound = "import.error.fileNotFound";
     public const string ImportErrorEmptyPdf = "import.error.emptyPdf";
@@ -412,6 +413,14 @@ public static class TranslationKeys
     public const string ImportWarningUnmappedTextAppended = "import.warning.unmappedTextAppended";
     public const string ImportWarningPersonalLinksDuplicatedSkipped = "import.warning.personalLinksDuplicatedSkipped";
     public const string ImportDefaultSkillsCategory = "import.defaultSkillsCategory";
+    public const string ImportErrorEmptyDocument = "import.error.emptyDocument";
+    public const string ImportErrorUnreadableDocument = "import.error.unreadableDocument";
+    public const string ImportErrorUnsupportedFormat = "import.error.unsupportedFormat";
+    public const string ImportErrorUnsupportedStructuredFormat = "import.error.unsupportedStructuredFormat";
+    public const string ImportErrorFileTooLarge = "import.error.fileTooLarge";
+    public const string ImportWarningPartialDocumentContent = "import.warning.partialDocumentContent";
+    public const string ImportWarningLatexPartiallyNormalized = "import.warning.latexPartiallyNormalized";
+    public const string ImportWarningTabularMultipleRowsIgnored = "import.warning.tabularMultipleRowsIgnored";
 
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
@@ -804,6 +813,7 @@ public static class TranslationKeys
         ReplaceCvConfirmTitle,
         ReplaceCvConfirmMessage,
         UploadCvFilePickerTitle,
+        ImportCvFilePickerTitle,
         ImportPdfFileType,
         ImportErrorFileNotFound,
         ImportErrorEmptyPdf,
@@ -815,6 +825,14 @@ public static class TranslationKeys
         ImportWarningWorkExperiencePartial,
         ImportWarningUnmappedTextAppended,
         ImportWarningPersonalLinksDuplicatedSkipped,
-        ImportDefaultSkillsCategory
+        ImportDefaultSkillsCategory,
+        ImportErrorEmptyDocument,
+        ImportErrorUnreadableDocument,
+        ImportErrorUnsupportedFormat,
+        ImportErrorUnsupportedStructuredFormat,
+        ImportErrorFileTooLarge,
+        ImportWarningPartialDocumentContent,
+        ImportWarningLatexPartiallyNormalized,
+        ImportWarningTabularMultipleRowsIgnored
     ];
 }

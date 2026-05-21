@@ -29,16 +29,16 @@ It establishes the versioning foundation those features will depend on later.
 
 Today the repository has several unrelated version-like values:
 
-| Location | Current value | Problem |
-| --- | --- | --- |
-| `package.json` | `1.0.0` | npm tooling only; not shown in app |
-| `src/ReVitae/app.manifest` | `1.0.0.0` | hardcoded Windows assembly identity |
-| `src/ReVitae/ReVitae.csproj` | none | no `Version` / `InformationalVersion` |
-| `src/ReVitae.Core/ReVitae.Core.csproj` | none | no shared version metadata |
-| README badges | `.NET 10.0`, `Avalonia 12.0`, tests count | no ReVitae app version badge |
-| Setup modal | placeholder text only | no About/version section |
-| Git tags / releases | none documented | no release convention |
-| `CHANGELOG.md` | missing | no release history |
+| Location                               | Current value                             | Problem                               |
+| -------------------------------------- | ----------------------------------------- | ------------------------------------- |
+| `package.json`                         | `1.0.0`                                   | npm tooling only; not shown in app    |
+| `src/ReVitae/app.manifest`             | `1.0.0.0`                                 | hardcoded Windows assembly identity   |
+| `src/ReVitae/ReVitae.csproj`           | none                                      | no `Version` / `InformationalVersion` |
+| `src/ReVitae.Core/ReVitae.Core.csproj` | none                                      | no shared version metadata            |
+| README badges                          | `.NET 10.0`, `Avalonia 12.0`, tests count | no ReVitae app version badge          |
+| Setup modal                            | placeholder text only                     | no About/version section              |
+| Git tags / releases                    | none documented                           | no release convention                 |
+| `CHANGELOG.md`                         | missing                                   | no release history                    |
 
 Important distinction:
 

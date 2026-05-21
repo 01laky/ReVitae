@@ -403,28 +403,41 @@ public sealed class AppLocalizer
         [TranslationKeys.PreviewAdditionalInformation] = "Additional Information",
         [TranslationKeys.ValidationAdditionalInformationContentMax] = "Content must be 3000 characters or fewer.",
         [TranslationKeys.IntroTitle] = "Welcome to ReVitae",
-        [TranslationKeys.IntroSubtitle] = "Create a new CV from scratch or import an existing PDF to get started faster.",
-        [TranslationKeys.IntroHelper] = "PDF import works best with text-based CVs. Scanned image-only PDFs are not supported yet.",
+        [TranslationKeys.IntroSubtitle] = "Create a new CV from scratch or import an existing file to get started faster.",
+        [TranslationKeys.IntroHelper] =
+            "Works with PDF, Word, OpenDocument, RTF, text, Markdown, HTML, JSON, XML, and other common CV files. "
+            + "Scanned or image‑only PDFs are not supported.",
         [TranslationKeys.IntroCreateNew] = "Create new CV",
-        [TranslationKeys.IntroImportPdf] = "Import from PDF",
-        [TranslationKeys.IntroReadingPdf] = "Reading PDF…",
+        [TranslationKeys.IntroImportPdf] = "Import existing CV",
+        [TranslationKeys.IntroReadingPdf] = "Reading document…",
         [TranslationKeys.IntroParsingCv] = "Parsing CV…",
         [TranslationKeys.IntroImportRetry] = "Try import again",
         [TranslationKeys.ReplaceCvConfirmTitle] = "Replace current CV?",
-        [TranslationKeys.ReplaceCvConfirmMessage] = "Importing a new PDF will replace all current CV data. Do you want to continue?",
-        [TranslationKeys.UploadCvFilePickerTitle] = "Upload CV (PDF)",
-        [TranslationKeys.ImportPdfFileType] = "PDF files",
-        [TranslationKeys.ImportErrorFileNotFound] = "The selected PDF file could not be found.",
-        [TranslationKeys.ImportErrorEmptyPdf] = "The PDF does not contain extractable text.",
+        [TranslationKeys.ReplaceCvConfirmMessage] =
+            "Importing a new file will replace all current CV data. Do you want to continue?",
+        [TranslationKeys.UploadCvFilePickerTitle] = "Upload CV",
+        [TranslationKeys.ImportCvFilePickerTitle] = "Import CV",
+        [TranslationKeys.ImportPdfFileType] = "Supported CV files",
+        [TranslationKeys.ImportErrorFileNotFound] = "The selected file could not be found.",
+        [TranslationKeys.ImportErrorEmptyPdf] = "This PDF does not contain extractable text.",
         [TranslationKeys.ImportErrorUnreadablePdf] = "The PDF could not be read.",
-        [TranslationKeys.ImportErrorPasswordProtected] = "Password-protected PDFs are not supported.",
-        [TranslationKeys.ImportErrorNoStructuredData] = "No usable CV content could be extracted from the PDF.",
+        [TranslationKeys.ImportErrorPasswordProtected] = "Password-protected documents are not supported.",
+        [TranslationKeys.ImportErrorNoStructuredData] = "No usable CV content could be extracted.",
         [TranslationKeys.ImportWarningNoSectionsDetected] = "No CV sections were detected. Content was placed into Additional Information.",
         [TranslationKeys.ImportWarningNameUncertain] = "The candidate name could not be parsed confidently.",
         [TranslationKeys.ImportWarningWorkExperiencePartial] = "Some work experience entries may be incomplete.",
         [TranslationKeys.ImportWarningUnmappedTextAppended] = "Some text could not be mapped and was appended to Additional Information.",
         [TranslationKeys.ImportWarningPersonalLinksDuplicatedSkipped] = "A URL already stored in personal information was skipped in Links.",
-        [TranslationKeys.ImportDefaultSkillsCategory] = "General"
+        [TranslationKeys.ImportDefaultSkillsCategory] = "General",
+        [TranslationKeys.ImportErrorEmptyDocument] = "The file does not contain extractable text.",
+        [TranslationKeys.ImportErrorUnreadableDocument] = "The file could not be read.",
+        [TranslationKeys.ImportErrorUnsupportedFormat] =
+            "This file type is not supported. Export the CV as PDF, DOCX, RTF, or plain text and try again.",
+        [TranslationKeys.ImportErrorUnsupportedStructuredFormat] = "The file is recognized, but its structure is not supported.",
+        [TranslationKeys.ImportErrorFileTooLarge] = "This file is too large to import. Maximum size is 25 MB.",
+        [TranslationKeys.ImportWarningPartialDocumentContent] = "Some document content could not be imported.",
+        [TranslationKeys.ImportWarningLatexPartiallyNormalized] = "LaTeX markup was simplified before parsing.",
+        [TranslationKeys.ImportWarningTabularMultipleRowsIgnored] = "Only the first row of the table was imported."
     };
 
     private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> TranslationOverlays =

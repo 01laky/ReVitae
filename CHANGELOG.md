@@ -7,6 +7,33 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- Unified **multi-format CV import** via `CvDocumentImporter` (prompt **021**): PDF;
+  TXT/Markdown/HTML; DOC/DOCX; ODT/RTF; AbiWord, Pages, WPS, LaTeX; Json Resume;
+  native `.revitae.json`; YAML; CSV/TSV; Europass / HR‑XML-style XML when detected.
+- **25 MB** import size guard (`CvImportLimits`) and **XXE-safe XML** parsing
+  (`SecureXmlReaderFactory`) for office-derived XML surfaces.
+- Structured mappers (`JsonResumeMapper`, `ReVitaeJsonMapper`, tabular, Europass,
+  HR‑XML) plus text extractors registered behind `ICvFormatImporter`.
+- Targeted import edge-case suites under `tests/ReVitae.Tests/Import/` (608 tests
+  total).
+- Documentation: [`docs/import-formats.md`](docs/import-formats.md) format matrix
+  and [`docs/revitae-project-json.md`](docs/revitae-project-json.md) native
+  interchange schema.
+
+### Changed
+
+- Intro and header **replace import** flows now accept all supported formats (not
+  PDF-only); UI copy and file picker filters updated accordingly.
+- README, concept doc, and roadmap aligned with multi-format import scope.
+
+### Fixed
+
+- Education import no longer creates duplicate garbage entries when PDF text
+  extraction splits a single institution name across blank lines (continuation
+  blocks such as `and Training` / `Engineering` merge into one entry).
+
 ## [0.1.0] - 2026-05-21
 
 First formally versioned ReVitae release baseline.
