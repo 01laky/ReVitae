@@ -28,4 +28,6 @@ public static class UiClasses
     public const string ErrorText = "re-vitae-error";
     public const string SecondaryText = "re-vitae-secondary";
     public const string CounterText = "re-vitae-counter";
+    public const string SkillChip = "re-vitae-skill-chip";
+    public const string SkillChipPanel = "re-vitae-skill-chip-panel";
 }

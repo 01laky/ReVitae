@@ -180,6 +180,42 @@ public static class TranslationKeys
     public const string ValidationEducationInstitutionUrlFormat = "validation.education.institutionUrl.format";
     public const string ValidationEducationStartAfterEnd = "validation.education.dateRange.startAfterEnd";
 
+    public const string Skills = "form.skills";
+    public const string SkillsEmptyHint = "skills.emptyHint";
+    public const string SkillsAdd = "skills.add";
+    public const string SkillsDuplicate = "skills.duplicate";
+    public const string SkillsRemove = "skills.remove";
+    public const string SkillsCategory = "skills.field.category";
+    public const string SkillsSkillName = "skills.field.skillName";
+    public const string SkillsProficiency = "skills.field.proficiency";
+    public const string SkillsYearsOfExperience = "skills.field.yearsOfExperience";
+    public const string SkillsAddSkill = "skills.addSkill";
+    public const string SkillsAddFromList = "skills.addFromList";
+    public const string SkillsBulkSkills = "skills.bulkSkills";
+    public const string SkillsBulkSkillsPlaceholder = "skills.bulkSkills.placeholder";
+    public const string SkillsRemoveSkill = "skills.removeSkill";
+    public const string SkillsDragToReorder = "skills.dragToReorder";
+    public const string SkillsDragSkillToMove = "skills.dragSkillToMove";
+    public const string SkillsExpand = "skills.expand";
+    public const string SkillsCollapse = "skills.collapse";
+    public const string SkillsValidationErrors = "skills.validationErrors";
+    public const string ProficiencyBeginner = "skills.proficiency.beginner";
+    public const string ProficiencyIntermediate = "skills.proficiency.intermediate";
+    public const string ProficiencyAdvanced = "skills.proficiency.advanced";
+    public const string ProficiencyExpert = "skills.proficiency.expert";
+    public const string PreviewSkills = "preview.skills";
+    public const string PreviewYearsSuffix = "preview.yearsSuffix";
+    public const string ValidationSkillsCategoryRequired = "validation.skills.category.required";
+    public const string ValidationSkillsCategoryMax = "validation.skills.category.max";
+    public const string ValidationSkillsSkillNameRequired = "validation.skills.skillName.required";
+    public const string ValidationSkillsSkillNameMax = "validation.skills.skillName.max";
+    public const string ValidationSkillsAtLeastOneRequired = "validation.skills.atLeastOne.required";
+    public const string ValidationSkillsProficiencyRequired = "validation.skills.proficiency.required";
+    public const string ValidationSkillsProficiencyInvalid = "validation.skills.proficiency.invalid";
+    public const string ValidationSkillsYearsOfExperienceInvalid = "validation.skills.yearsOfExperience.invalid";
+    public const string ValidationSkillsDuplicateInGroup = "validation.skills.duplicateInGroup";
+    public const string ValidationSkillsBulkSkillsMax = "validation.skills.bulkSkills.max";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -356,6 +392,41 @@ public static class TranslationKeys
         ValidationEducationDescriptionMax,
         ValidationEducationInstitutionUrlMax,
         ValidationEducationInstitutionUrlFormat,
-        ValidationEducationStartAfterEnd
+        ValidationEducationStartAfterEnd,
+        Skills,
+        SkillsEmptyHint,
+        SkillsAdd,
+        SkillsDuplicate,
+        SkillsRemove,
+        SkillsCategory,
+        SkillsSkillName,
+        SkillsProficiency,
+        SkillsYearsOfExperience,
+        SkillsAddSkill,
+        SkillsAddFromList,
+        SkillsBulkSkills,
+        SkillsBulkSkillsPlaceholder,
+        SkillsRemoveSkill,
+        SkillsDragToReorder,
+        SkillsDragSkillToMove,
+        SkillsExpand,
+        SkillsCollapse,
+        SkillsValidationErrors,
+        ProficiencyBeginner,
+        ProficiencyIntermediate,
+        ProficiencyAdvanced,
+        ProficiencyExpert,
+        PreviewSkills,
+        PreviewYearsSuffix,
+        ValidationSkillsCategoryRequired,
+        ValidationSkillsCategoryMax,
+        ValidationSkillsSkillNameRequired,
+        ValidationSkillsSkillNameMax,
+        ValidationSkillsAtLeastOneRequired,
+        ValidationSkillsProficiencyRequired,
+        ValidationSkillsProficiencyInvalid,
+        ValidationSkillsYearsOfExperienceInvalid,
+        ValidationSkillsDuplicateInGroup,
+        ValidationSkillsBulkSkillsMax
     ];
 }

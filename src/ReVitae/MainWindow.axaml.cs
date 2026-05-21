@@ -8,6 +8,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Media;
 using ReVitae.Core.Cv;
 using ReVitae.Core.Cv.Education;
+using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
@@ -28,6 +29,7 @@ public partial class MainWindow : Window
     private readonly FieldValidator _validator = MainPersonalInformationSchema.CreateValidator();
     private readonly WorkExperienceCollectionValidator _workExperienceValidator = new();
     private readonly EducationCollectionValidator _educationValidator = new();
+    private readonly SkillsCollectionValidator _skillsValidator = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private bool _isUpdatingLanguageSelection;
     private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
@@ -62,6 +64,15 @@ public partial class MainWindow : Window
         string? Description,
         string? InstitutionUrl);
 
+    private sealed record SkillPreviewItem(
+        string Name,
+        string ProficiencyLabel,
+        int? YearsOfExperience);
+
+    private sealed record SkillsPreviewGroup(
+        string Category,
+        IReadOnlyList<SkillPreviewItem> Skills);
+
     private sealed record CvTemplateData(
         string FirstName,
         string LastName,
@@ -75,7 +86,8 @@ public partial class MainWindow : Window
         string? ShortSummary,
         string? PhotoPath,
         IReadOnlyList<WorkExperiencePreviewEntry> WorkExperienceEntries,
-        IReadOnlyList<EducationPreviewEntry> EducationEntries)
+        IReadOnlyList<EducationPreviewEntry> EducationEntries,
+        IReadOnlyList<SkillsPreviewGroup> SkillsGroups)
     {
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
@@ -86,6 +98,7 @@ public partial class MainWindow : Window
         InitializeLanguageSelector();
         WorkExperienceSection.EntriesChanged += OnWorkExperienceChanged;
         EducationSection.EntriesChanged += OnEducationChanged;
+        SkillsSection.EntriesChanged += OnSkillsChanged;
         ApplyLocalization();
         UpdateTemplateSelectionState();
         UpdatePreview();
@@ -109,6 +122,13 @@ public partial class MainWindow : Window
     }
 
     private void OnEducationChanged(object? sender, EventArgs e)
+    {
+        UpdatePreview();
+        UpdateValidationState();
+        ExportStatusTextBlock.Text = string.Empty;
+    }
+
+    private void OnSkillsChanged(object? sender, EventArgs e)
     {
         UpdatePreview();
         UpdateValidationState();
@@ -277,6 +297,7 @@ public partial class MainWindow : Window
         PersonalInformationSection.CollapseToolTip = _localizer.Get(TranslationKeys.CollapseSection);
         WorkExperienceSection.SetLocalizer(_localizer);
         EducationSection.SetLocalizer(_localizer);
+        SkillsSection.SetLocalizer(_localizer);
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
         LastNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.LastName);
         ProfessionalTitleLabelTextBlock.Text = _localizer.Get(TranslationKeys.ProfessionalTitle);
@@ -398,6 +419,7 @@ public partial class MainWindow : Window
         UpdateFieldErrorMessages(validationResult);
         WorkExperienceSection.UpdateValidation(validationResult);
         EducationSection.UpdateValidation(validationResult);
+        SkillsSection.UpdateValidation(validationResult);
         ValidationSummaryTextBlock.Text = validationResult.IsValid
             ? string.Empty
             : string.Join(Environment.NewLine, validationResult.Errors.Select(error => _localizer.Get(error.Message)));
@@ -434,9 +456,11 @@ public partial class MainWindow : Window
         var personalResult = _validator.Validate(BuildFieldValues());
         var workExperienceResult = _workExperienceValidator.Validate(WorkExperienceSection.Entries.ToArray());
         var educationResult = _educationValidator.Validate(EducationSection.Entries.ToArray());
+        var skillsResult = _skillsValidator.Validate(SkillsSection.Entries.ToArray());
         var combinedErrors = personalResult.Errors
             .Concat(workExperienceResult.Errors)
             .Concat(educationResult.Errors)
+            .Concat(skillsResult.Errors)
             .ToArray();
         return new FieldValidationResult(combinedErrors);
     }
@@ -478,6 +502,7 @@ public partial class MainWindow : Window
         lines.AddRange(BuildSummaryLines());
         lines.AddRange(BuildWorkExperiencePdfLines());
         lines.AddRange(BuildEducationPdfLines());
+        lines.AddRange(BuildSkillsPdfLines());
 
         return lines.ToArray();
     }
@@ -621,6 +646,75 @@ public partial class MainWindow : Window
             entry.InstitutionUrl);
     }
 
+    private IEnumerable<string> BuildSkillsPdfLines()
+    {
+        var groups = GetActiveSkillsPreviewGroups();
+        if (groups.Count == 0)
+        {
+            return Array.Empty<string>();
+        }
+
+        var lines = new List<string>
+        {
+            string.Empty,
+            _localizer.Get(TranslationKeys.PreviewSkills)
+        };
+
+        foreach (var group in groups)
+        {
+            lines.Add(string.Empty);
+            lines.Add(group.Category);
+            foreach (var skill in group.Skills)
+            {
+                lines.Add(FormatSkillPreviewLine(skill));
+            }
+        }
+
+        return lines;
+    }
+
+    private string FormatSkillPreviewLine(SkillPreviewItem skill)
+    {
+        var parts = new List<string> { skill.Name, skill.ProficiencyLabel };
+        if (skill.YearsOfExperience is not null)
+        {
+            parts.Add($"{skill.YearsOfExperience} {_localizer.Get(TranslationKeys.PreviewYearsSuffix)}");
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private IReadOnlyList<SkillsPreviewGroup> GetActiveSkillsPreviewGroups()
+    {
+        var activeGroups = SkillsSection.Entries
+            .Where(entry => entry.HasUserInput())
+            .ToArray();
+
+        var prepared = SkillsDeduplication.PrepareForPreview(
+            activeGroups,
+            WorkExperienceSection.Entries.ToArray());
+
+        return prepared
+            .Where(group => group.Skills.Any(skill => skill.HasUserInput()))
+            .Select(BuildSkillsPreviewGroup)
+            .ToArray();
+    }
+
+    private SkillsPreviewGroup BuildSkillsPreviewGroup(SkillsGroupEntry group)
+    {
+        var skills = group.Skills
+            .Where(skill => skill.HasUserInput())
+            .Select(skill => new SkillPreviewItem(
+                skill.Name.Trim(),
+                _localizer.Get(skill.Proficiency.ToTranslationKey()),
+                skill.YearsOfExperience))
+            .ToArray();
+
+        return new SkillsPreviewGroup(
+            NormalizeValue(group.Category),
+            skills);
+    }
+
     private IReadOnlyList<WorkExperiencePreviewEntry> GetActiveWorkExperienceEntries()
     {
         return WorkExperienceSection.Entries
@@ -700,7 +794,8 @@ public partial class MainWindow : Window
             ShortSummaryTextBox.Text?.Trim(),
             PhotoPath: null,
             GetActiveWorkExperienceEntries(),
-            GetActiveEducationEntries());
+            GetActiveEducationEntries(),
+            GetActiveSkillsPreviewGroups());
     }
 
     private static string NormalizeOptionalValue(string? value)
@@ -721,6 +816,7 @@ public partial class MainWindow : Window
         content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
         AddWorkExperienceSection(content, data);
         AddEducationSection(content, data);
+        AddSkillsSection(content, data);
         content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.ContactLinks), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
 
         root.Children.Add(CreateSidebarPanel(Brush.Parse("#D8D8D8"), sidebarContent));
@@ -758,6 +854,7 @@ public partial class MainWindow : Window
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Profile), GetSummary(data)));
         AddWorkExperienceSection(body, data);
         AddEducationSection(body, data);
+        AddSkillsSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Digital), BuildLines(_localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         Grid.SetRow(WrapContentPanel(body), 1);
         content.Children.Add(WrapContentPanel(body));
@@ -806,6 +903,7 @@ public partial class MainWindow : Window
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
         AddWorkExperienceSection(body, data);
         AddEducationSection(body, data);
+        AddSkillsSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Links), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         root.Children.Add(WrapContentPanel(body));
 
@@ -847,6 +945,7 @@ public partial class MainWindow : Window
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Objective), GetSummary(data)));
         AddWorkExperienceSection(body, data);
         AddEducationSection(body, data);
+        AddSkillsSection(body, data);
         body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Online), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
         content.Children.Add(WrapContentPanel(body, Brush.Parse("#F2F2F2")));
 
@@ -1005,6 +1104,29 @@ public partial class MainWindow : Window
         }
 
         return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
+    }
+
+    private void AddSkillsSection(StackPanel panel, CvTemplateData data)
+    {
+        if (data.SkillsGroups.Count == 0)
+        {
+            return;
+        }
+
+        panel.Children.Add(CreateSection(_localizer.Get(TranslationKeys.PreviewSkills), BuildSkillsPreviewContent(data)));
+    }
+
+    private string BuildSkillsPreviewContent(CvTemplateData data)
+    {
+        var groups = new List<string>();
+        foreach (var group in data.SkillsGroups)
+        {
+            var lines = new List<string> { group.Category };
+            lines.AddRange(group.Skills.Select(FormatSkillPreviewLine));
+            groups.Add(string.Join(Environment.NewLine, lines));
+        }
+
+        return string.Join($"{Environment.NewLine}{Environment.NewLine}", groups);
     }
 
     private static Control CreateSection(string title, string content)

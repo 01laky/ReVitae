@@ -8,5 +8,6 @@ public enum FieldFormat
     Month,
     Year,
     EmploymentType,
-    DegreeType
+    DegreeType,
+    ProficiencyLevel
 }
