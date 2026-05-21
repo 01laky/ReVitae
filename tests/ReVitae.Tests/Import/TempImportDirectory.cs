@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 
 namespace ReVitae.Tests.Import;
@@ -19,6 +20,16 @@ internal sealed class TempImportDirectory : IDisposable
     }
 
     public string FilePath(string fileName, string text) => FilePath(fileName, Encoding.UTF8.GetBytes(text));
+
+    public string PagesBundle(string fileName, IReadOnlyList<string> previewPdfLines)
+    {
+        var path = Path.Combine(_directory.FullName, fileName);
+        var pdfBytes = MinimalPdfWriter.CreateFromLines(previewPdfLines);
+        using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
+        using var entryStream = archive.CreateEntry("preview.pdf").Open();
+        entryStream.Write(pdfBytes);
+        return path;
+    }
 
     public void Dispose()
     {

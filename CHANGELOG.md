@@ -15,14 +15,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   label; **Setup** modal now handles language selection only.
 - Shared validation helpers: `FieldSchemaFactory`, `CollectionEntryValidationHelper`,
   `CvFormatImporterRegistry`, Core `CvExportSourceDataFactory`.
-- Expanded edge-case tests (870 total): field format enums, Europass/HR-XML mappers,
+- Expanded edge-case tests (889 total): field format enums, Europass/HR-XML mappers,
   template catalog, profile photo bytes, import error normalization, format detection,
-  RTF/LaTeX/ODT/DOC text extractors, HR-XML export round-trip.
+  RTF/LaTeX/ODT/DOC/ABW/Pages text extractors, HR-XML export round-trip,
+  `MonthYearSelection`, `CvExportDocumentMapper`.
 
 ### Changed
 
 - Modal top-right close buttons use an **X** icon instead of text **Close**.
 - `MonthYearValue` moved to `ReVitae.Core.Cv` (shared date type).
+- `MainWindow` split into partials: export document builder, shared preview helpers,
+  base template layouts (Extended/Templates/ProfilePhoto unchanged).
+- Core `CvExportDocumentMapper` and `MonthYearSelection`; UI `MonthYearDateHelper`
+  delegates month/year conversion to Core.
 - `ExpandableSection` fires `ExpandStateChanged` only when expand/collapse toggles.
 - `HrXmlMapper` imports ReVitae HR-XML export output (Email, EmploymentHistory blocks).
 - Preview section helpers call `CvExportPreviewContentBuilder` directly (removed thin wrappers).

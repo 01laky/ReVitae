@@ -1,34 +1,16 @@
 using System;
 using Avalonia.Controls;
+using ReVitae.Core.Cv;
 
 namespace ReVitae.Ui.Validation;
 
 public static class MonthYearDateHelper
 {
-    public static DateTimeOffset? ToSelectedDate(int? month, int? year)
-    {
-        if (!month.HasValue || !year.HasValue)
-        {
-            return null;
-        }
+    public static DateTimeOffset? ToSelectedDate(int? month, int? year) =>
+        MonthYearSelection.ToDateTimeOffset(month, year);
 
-        if (month is < 1 or > 12)
-        {
-            return null;
-        }
-
-        return new DateTimeOffset(year.Value, month.Value, 1, 0, 0, 0, TimeSpan.Zero);
-    }
-
-    public static (int? Month, int? Year) FromSelectedDate(DateTimeOffset? selectedDate)
-    {
-        if (!selectedDate.HasValue)
-        {
-            return (null, null);
-        }
-
-        return (selectedDate.Value.Month, selectedDate.Value.Year);
-    }
+    public static (int? Month, int? Year) FromSelectedDate(DateTimeOffset? selectedDate) =>
+        MonthYearSelection.FromDateTimeOffset(selectedDate);
 
     public static DatePicker CreatePicker(EventHandler<DatePickerSelectedValueChangedEventArgs>? onChanged = null)
     {
