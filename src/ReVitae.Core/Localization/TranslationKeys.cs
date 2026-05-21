@@ -216,6 +216,50 @@ public static class TranslationKeys
     public const string ValidationSkillsDuplicateInGroup = "validation.skills.duplicateInGroup";
     public const string ValidationSkillsBulkSkillsMax = "validation.skills.bulkSkills.max";
 
+    public const string Languages = "form.languages";
+    public const string LanguagesEmptyHint = "languages.emptyHint";
+    public const string LanguagesAdd = "languages.add";
+    public const string LanguagesDuplicate = "languages.duplicate";
+    public const string LanguagesRemove = "languages.remove";
+    public const string LanguagesLanguage = "languages.field.language";
+    public const string LanguagesProficiency = "languages.field.proficiency";
+    public const string LanguagesCefrLevel = "languages.field.cefrLevel";
+    public const string LanguagesCertificate = "languages.field.certificate";
+    public const string LanguagesReading = "languages.field.reading";
+    public const string LanguagesWriting = "languages.field.writing";
+    public const string LanguagesSpeaking = "languages.field.speaking";
+    public const string LanguagesListening = "languages.field.listening";
+    public const string LanguagesSubSkills = "languages.subSkills";
+    public const string LanguagesCefrNone = "languages.cefr.none";
+    public const string LanguagesProficiencyNone = "languages.proficiency.none";
+    public const string LanguagesDragToReorder = "languages.dragToReorder";
+    public const string LanguagesExpand = "languages.expand";
+    public const string LanguagesCollapse = "languages.collapse";
+    public const string LanguagesValidationErrors = "languages.validationErrors";
+    public const string LanguageProficiencyElementary = "languages.proficiency.elementary";
+    public const string LanguageProficiencyIntermediate = "languages.proficiency.intermediate";
+    public const string LanguageProficiencyAdvanced = "languages.proficiency.advanced";
+    public const string LanguageProficiencyFluent = "languages.proficiency.fluent";
+    public const string LanguageProficiencyNative = "languages.proficiency.native";
+    public const string CefrA1 = "languages.cefr.a1";
+    public const string CefrA2 = "languages.cefr.a2";
+    public const string CefrB1 = "languages.cefr.b1";
+    public const string CefrB2 = "languages.cefr.b2";
+    public const string CefrC1 = "languages.cefr.c1";
+    public const string CefrC2 = "languages.cefr.c2";
+    public const string PreviewLanguages = "preview.languages";
+    public const string PreviewReading = "preview.reading";
+    public const string PreviewWriting = "preview.writing";
+    public const string PreviewSpeaking = "preview.speaking";
+    public const string PreviewListening = "preview.listening";
+    public const string ValidationLanguagesLanguageRequired = "validation.languages.language.required";
+    public const string ValidationLanguagesLanguageMax = "validation.languages.language.max";
+    public const string ValidationLanguagesProficiencyRequired = "validation.languages.proficiency.required";
+    public const string ValidationLanguagesProficiencyInvalid = "validation.languages.proficiency.invalid";
+    public const string ValidationLanguagesCefrInvalid = "validation.languages.cefr.invalid";
+    public const string ValidationLanguagesCertificateMax = "validation.languages.certificate.max";
+    public const string ValidationLanguagesDuplicateLanguage = "validation.languages.duplicateLanguage";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -427,6 +471,49 @@ public static class TranslationKeys
         ValidationSkillsProficiencyInvalid,
         ValidationSkillsYearsOfExperienceInvalid,
         ValidationSkillsDuplicateInGroup,
-        ValidationSkillsBulkSkillsMax
+        ValidationSkillsBulkSkillsMax,
+        Languages,
+        LanguagesEmptyHint,
+        LanguagesAdd,
+        LanguagesDuplicate,
+        LanguagesRemove,
+        LanguagesLanguage,
+        LanguagesProficiency,
+        LanguagesCefrLevel,
+        LanguagesCertificate,
+        LanguagesReading,
+        LanguagesWriting,
+        LanguagesSpeaking,
+        LanguagesListening,
+        LanguagesSubSkills,
+        LanguagesCefrNone,
+        LanguagesProficiencyNone,
+        LanguagesDragToReorder,
+        LanguagesExpand,
+        LanguagesCollapse,
+        LanguagesValidationErrors,
+        LanguageProficiencyElementary,
+        LanguageProficiencyIntermediate,
+        LanguageProficiencyAdvanced,
+        LanguageProficiencyFluent,
+        LanguageProficiencyNative,
+        CefrA1,
+        CefrA2,
+        CefrB1,
+        CefrB2,
+        CefrC1,
+        CefrC2,
+        PreviewLanguages,
+        PreviewReading,
+        PreviewWriting,
+        PreviewSpeaking,
+        PreviewListening,
+        ValidationLanguagesLanguageRequired,
+        ValidationLanguagesLanguageMax,
+        ValidationLanguagesProficiencyRequired,
+        ValidationLanguagesProficiencyInvalid,
+        ValidationLanguagesCefrInvalid,
+        ValidationLanguagesCertificateMax,
+        ValidationLanguagesDuplicateLanguage
     ];
 }

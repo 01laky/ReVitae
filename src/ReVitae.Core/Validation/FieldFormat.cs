@@ -9,5 +9,7 @@ public enum FieldFormat
     Year,
     EmploymentType,
     DegreeType,
-    ProficiencyLevel
+    ProficiencyLevel,
+    LanguageProficiency,
+    CefrLevel
 }

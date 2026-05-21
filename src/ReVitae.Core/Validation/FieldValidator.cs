@@ -1,5 +1,6 @@
 using System.Net.Mail;
 using ReVitae.Core.Cv.Education;
+using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
 
@@ -79,6 +80,8 @@ public sealed class FieldValidator
             FieldFormat.EmploymentType => IsEmploymentTypeValid(value),
             FieldFormat.DegreeType => IsDegreeTypeValid(value),
             FieldFormat.ProficiencyLevel => IsProficiencyLevelValid(value),
+            FieldFormat.LanguageProficiency => IsLanguageProficiencyValid(value),
+            FieldFormat.CefrLevel => IsCefrLevelValid(value),
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
         };
     }
@@ -106,6 +109,16 @@ public sealed class FieldValidator
     private static bool IsProficiencyLevelValid(string value)
     {
         return Enum.TryParse<ProficiencyLevel>(value, ignoreCase: false, out _);
+    }
+
+    private static bool IsLanguageProficiencyValid(string value)
+    {
+        return Enum.TryParse<LanguageProficiency>(value, ignoreCase: false, out _);
+    }
+
+    private static bool IsCefrLevelValid(string value)
+    {
+        return Enum.TryParse<CefrLevel>(value, ignoreCase: false, out _);
     }
 
     private static bool IsEmailValid(string value)
