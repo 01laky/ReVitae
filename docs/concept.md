@@ -108,14 +108,11 @@ Future export formats may include:
 As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expanded import:
 
 - All structured CV sections in the form with validation and badges,
-- Live preview across four built-in templates,
-- Template-aligned QuestPDF export,
+- Live preview across **16 built-in templates** with template-aligned QuestPDF export,
+- **Multi-format export** (15 formats) and **multi-format import** via `CvDocumentImporter`,
 - Startup intro modal (**create new** or **import CV**) and header **replace import**
   confirmation when data already exists,
-- **Multi-format deterministic import** (`CvDocumentImporter`): PDF; TXT/Markdown/HTML;
-  DOC/DOCX; ODT/RTF; additional converters (AbiWord, Pages, WPS, LaTeX); Json Resume;
-  native `.revitae.json`; YAML CV interchange; CSV/TSV tabular rows; Europass / HR‑XML-style XML when detected — all mapped locally without AI,
-- Shared **25 MB** guardrails and **XXE-safe XML** parsing via `SecureXmlReaderFactory`,
+- Shared **25 MB** guardrails and **XXE-safe XML** parsing via `SecureXmlReaderFactory`,
 - Inline field validation with export scroll-to-first-error,
 - Internationalization across supported UI languages,
 - Import confidence hints on uncertain parsed fields.
@@ -124,13 +121,13 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 
 Documentation:
 
+- [`docs/export-formats.md`](export-formats.md) export matrix,
 - [`docs/import-formats.md`](import-formats.md) format matrix & exclusions,
 - [`docs/revitae-project-json.md`](revitae-project-json.md) native interchange schema.
 
 Still open for later phases:
 
 - durable save/load UX beyond interchange JSON files,
-- broader export surfaces (standalone DOCX/HTML bundles),
 - static CV quality hints,
 - optional AI-assisted import and recommendations,
 - installers or packaged binaries for each supported platform.

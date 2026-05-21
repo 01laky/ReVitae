@@ -1,4 +1,5 @@
 using System.Net.Mail;
+using ReVitae.Core.Cv;
 using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Cv.Skills;

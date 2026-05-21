@@ -9,6 +9,26 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **16 CV templates** with QuestPDF export, live preview, template picker cards,
+  thumbnails, and localized names/descriptions.
+- Dedicated **About** modal (toolbar icon) with version badge and early-preview
+  label; **Setup** modal now handles language selection only.
+- Shared validation helpers: `FieldSchemaFactory`, `CollectionEntryValidationHelper`,
+  `CvFormatImporterRegistry`, Core `CvExportSourceDataFactory`.
+- Expanded edge-case tests (870 total): field format enums, Europass/HR-XML mappers,
+  template catalog, profile photo bytes, import error normalization, format detection,
+  RTF/LaTeX/ODT/DOC text extractors, HR-XML export round-trip.
+
+### Changed
+
+- Modal top-right close buttons use an **X** icon instead of text **Close**.
+- `MonthYearValue` moved to `ReVitae.Core.Cv` (shared date type).
+- `ExpandableSection` fires `ExpandStateChanged` only when expand/collapse toggles.
+- `HrXmlMapper` imports ReVitae HR-XML export output (Email, EmploymentHistory blocks).
+- Preview section helpers call `CvExportPreviewContentBuilder` directly (removed thin wrappers).
+
+### Added (prior unreleased)
+
 - **Optional profile photo** (prompt **023**): upload JPEG/PNG/WebP (max **15 MB**)
   from Personal information; EXIF auto-orient on save; click-to-replace; local
   storage under `%LocalAppData%/ReVitae/profile-photos/`; template preview +
@@ -16,7 +36,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - ReVitae JSON/YAML **`revitaeVersion: 2`** with `profilePhotoBase64` /
   `profilePhotoContentType` round-trip (v1 unchanged; absolute paths never exported).
 - Profile photo test suites (`ProfilePhotoStorageTests`, `ProfilePhotoInitialsTests`,
-  structured/export extensions) — **783 tests** total.
+  structured/export extensions) — **859 tests** total.
 
 - **Multi-format CV export** (prompt **022**): **Export** toolbar button opens an
   in-window format modal with 15 formats (PDF, DOCX, ODT, RTF, HTML, Markdown,
@@ -39,7 +59,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   and [`docs/revitae-project-json.md`](docs/revitae-project-json.md) native
   interchange schema.
 
-### Changed
+### Changed (prior unreleased)
 
 - **Export PDF** renamed to **Export**; validation-gated format modal replaces
   direct PDF save dialog; localized status and file-type labels updated for all
@@ -69,7 +89,7 @@ First formally versioned ReVitae release baseline.
 - Intro and replace PDF import flows with deterministic parsing and low-confidence
   review highlighting.
 - Four live preview templates and matching QuestPDF export.
-- Setup modal with language selection and About/version information.
+- Setup modal with language selection; About/version information in a separate About modal.
 - Centralized app versioning via `Version.props`, README app badge, and release
   verification scripts.
 

@@ -79,8 +79,8 @@ public static class HrXmlMapper
 
         personal.FirstName = Pick(personal.FirstName, LocateText(doc, "GivenName", "PreferredGivenName"));
         personal.LastName = Pick(personal.LastName, LocateText(doc, "FamilyName", "PreferredFamilyName"));
-        personal.Email = Pick(personal.Email, LocateText(doc, "CommunicationAddress"));
-        personal.Phone = Pick(personal.Phone, LocateText(doc, "TelephoneFormattedNumber", "Mobile"));
+        personal.Email = Pick(personal.Email, LocateText(doc, "CommunicationAddress", "Email", "InternetEmailAddress"));
+        personal.Phone = Pick(personal.Phone, LocateText(doc, "TelephoneFormattedNumber", "Mobile", "Telephone"));
         personal.Location = Pick(personal.Location, LocateText(doc, "PostalCode", "CountryCode"));
         personal.ProfessionalTitle = Pick(personal.ProfessionalTitle, LocateText(doc, "Profession"));
         personal.ShortSummary =
@@ -94,7 +94,7 @@ public static class HrXmlMapper
         var aggregate = new List<WorkExperienceEntry>();
 
         foreach (var block in ByLocal(doc.Descendants(),
-                     "EmploymentHistoryItem", "EmploymentHistoriesItem", "PositionHistory"))
+                     "EmploymentHistoryItem", "EmploymentHistoriesItem", "PositionHistory", "EmploymentHistory"))
         {
             var entry = new WorkExperienceEntry();
 

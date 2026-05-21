@@ -1,4 +1,4 @@
-namespace ReVitae.Core.Cv.WorkExperience;
+namespace ReVitae.Core.Cv;
 
 public sealed record MonthYearValue(int Month, int Year)
 {

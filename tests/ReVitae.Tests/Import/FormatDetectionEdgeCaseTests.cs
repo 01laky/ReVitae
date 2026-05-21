@@ -34,6 +34,13 @@ public sealed class FormatDetectionEdgeCaseTests
     [InlineData(".tsv", CvImportFormat.CsvTabular)]
     [InlineData(".yaml", CvImportFormat.YamlCv)]
     [InlineData(".yml", CvImportFormat.YamlCv)]
+    [InlineData(".odt", CvImportFormat.Odt)]
+    [InlineData(".rtf", CvImportFormat.Rtf)]
+    [InlineData(".tex", CvImportFormat.Latex)]
+    [InlineData(".doc", CvImportFormat.Doc)]
+    [InlineData(".abw", CvImportFormat.Abw)]
+    [InlineData(".pages", CvImportFormat.Pages)]
+    [InlineData(".wps", CvImportFormat.Wps)]
     public void DetectFormat_ClassifiesKnownExtensions(string extension, CvImportFormat expected)
     {
         using var dir = new TempImportDirectory();

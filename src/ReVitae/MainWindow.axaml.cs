@@ -216,7 +216,7 @@ public partial class MainWindow : Window
 
     private void OnOpenSetupClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
+        if (IsBlockingOverlayOpen())
         {
             return;
         }
@@ -226,7 +226,7 @@ public partial class MainWindow : Window
 
     private void OnOpenAboutClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
+        if (IsBlockingOverlayOpen())
         {
             return;
         }
@@ -236,7 +236,7 @@ public partial class MainWindow : Window
 
     private void OnOpenTemplatesClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
+        if (IsBlockingOverlayOpen())
         {
             return;
         }
@@ -247,7 +247,7 @@ public partial class MainWindow : Window
 
     private void OnOpenPreviewExpandClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
+        if (IsBlockingOverlayOpen())
         {
             return;
         }
@@ -264,7 +264,7 @@ public partial class MainWindow : Window
 
     private void OnOpenCreateNewCvClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible || _isImportInProgress)
+        if (IsBlockingOverlayOpen() || _isImportInProgress)
         {
             return;
         }
@@ -872,7 +872,7 @@ public partial class MainWindow : Window
 
     private async void OnExportPdfClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
+        if (IsBlockingOverlayOpen())
         {
             return;
         }
@@ -1217,71 +1217,88 @@ public partial class MainWindow : Window
         SetTemplatesModalVisible(false);
     }
 
-    private void SetSetupModalVisible(bool isVisible)
+    private bool IsBlockingOverlayOpen() =>
+        IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible;
+
+    private void HideOtherContentModals(Grid activeModal)
     {
-        SetupModalOverlay.IsVisible = isVisible;
-        if (isVisible)
+        if (!ReferenceEquals(SetupModalOverlay, activeModal))
         {
-            AboutModalOverlay.IsVisible = false;
-            TemplatesModalOverlay.IsVisible = false;
-            PreviewExpandModalOverlay.IsVisible = false;
-            ExportModalOverlay.IsVisible = false;
+            SetupModalOverlay.IsVisible = false;
         }
 
+        if (!ReferenceEquals(AboutModalOverlay, activeModal))
+        {
+            AboutModalOverlay.IsVisible = false;
+        }
+
+        if (!ReferenceEquals(TemplatesModalOverlay, activeModal))
+        {
+            TemplatesModalOverlay.IsVisible = false;
+        }
+
+        if (!ReferenceEquals(PreviewExpandModalOverlay, activeModal))
+        {
+            PreviewExpandModalOverlay.IsVisible = false;
+        }
+
+        if (!ReferenceEquals(ExportModalOverlay, activeModal))
+        {
+            ExportModalOverlay.IsVisible = false;
+        }
+    }
+
+    private void SetSetupModalVisible(bool isVisible)
+    {
+        if (isVisible)
+        {
+            HideOtherContentModals(SetupModalOverlay);
+        }
+
+        SetupModalOverlay.IsVisible = isVisible;
         UpdateModalSizes();
     }
 
     private void SetAboutModalVisible(bool isVisible)
     {
-        AboutModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
-            SetupModalOverlay.IsVisible = false;
-            TemplatesModalOverlay.IsVisible = false;
-            PreviewExpandModalOverlay.IsVisible = false;
-            ExportModalOverlay.IsVisible = false;
+            HideOtherContentModals(AboutModalOverlay);
         }
+
+        AboutModalOverlay.IsVisible = isVisible;
     }
 
     private void SetTemplatesModalVisible(bool isVisible)
     {
-        TemplatesModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
-            SetupModalOverlay.IsVisible = false;
-            AboutModalOverlay.IsVisible = false;
-            PreviewExpandModalOverlay.IsVisible = false;
-            ExportModalOverlay.IsVisible = false;
+            HideOtherContentModals(TemplatesModalOverlay);
         }
 
+        TemplatesModalOverlay.IsVisible = isVisible;
         UpdateModalSizes();
     }
 
     private void SetPreviewExpandModalVisible(bool isVisible)
     {
-        PreviewExpandModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
-            SetupModalOverlay.IsVisible = false;
-            AboutModalOverlay.IsVisible = false;
-            TemplatesModalOverlay.IsVisible = false;
-            ExportModalOverlay.IsVisible = false;
+            HideOtherContentModals(PreviewExpandModalOverlay);
         }
 
+        PreviewExpandModalOverlay.IsVisible = isVisible;
         UpdateModalSizes();
     }
 
     private void SetExportModalVisible(bool isVisible)
     {
-        ExportModalOverlay.IsVisible = isVisible;
         if (isVisible)
         {
-            SetupModalOverlay.IsVisible = false;
-            AboutModalOverlay.IsVisible = false;
-            TemplatesModalOverlay.IsVisible = false;
-            PreviewExpandModalOverlay.IsVisible = false;
+            HideOtherContentModals(ExportModalOverlay);
         }
 
+        ExportModalOverlay.IsVisible = isVisible;
         UpdateModalSizes();
     }
 
@@ -1954,12 +1971,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewWorkExperience, BuildWorkExperiencePreviewContent(document)));
-    }
-
-    private static string BuildWorkExperiencePreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildWorkExperiencePreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewWorkExperience,
+            CvExportPreviewContentBuilder.BuildWorkExperiencePreviewContent(document)));
     }
 
     private void AddEducationSection(StackPanel panel, CvExportDocument document)
@@ -1969,12 +1983,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewEducation, BuildEducationPreviewContent(document)));
-    }
-
-    private static string BuildEducationPreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildEducationPreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewEducation,
+            CvExportPreviewContentBuilder.BuildEducationPreviewContent(document)));
     }
 
     private void AddSkillsSection(StackPanel panel, CvExportDocument document)
@@ -1984,12 +1995,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewSkills, BuildSkillsPreviewContent(document)));
-    }
-
-    private static string BuildSkillsPreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewSkills,
+            CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document)));
     }
 
     private void AddLanguagesSection(StackPanel panel, CvExportDocument document)
@@ -1999,12 +2007,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewLanguages, BuildLanguagesPreviewContent(document)));
-    }
-
-    private static string BuildLanguagesPreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewLanguages,
+            CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document)));
     }
 
     private void AddCertificatesSection(StackPanel panel, CvExportDocument document)
@@ -2014,12 +2019,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewCertificates, BuildCertificatesPreviewContent(document)));
-    }
-
-    private static string BuildCertificatesPreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildCertificatesPreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewCertificates,
+            CvExportPreviewContentBuilder.BuildCertificatesPreviewContent(document)));
     }
 
     private void AddProjectsSection(StackPanel panel, CvExportDocument document)
@@ -2029,12 +2031,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewProjects, BuildProjectsPreviewContent(document)));
-    }
-
-    private static string BuildProjectsPreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildProjectsPreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewProjects,
+            CvExportPreviewContentBuilder.BuildProjectsPreviewContent(document)));
     }
 
     private void AddCustomLinksSection(StackPanel panel, CvExportDocument document)
@@ -2044,12 +2043,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewCustomLinks, BuildCustomLinksPreviewContent(document)));
-    }
-
-    private static string BuildCustomLinksPreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildCustomLinksPreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewCustomLinks,
+            CvExportPreviewContentBuilder.BuildCustomLinksPreviewContent(document)));
     }
 
     private void AddAdditionalInformationSection(StackPanel panel, CvExportDocument document)
@@ -2059,12 +2055,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        panel.Children.Add(CreateSection(document.Labels.PreviewAdditionalInformation, BuildAdditionalInformationPreviewContent(document)));
-    }
-
-    private static string BuildAdditionalInformationPreviewContent(CvExportDocument document)
-    {
-        return CvExportPreviewContentBuilder.BuildAdditionalInformationPreviewContent(document);
+        panel.Children.Add(CreateSection(
+            document.Labels.PreviewAdditionalInformation,
+            CvExportPreviewContentBuilder.BuildAdditionalInformationPreviewContent(document)));
     }
 
     private static Control CreateSection(string title, string content)

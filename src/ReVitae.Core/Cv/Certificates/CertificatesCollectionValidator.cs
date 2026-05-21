@@ -1,4 +1,4 @@
-using ReVitae.Core.Cv.WorkExperience;
+using ReVitae.Core.Cv;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 

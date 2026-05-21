@@ -73,11 +73,15 @@ public partial class ExpandableSection : UserControl
         {
             TitleTextBlock.Text = Title;
         }
-        else if (change.Property == IsExpandedProperty
-            || change.Property == ExpandToolTipProperty
-            || change.Property == CollapseToolTipProperty)
+        else if (change.Property == IsExpandedProperty)
         {
             UpdateExpandedState();
+            ExpandStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+        else if (change.Property == ExpandToolTipProperty
+            || change.Property == CollapseToolTipProperty)
+        {
+            UpdateTogglePresentation();
         }
     }
 
@@ -89,11 +93,15 @@ public partial class ExpandableSection : UserControl
     private void UpdateExpandedState()
     {
         BodyPresenter.IsVisible = IsExpanded;
+        UpdateTogglePresentation();
+        TitleTextBlock.Text = Title;
+    }
+
+    private void UpdateTogglePresentation()
+    {
         ToggleButton.Content = MaterialIconFactory.Create(
             IsExpanded ? MaterialIconKind.ChevronDown : MaterialIconKind.ChevronRight,
             22);
         ToolTip.SetTip(ToggleButton, IsExpanded ? CollapseToolTip : ExpandToolTip);
-        TitleTextBlock.Text = Title;
-        ExpandStateChanged?.Invoke(this, EventArgs.Empty);
     }
 }

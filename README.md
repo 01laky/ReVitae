@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-783%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-870%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -111,12 +111,16 @@ matrix.
 After a successful export, **Open file** and **Show in folder** actions help you
 reach the saved file without hunting in Finder or Explorer.
 
-Current template styles include:
+Current template styles (16 built-in designs):
 
-- Classic Sidebar
-- Modern Sidebar
-- Clean Top Header
-- Dark Sidebar Accent
+- Classic Sidebar, Modern Sidebar, Clean Top Header, Dark Sidebar Accent
+- Centered Minimal, Photo Left Band, Executive Blue Sidebar, Peach Designer
+- Navy Profile Split, Forest Green Sidebar, Yellow Skill Dots, Royal Blue Sidebar
+- Orange Timeline, Blue Accent Summary, Pill Header Split, Navy Overlap Photo
+
+Open the **Templates** toolbar icon to preview and switch designs. **About**
+(version, tagline, early-preview badge) lives in a separate modal from the last
+toolbar icon — **Setup** covers language selection only.
 
 The preview can be expanded into a larger modal and scrolls independently from
 the form. Exported PDFs use A4 layout, support Unicode text (including Slovak and
@@ -151,8 +155,9 @@ and smarter CV guidance / optional AI-assisted workflows.
 
 ReVitae uses three different version concepts:
 
-- **App version** (`0.1.0`): the ReVitae product release shown in Setup → About,
-  README app badge, `Version.props`, and Git tags such as `v0.1.0`.
+- **App version** (`0.1.0`): the ReVitae product release shown in the **About**
+  modal (toolbar icon), README app badge, `Version.props`, and Git tags such as
+  `v0.1.0`.
 - **Tech-stack badges**: framework/platform versions such as `.NET 10` and
   `Avalonia 12`.
 - **Dependency package versions**: NuGet package versions declared in `.csproj`
@@ -237,10 +242,11 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–021)
+  Implementation prompts and product increments (001–023)
 
 docs/
-  Product concept, interchange schemas (`import-formats.md`, `revitae-project-json.md`), planning notes
+  Product concept, export/import matrices (`export-formats.md`,
+  `import-formats.md`, `revitae-project-json.md`), planning notes
 ```
 
 ## Design Principles

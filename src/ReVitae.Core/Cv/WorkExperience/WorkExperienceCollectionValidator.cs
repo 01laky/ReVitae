@@ -34,21 +34,26 @@ public sealed class WorkExperienceCollectionValidator
         {
             values.TryGetValue(schema.Key, out var value);
 
-            if (schema.Key.EndsWith("." + WorkExperienceFieldKeys.EndMonth, StringComparison.Ordinal)
-                || schema.Key.EndsWith("." + WorkExperienceFieldKeys.EndYear, StringComparison.Ordinal))
+            if (CollectionEntryValidationHelper.IsEndDateField(
+                    schema.Key,
+                    WorkExperienceFieldKeys.EndMonth,
+                    WorkExperienceFieldKeys.EndYear))
             {
                 if (entry.IsCurrentlyWorking)
                 {
                     continue;
                 }
 
-                if (string.IsNullOrWhiteSpace(value))
+                var endDateError = CollectionEntryValidationHelper.ValidateRequiredEndDateWhenInactive(
+                    schema.Key,
+                    value,
+                    WorkExperienceFieldKeys.EndMonth,
+                    TranslationKeys.ValidationWorkExperienceEndMonthRequired,
+                    TranslationKeys.ValidationWorkExperienceEndYearRequired);
+
+                if (endDateError is not null)
                 {
-                    errors.Add(new FieldValidationError(
-                        schema.Key,
-                        schema.Key.EndsWith("." + WorkExperienceFieldKeys.EndMonth, StringComparison.Ordinal)
-                            ? TranslationKeys.ValidationWorkExperienceEndMonthRequired
-                            : TranslationKeys.ValidationWorkExperienceEndYearRequired));
+                    errors.Add(endDateError);
                     continue;
                 }
             }
@@ -63,15 +68,15 @@ public sealed class WorkExperienceCollectionValidator
             }
         }
 
-        if (MonthYearValue.TryParse(entry.StartMonth, entry.StartYear, out var startDate)
-            && MonthYearValue.TryParse(entry.EndMonth, entry.EndYear, out var endDate)
-            && !entry.IsCurrentlyWorking
-            && startDate!.CompareTo(endDate) > 0)
-        {
-            errors.Add(new FieldValidationError(
-                WorkExperienceFieldKeys.Build(entry.Id, WorkExperienceFieldKeys.DateRange),
-                TranslationKeys.ValidationWorkExperienceStartAfterEnd));
-        }
+        CollectionEntryValidationHelper.ValidateStartBeforeEnd(
+            errors,
+            WorkExperienceFieldKeys.Build(entry.Id, WorkExperienceFieldKeys.DateRange),
+            TranslationKeys.ValidationWorkExperienceStartAfterEnd,
+            entry.StartMonth,
+            entry.StartYear,
+            entry.EndMonth,
+            entry.EndYear,
+            entry.IsCurrentlyWorking);
 
         return errors;
     }

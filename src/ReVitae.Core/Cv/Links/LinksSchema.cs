@@ -12,20 +12,20 @@ public static class LinksSchema
     public static readonly IReadOnlyList<FieldSchema> EntryFields = Array.AsReadOnly(
         new[]
         {
-            RequiredText(
+            FieldSchemaFactory.RequiredText(
                 LinksFieldKeys.Label,
                 "Label",
                 LabelMaxLength,
                 TranslationKeys.ValidationLinksLabelRequired,
                 TranslationKeys.ValidationLinksLabelMax),
-            RequiredUrl(
+            FieldSchemaFactory.RequiredUrl(
                 LinksFieldKeys.Url,
                 "URL",
                 UrlMaxLength,
                 TranslationKeys.ValidationLinksUrlRequired,
                 TranslationKeys.ValidationLinksUrlMax,
                 TranslationKeys.ValidationLinksUrlFormat),
-            OptionalText(
+            FieldSchemaFactory.OptionalText(
                 LinksFieldKeys.Note,
                 "Note",
                 NoteMaxLength,
@@ -42,53 +42,5 @@ public static class LinksSchema
         return EntryFields
             .Select(field => field with { Key = LinksFieldKeys.Build(entryId, field.Key) })
             .ToArray();
-    }
-
-    private static FieldSchema RequiredText(
-        string key,
-        string label,
-        int maximumLength,
-        string requiredMessageKey,
-        string maximumLengthMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            label,
-            IsRequired: true,
-            maximumLength,
-            FieldFormat.Text,
-            RequiredMessage: requiredMessageKey,
-            MaximumLengthMessage: maximumLengthMessageKey);
-    }
-
-    private static FieldSchema OptionalText(string key, string label, int maximumLength, string maximumLengthMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            label,
-            IsRequired: false,
-            maximumLength,
-            FieldFormat.Text,
-            RequiredMessage: string.Empty,
-            MaximumLengthMessage: maximumLengthMessageKey);
-    }
-
-    private static FieldSchema RequiredUrl(
-        string key,
-        string label,
-        int maximumLength,
-        string requiredMessageKey,
-        string maximumLengthMessageKey,
-        string formatMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            label,
-            IsRequired: true,
-            maximumLength,
-            FieldFormat.Url,
-            RequiredMessage: requiredMessageKey,
-            MaximumLengthMessage: maximumLengthMessageKey,
-            FormatMessage: formatMessageKey);
     }
 }

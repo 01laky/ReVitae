@@ -17,46 +17,46 @@ public static class ProjectsSchema
     public static readonly IReadOnlyList<FieldSchema> EntryFields = Array.AsReadOnly(
         new[]
         {
-            RequiredText(
+            FieldSchemaFactory.RequiredText(
                 ProjectsFieldKeys.Name,
                 "Project name",
                 NameMaxLength,
                 TranslationKeys.ValidationProjectsNameRequired,
                 TranslationKeys.ValidationProjectsNameMax),
-            OptionalText(
+            FieldSchemaFactory.OptionalText(
                 ProjectsFieldKeys.Role,
                 "Role",
                 RoleMaxLength,
                 TranslationKeys.ValidationProjectsRoleMax),
-            OptionalText(
+            FieldSchemaFactory.OptionalText(
                 ProjectsFieldKeys.Organization,
                 "Organization or context",
                 OrganizationMaxLength,
                 TranslationKeys.ValidationProjectsOrganizationMax),
-            OptionalMonth(
+            FieldSchemaFactory.OptionalMonth(
                 ProjectsFieldKeys.StartMonth,
                 TranslationKeys.ValidationProjectsStartMonthInvalid),
-            OptionalYear(
+            FieldSchemaFactory.OptionalYear(
                 ProjectsFieldKeys.StartYear,
                 TranslationKeys.ValidationProjectsStartYearInvalid),
-            OptionalMonth(
+            FieldSchemaFactory.OptionalMonth(
                 ProjectsFieldKeys.EndMonth,
                 TranslationKeys.ValidationProjectsEndMonthInvalid),
-            OptionalYear(
+            FieldSchemaFactory.OptionalYear(
                 ProjectsFieldKeys.EndYear,
                 TranslationKeys.ValidationProjectsEndYearInvalid),
-            OptionalUrl(
+            FieldSchemaFactory.OptionalUrl(
                 ProjectsFieldKeys.ProjectUrl,
                 "Project URL",
                 ProjectUrlMaxLength,
                 TranslationKeys.ValidationProjectsProjectUrlMax,
                 TranslationKeys.ValidationProjectsProjectUrlFormat),
-            OptionalText(
+            FieldSchemaFactory.OptionalText(
                 ProjectsFieldKeys.Highlights,
                 "Highlights",
                 HighlightsMaxLength,
                 TranslationKeys.ValidationProjectsHighlightsMax),
-            OptionalText(
+            FieldSchemaFactory.OptionalText(
                 ProjectsFieldKeys.Description,
                 "Description",
                 DescriptionMaxLength,
@@ -87,78 +87,5 @@ public static class ProjectsSchema
         return EntryFields
             .Select(field => field with { Key = ProjectsFieldKeys.Build(entryId, field.Key) })
             .ToArray();
-    }
-
-    private static FieldSchema RequiredText(
-        string key,
-        string label,
-        int maximumLength,
-        string requiredMessageKey,
-        string maximumLengthMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            label,
-            IsRequired: true,
-            maximumLength,
-            FieldFormat.Text,
-            RequiredMessage: requiredMessageKey,
-            MaximumLengthMessage: maximumLengthMessageKey);
-    }
-
-    private static FieldSchema OptionalText(string key, string label, int maximumLength, string maximumLengthMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            label,
-            IsRequired: false,
-            maximumLength,
-            FieldFormat.Text,
-            RequiredMessage: string.Empty,
-            MaximumLengthMessage: maximumLengthMessageKey);
-    }
-
-    private static FieldSchema OptionalUrl(
-        string key,
-        string label,
-        int maximumLength,
-        string maximumLengthMessageKey,
-        string formatMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            label,
-            IsRequired: false,
-            maximumLength,
-            FieldFormat.Url,
-            RequiredMessage: string.Empty,
-            MaximumLengthMessage: maximumLengthMessageKey,
-            FormatMessage: formatMessageKey);
-    }
-
-    private static FieldSchema OptionalMonth(string key, string invalidMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            "Month",
-            IsRequired: false,
-            MaximumLength: 2,
-            Format: FieldFormat.Month,
-            RequiredMessage: string.Empty,
-            MaximumLengthMessage: invalidMessageKey,
-            FormatMessage: invalidMessageKey);
-    }
-
-    private static FieldSchema OptionalYear(string key, string invalidMessageKey)
-    {
-        return new FieldSchema(
-            key,
-            "Year",
-            IsRequired: false,
-            MaximumLength: 4,
-            Format: FieldFormat.Year,
-            RequiredMessage: string.Empty,
-            MaximumLengthMessage: invalidMessageKey,
-            FormatMessage: invalidMessageKey);
     }
 }

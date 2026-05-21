@@ -30,7 +30,7 @@ public static class CvDocumentImporter
         }
 
         var formatGuess = CvImportFormatDetector.DetectFormat(filePath);
-        var driver = LocateImporter(formatGuess);
+        var driver = CvFormatImporterRegistry.Get(formatGuess);
         if (driver is null)
         {
             return CvImportResult.Failed(TranslationKeys.ImportErrorUnsupportedFormat);
@@ -74,28 +74,4 @@ public static class CvDocumentImporter
 
         return key;
     }
-
-    private static ICvFormatImporter? LocateImporter(CvImportFormat blueprint)
-        => blueprint switch
-        {
-            CvImportFormat.Pdf => new PdfCvFormatImporter(),
-            CvImportFormat.Docx => new DocxCvFormatImporter(),
-            CvImportFormat.Doc => new DocCvFormatImporter(),
-            CvImportFormat.Odt => new OdtCvFormatImporter(),
-            CvImportFormat.Rtf => new RtfCvFormatImporter(),
-            CvImportFormat.PlainText => new PlainTextCvFormatImporter(),
-            CvImportFormat.Markdown => new MarkdownCvFormatImporter(),
-            CvImportFormat.Html => new HtmlCvFormatImporter(),
-            CvImportFormat.Latex => new LatexCvFormatImporter(),
-            CvImportFormat.Abw => new AbwCvFormatImporter(),
-            CvImportFormat.Pages => new PagesCvFormatImporter(),
-            CvImportFormat.Wps => new WpsCvFormatImporter(),
-            CvImportFormat.JsonResume => new JsonResumeCvFormatImporter(),
-            CvImportFormat.ReVitaeJson => new ReVitaeJsonCvFormatImporter(),
-            CvImportFormat.YamlCv => new YamlCvFormatImporter(),
-            CvImportFormat.CsvTabular => new TabularCvFormatImporter(),
-            CvImportFormat.EuropassXml => new EuropassXmlCvFormatImporter(),
-            CvImportFormat.HrXml => new HrXmlCvFormatImporter(),
-            _ => null
-        };
 }

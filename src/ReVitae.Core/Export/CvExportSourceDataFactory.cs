@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
 using ReVitae.Core.Cv.Links;
-using ReVitae.Core.Export;
 using ReVitae.Core.Import;
 using CvWorkExperienceEntry = ReVitae.Core.Cv.WorkExperience.WorkExperienceEntry;
 using CvEducationEntry = ReVitae.Core.Cv.Education.EducationEntry;
@@ -10,9 +7,9 @@ using CvLanguageEntry = ReVitae.Core.Cv.Languages.LanguageEntry;
 using CvCertificateEntry = ReVitae.Core.Cv.Certificates.CertificateEntry;
 using CvProjectEntry = ReVitae.Core.Cv.Projects.ProjectEntry;
 
-namespace ReVitae.Export;
+namespace ReVitae.Core.Export;
 
-internal static class CvExportSourceDataFactory
+public static class CvExportSourceDataFactory
 {
     public static CvExportSourceData Create(
         PersonalInformationImport personal,

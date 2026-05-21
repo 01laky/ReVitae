@@ -1,4 +1,3 @@
-using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
 
@@ -35,21 +34,26 @@ public sealed class EducationCollectionValidator
         {
             values.TryGetValue(schema.Key, out var value);
 
-            if (schema.Key.EndsWith("." + EducationFieldKeys.EndMonth, StringComparison.Ordinal)
-                || schema.Key.EndsWith("." + EducationFieldKeys.EndYear, StringComparison.Ordinal))
+            if (CollectionEntryValidationHelper.IsEndDateField(
+                    schema.Key,
+                    EducationFieldKeys.EndMonth,
+                    EducationFieldKeys.EndYear))
             {
                 if (entry.IsCurrentlyStudying)
                 {
                     continue;
                 }
 
-                if (string.IsNullOrWhiteSpace(value))
+                var endDateError = CollectionEntryValidationHelper.ValidateRequiredEndDateWhenInactive(
+                    schema.Key,
+                    value,
+                    EducationFieldKeys.EndMonth,
+                    TranslationKeys.ValidationEducationEndMonthRequired,
+                    TranslationKeys.ValidationEducationEndYearRequired);
+
+                if (endDateError is not null)
                 {
-                    errors.Add(new FieldValidationError(
-                        schema.Key,
-                        schema.Key.EndsWith("." + EducationFieldKeys.EndMonth, StringComparison.Ordinal)
-                            ? TranslationKeys.ValidationEducationEndMonthRequired
-                            : TranslationKeys.ValidationEducationEndYearRequired));
+                    errors.Add(endDateError);
                     continue;
                 }
             }
@@ -64,15 +68,15 @@ public sealed class EducationCollectionValidator
             }
         }
 
-        if (MonthYearValue.TryParse(entry.StartMonth, entry.StartYear, out var startDate)
-            && MonthYearValue.TryParse(entry.EndMonth, entry.EndYear, out var endDate)
-            && !entry.IsCurrentlyStudying
-            && startDate!.CompareTo(endDate) > 0)
-        {
-            errors.Add(new FieldValidationError(
-                EducationFieldKeys.Build(entry.Id, EducationFieldKeys.DateRange),
-                TranslationKeys.ValidationEducationStartAfterEnd));
-        }
+        CollectionEntryValidationHelper.ValidateStartBeforeEnd(
+            errors,
+            EducationFieldKeys.Build(entry.Id, EducationFieldKeys.DateRange),
+            TranslationKeys.ValidationEducationStartAfterEnd,
+            entry.StartMonth,
+            entry.StartYear,
+            entry.EndMonth,
+            entry.EndYear,
+            entry.IsCurrentlyStudying);
 
         return errors;
     }

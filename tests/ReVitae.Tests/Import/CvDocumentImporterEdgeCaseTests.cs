@@ -60,6 +60,18 @@ public sealed class CvDocumentImporterEdgeCaseTests
     }
 
     [Fact]
+    public void Import_NormalizesEmptyPdfErrorToGenericEmptyDocument()
+    {
+        using var dir = new TempImportDirectory();
+        var path = dir.FilePath("blank.pdf", MinimalPdfWriter.CreateFromLines([]));
+
+        var result = CvDocumentImporter.Import(path);
+
+        Assert.False(result.Success);
+        Assert.Equal(TranslationKeys.ImportErrorEmptyDocument, result.ErrorMessageKey);
+    }
+
+    [Fact]
     public void Import_ReturnsUnsupportedFormatForUnknownExtension()
     {
         using var dir = new TempImportDirectory();
