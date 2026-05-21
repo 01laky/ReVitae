@@ -98,6 +98,31 @@ Future export formats may include:
 - structured JSON,
 - multiple language versions of the same CV.
 
+## Current Implementation Status
+
+As of early 2026, the desktop app already includes much of the Phase 1 builder
+experience:
+
+- all planned structured CV sections in the form,
+- live preview across four built-in templates,
+- plain PDF export of entered data,
+- startup intro modal with create-new or import-from-PDF,
+- header action to upload another PDF with replace confirmation when the form
+  is not empty,
+- local deterministic PDF text extraction and parsing (no AI required),
+- inline field validation with section badges and export scroll-to-first-error,
+- internationalization across supported UI languages,
+- import confidence hints on uncertain parsed fields.
+
+Still open for later phases:
+
+- local save/load of CV projects,
+- template-based PDF export,
+- additional import formats such as DOCX or TXT,
+- static CV quality hints,
+- optional AI-assisted import and recommendations,
+- installers or packaged binaries for each supported platform.
+
 ## Phase 2 - AI Assistance and Model Management
 
 The second phase should add AI-powered features after the core CV builder is stable.
@@ -180,4 +205,6 @@ The user must stay in control. AI suggestions should be presented as recommendat
 - Should PDF export use an internal renderer or an HTML-to-PDF engine?
 - Should the application store each CV as a local project?
 - Should CV version history be supported?
-- Should the first version support one language or multiple languages?
+- ~~Should the first version support one language or multiple languages?~~
+  Multiple UI languages are already supported; CV content localization remains
+  an open question.

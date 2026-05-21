@@ -10,7 +10,9 @@ using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,13 +20,16 @@ using System.Linq;
 
 namespace ReVitae.Skills;
 
-public sealed class SkillsSectionView : UserControl
+public sealed class SkillsSectionView : UserControl, IValidationNavigableSection
 {
     private readonly ExpandableSection _section;
+    private readonly StackPanel _sectionErrorBadgePanel;
+    private readonly TextBlock _sectionErrorBadgeTextBlock;
     private readonly StackPanel _contentPanel;
     private readonly StackPanel _entriesPanel;
     private readonly TextBlock _emptyHintTextBlock;
     private readonly Button _addButton;
+    private ValidationTouchTracker _touchTracker = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly List<SkillsGroupEntry> _entries = [];
     private readonly Dictionary<string, SkillsGroupCard> _cardsById = new(StringComparer.Ordinal);
@@ -61,10 +66,13 @@ public sealed class SkillsSectionView : UserControl
             }
         };
 
+        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionErrorBadgePanel
         };
 
         Content = _section;
@@ -91,16 +99,88 @@ public sealed class SkillsSectionView : UserControl
         }
     }
 
-    public void UpdateValidation(FieldValidationResult validationResult)
+    public ValidationTouchTracker TouchTracker => _touchTracker;
+
+    public void UpdateValidation(FieldValidationResult validationResult) =>
+        UpdateValidation(validationResult, _touchTracker);
+
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
+        _touchTracker = touchTracker;
+
+        var sectionErrors = validationResult.Errors
+            .Where(error => SkillsFieldKeys.TryParseGroupId(error.FieldKey, out _, out _))
+            .ToArray();
+
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionErrorBadgePanel,
+            _sectionErrorBadgeTextBlock,
+            sectionErrors.Length,
+            !_section.IsExpanded,
+            _localizer,
+            TranslationKeys.SkillsValidationErrors,
+            () => _section.IsExpanded = true);
+
         foreach (var (entryId, card) in _cardsById)
         {
-            var errors = validationResult.Errors
+            var errors = sectionErrors
                 .Where(error => SkillsFieldKeys.TryParseGroupId(error.FieldKey, out var parsedId, out _)
                     && parsedId == entryId)
                 .ToArray();
-            card.UpdateValidation(errors);
+            card.UpdateValidation(errors, touchTracker);
         }
+    }
+
+    public IReadOnlyList<string> GetOrderedFieldKeys()
+    {
+        var keys = new List<string>();
+        foreach (var entry in _entries)
+        {
+            var groupId = entry.Id;
+            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.Category));
+            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillName));
+            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillProficiency));
+            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillsCollection));
+            foreach (var skill in entry.Skills.Where(skill => skill.HasUserInput()))
+            {
+                keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillName));
+                keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillProficiency));
+                keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillYearsOfExperience));
+            }
+        }
+
+        return keys;
+    }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (!SkillsFieldKeys.TryParseGroupId(fieldKey, out var groupId, out _))
+        {
+            return false;
+        }
+
+        if (!_cardsById.TryGetValue(groupId, out var card))
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+        card.SetExpanded(true);
+        var control = FindControlForFieldKey(fieldKey);
+        control?.Focus();
+        return control is not null;
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey)
+    {
+        if (!SkillsFieldKeys.TryParseGroupId(fieldKey, out var groupId, out _))
+        {
+            return null;
+        }
+
+        return _cardsById.TryGetValue(groupId, out var card)
+            ? card.FindControlForFieldKey(fieldKey)
+            : null;
     }
 
     public void ReplaceEntries(IReadOnlyList<SkillsGroupEntry> entries, bool expandSection = true)
@@ -242,7 +322,7 @@ public sealed class SkillsSectionView : UserControl
         for (var index = 0; index < _entries.Count; index++)
         {
             var entry = _entries[index];
-            var card = new SkillsGroupCard(this, entry, _localizer);
+            var card = new SkillsGroupCard(this, entry, _localizer, _touchTracker);
             card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
@@ -403,6 +483,7 @@ public sealed class SkillsSectionView : UserControl
     {
         private readonly SkillsSectionView _sectionView;
         private readonly SkillsGroupEntry _entry;
+        private readonly ValidationFieldRegistry _validationRegistry = new();
         private AppLocalizer _localizer;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
@@ -414,36 +495,20 @@ public sealed class SkillsSectionView : UserControl
         private readonly TextBox _bulkSkillsTextBox;
         private readonly TextBlock _bulkCounterTextBlock;
         private readonly WrapPanel _skillsPanel;
-        private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
         private readonly Dictionary<Visual, string> _skillIdsByChip = new();
         private readonly Border _dragArea;
 
-        public SkillsGroupCard(SkillsSectionView sectionView, SkillsGroupEntry entry, AppLocalizer localizer)
+        public SkillsGroupCard(
+            SkillsSectionView sectionView,
+            SkillsGroupEntry entry,
+            AppLocalizer localizer,
+            ValidationTouchTracker touchTracker)
         {
             _sectionView = sectionView;
             _entry = entry;
             _localizer = localizer;
 
-            _errorBadgeTextBlock = new TextBlock
-            {
-                IsVisible = false,
-                FontWeight = FontWeight.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            _errorBadgeTextBlock.Classes.Add(UiClasses.ErrorText);
-
-            _errorBadgePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                IsVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    MaterialIconFactory.Create(MaterialIconKind.AlertCircle, 16),
-                    _errorBadgeTextBlock
-                }
-            };
+            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
             _dragArea = new Border();
             _dragArea.Classes.Add(UiClasses.DragHandle);
@@ -501,15 +566,46 @@ public sealed class SkillsSectionView : UserControl
                 Children = { _dragArea, _errorBadgePanel }
             };
 
+            var groupId = _entry.Id;
+            var proficiencyError = new TextBlock { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+            proficiencyError.Classes.Add(UiClasses.ErrorText);
+            var proficiencyBinding = new ValidationFieldBinding(
+                SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillProficiency),
+                _proficiencyComboBox,
+                proficiencyError);
+            proficiencyBinding.WireTouchTracking(touchTracker);
+            _validationRegistry.Register(proficiencyBinding);
+
+            var addSkillArea = new StackPanel
+            {
+                Spacing = 6,
+                Children = { addSkillRow, proficiencyError }
+            };
+
             var body = new StackPanel
             {
                 Spacing = 10,
                 Children =
                 {
-                    CreateField(_categoryTextBox, TranslationKeys.SkillsCategory, SkillsFieldKeys.Category),
-                    CreateField(addSkillRow, TranslationKeys.SkillsSkillName, SkillsFieldKeys.SkillName),
-                    CreateField(_bulkSkillsTextBox, TranslationKeys.SkillsBulkSkills, SkillsFieldKeys.SkillsCollection),
-                    _bulkCounterTextBlock,
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.SkillsCategory),
+                        _categoryTextBox,
+                        SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.Category),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.SkillsSkillName),
+                        addSkillArea,
+                        SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillName),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.SkillsBulkSkills),
+                        _bulkSkillsTextBox,
+                        SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillsCollection),
+                        _validationRegistry,
+                        touchTracker,
+                        _bulkCounterTextBlock),
                     addFromListButton,
                     _skillsPanel,
                     new StackPanel
@@ -589,57 +685,19 @@ public sealed class SkillsSectionView : UserControl
             }
         }
 
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors)
+        public Control? FindControlForFieldKey(string fieldKey) =>
+            _validationRegistry.FindControlForFieldKey(fieldKey);
+
+        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
         {
-            foreach (var (fieldName, textBlock) in _errorTextBlocks)
-            {
-                var fieldErrors = errors
-                    .Where(error =>
-                    {
-                        if (!SkillsFieldKeys.TryParseSkillField(error.FieldKey, out _, out _, out var skillField))
-                        {
-                            return error.FieldKey.EndsWith("." + fieldName, StringComparison.Ordinal);
-                        }
-
-                        return skillField == fieldName;
-                    })
-                    .Select(error => _localizer.Get(error.Message))
-                    .Distinct()
-                    .ToArray();
-                textBlock.Text = string.Join(Environment.NewLine, fieldErrors);
-            }
-
-            var collectionError = errors.FirstOrDefault(error =>
-                error.FieldKey.EndsWith("." + SkillsFieldKeys.SkillsCollection, StringComparison.Ordinal));
-            if (collectionError is not null
-                && _errorTextBlocks.TryGetValue(SkillsFieldKeys.SkillsCollection, out var collectionErrorBlock))
-            {
-                collectionErrorBlock.Text = _localizer.Get(collectionError.Message);
-            }
-
-            var errorCount = errors.Count;
-            var showBadge = errorCount > 0 && !_expandableSection.IsExpanded;
-            _errorBadgePanel.IsVisible = showBadge;
-            _errorBadgeTextBlock.IsVisible = showBadge;
-            _errorBadgeTextBlock.Text = showBadge
-                ? _localizer.Format(TranslationKeys.SkillsValidationErrors, errorCount)
-                : string.Empty;
-        }
-
-        private StackPanel CreateField(Control input, string labelKey, string fieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, input, error }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
+            _validationRegistry.ApplyErrors(errors, _localizer, touchTracker);
+            ValidationErrorBadgeFactory.Update(
+                _errorBadgePanel,
+                _errorBadgeTextBlock,
+                errors.Count,
+                !_expandableSection.IsExpanded,
+                _localizer.Format(TranslationKeys.SkillsValidationErrors, errors.Count),
+                () => _expandableSection.IsExpanded = true);
         }
 
         private AutoCompleteBox CreateSkillAutoComplete()
@@ -765,9 +823,9 @@ public sealed class SkillsSectionView : UserControl
             _skillsPanel.Children.Clear();
             _skillIdsByChip.Clear();
 
-            for (var index = 0; index < _entry.Skills.Count; index++)
+            var groupId = _entry.Id;
+            foreach (var skill in _entry.Skills)
             {
-                var skill = _entry.Skills[index];
                 if (!skill.HasUserInput())
                 {
                     continue;
@@ -776,6 +834,17 @@ public sealed class SkillsSectionView : UserControl
                 var chip = CreateSkillChip(skill);
                 _skillIdsByChip[chip] = skill.Id;
                 _skillsPanel.Children.Add(chip);
+
+                var chipTarget = new ChipValidationTarget(chip);
+                _validationRegistry.RegisterChip(
+                    SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillName),
+                    chipTarget);
+                _validationRegistry.RegisterChip(
+                    SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillProficiency),
+                    chipTarget);
+                _validationRegistry.RegisterChip(
+                    SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillYearsOfExperience),
+                    chipTarget);
             }
         }
 

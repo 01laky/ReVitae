@@ -10,7 +10,9 @@ using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,13 +20,28 @@ using System.Linq;
 
 namespace ReVitae.Languages;
 
-public sealed class LanguagesSectionView : UserControl
+public sealed class LanguagesSectionView : UserControl, IValidationNavigableSection
 {
+    private static readonly string[] EntryFieldOrder =
+    [
+        LanguagesFieldKeys.Language,
+        LanguagesFieldKeys.Proficiency,
+        LanguagesFieldKeys.CefrLevel,
+        LanguagesFieldKeys.Certificate,
+        LanguagesFieldKeys.Reading,
+        LanguagesFieldKeys.Writing,
+        LanguagesFieldKeys.Speaking,
+        LanguagesFieldKeys.Listening
+    ];
+
     private readonly ExpandableSection _section;
+    private readonly StackPanel _sectionErrorBadgePanel;
+    private readonly TextBlock _sectionErrorBadgeTextBlock;
     private readonly StackPanel _contentPanel;
     private readonly StackPanel _entriesPanel;
     private readonly TextBlock _emptyHintTextBlock;
     private readonly Button _addButton;
+    private readonly ValidationTouchTracker _touchTracker = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly List<LanguageEntry> _entries = [];
     private readonly Dictionary<string, LanguageEntryCard> _cardsById = new(StringComparer.Ordinal);
@@ -49,10 +66,13 @@ public sealed class LanguagesSectionView : UserControl
             Children = { _emptyHintTextBlock, _addButton, _entriesPanel }
         };
 
+        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionErrorBadgePanel
         };
 
         Content = _section;
@@ -63,6 +83,8 @@ public sealed class LanguagesSectionView : UserControl
     public event EventHandler? EntriesChanged;
 
     public IReadOnlyList<LanguageEntry> Entries => _entries;
+
+    public ValidationTouchTracker TouchTracker => _touchTracker;
 
     public void SetLocalizer(AppLocalizer localizer)
     {
@@ -79,16 +101,78 @@ public sealed class LanguagesSectionView : UserControl
         }
     }
 
-    public void UpdateValidation(FieldValidationResult validationResult)
+    public void UpdateValidation(FieldValidationResult validationResult) =>
+        UpdateValidation(validationResult, _touchTracker);
+
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
+        var sectionErrors = validationResult.Errors
+            .Where(error => LanguagesFieldKeys.TryParseEntryId(error.FieldKey, out _, out _))
+            .ToArray();
+
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionErrorBadgePanel,
+            _sectionErrorBadgeTextBlock,
+            sectionErrors.Length,
+            !_section.IsExpanded,
+            _localizer,
+            TranslationKeys.LanguagesValidationErrors,
+            () => _section.IsExpanded = true);
+
         foreach (var (entryId, card) in _cardsById)
         {
-            var errors = validationResult.Errors
+            var errors = sectionErrors
                 .Where(error => LanguagesFieldKeys.TryParseEntryId(error.FieldKey, out var parsedId, out _)
                     && parsedId == entryId)
                 .ToArray();
-            card.UpdateValidation(errors);
+            card.UpdateValidation(errors, touchTracker);
         }
+    }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (!LanguagesFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        card.SetExpanded(true);
+        var control = FindControlForFieldKey(fieldKey);
+        control?.Focus();
+        return control is not null;
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey)
+    {
+        if (!LanguagesFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return null;
+        }
+
+        return _cardsById.TryGetValue(entryId, out var card)
+            ? card.FindControlForFieldKey(fieldKey)
+            : null;
+    }
+
+    public IReadOnlyList<string> GetOrderedFieldKeys()
+    {
+        var keys = new List<string>(_entries.Count * EntryFieldOrder.Length);
+        foreach (var entry in _entries)
+        {
+            foreach (var fieldName in EntryFieldOrder)
+            {
+                keys.Add(LanguagesFieldKeys.Build(entry.Id, fieldName));
+            }
+        }
+
+        return keys;
     }
 
     public void ReplaceEntries(IReadOnlyList<LanguageEntry> entries, bool expandSection = true)
@@ -179,7 +263,7 @@ public sealed class LanguagesSectionView : UserControl
 
         foreach (var entry in _entries)
         {
-            var card = new LanguageEntryCard(this, entry, _localizer);
+            var card = new LanguageEntryCard(this, entry, _localizer, _touchTracker);
             card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
@@ -285,6 +369,7 @@ public sealed class LanguagesSectionView : UserControl
     {
         private readonly LanguagesSectionView _sectionView;
         private readonly LanguageEntry _entry;
+        private readonly ValidationFieldRegistry _fieldRegistry = new();
         private AppLocalizer _localizer;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
@@ -298,36 +383,20 @@ public sealed class LanguagesSectionView : UserControl
         private readonly ComboBox _writingComboBox;
         private readonly ComboBox _speakingComboBox;
         private readonly ComboBox _listeningComboBox;
-        private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
         private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
-        public LanguageEntryCard(LanguagesSectionView sectionView, LanguageEntry entry, AppLocalizer localizer)
+        public LanguageEntryCard(
+            LanguagesSectionView sectionView,
+            LanguageEntry entry,
+            AppLocalizer localizer,
+            ValidationTouchTracker touchTracker)
         {
             _sectionView = sectionView;
             _entry = entry;
             _localizer = localizer;
 
-            _errorBadgeTextBlock = new TextBlock
-            {
-                IsVisible = false,
-                FontWeight = FontWeight.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            _errorBadgeTextBlock.Classes.Add(UiClasses.ErrorText);
-
-            _errorBadgePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                IsVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    MaterialIconFactory.Create(MaterialIconKind.AlertCircle, 16),
-                    _errorBadgeTextBlock
-                }
-            };
+            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
             _dragArea = new Border();
             _dragArea.Classes.Add(UiClasses.DragHandle);
@@ -370,10 +439,31 @@ public sealed class LanguagesSectionView : UserControl
             languageRow.Children.Add(_languageAutoComplete);
             Grid.SetColumn(_languageAutoComplete, 1);
 
-            var readingPanel = WrapSubSkill(_readingComboBox, TranslationKeys.LanguagesReading, LanguagesFieldKeys.Reading);
-            var writingPanel = WrapSubSkill(_writingComboBox, TranslationKeys.LanguagesWriting, LanguagesFieldKeys.Writing);
-            var speakingPanel = WrapSubSkill(_speakingComboBox, TranslationKeys.LanguagesSpeaking, LanguagesFieldKeys.Speaking);
-            var listeningPanel = WrapSubSkill(_listeningComboBox, TranslationKeys.LanguagesListening, LanguagesFieldKeys.Listening);
+            var entryId = _entry.Id;
+            var readingPanel = WrapSubSkill(
+                _readingComboBox,
+                TranslationKeys.LanguagesReading,
+                LanguagesFieldKeys.Reading,
+                entryId,
+                touchTracker);
+            var writingPanel = WrapSubSkill(
+                _writingComboBox,
+                TranslationKeys.LanguagesWriting,
+                LanguagesFieldKeys.Writing,
+                entryId,
+                touchTracker);
+            var speakingPanel = WrapSubSkill(
+                _speakingComboBox,
+                TranslationKeys.LanguagesSpeaking,
+                LanguagesFieldKeys.Speaking,
+                entryId,
+                touchTracker);
+            var listeningPanel = WrapSubSkill(
+                _listeningComboBox,
+                TranslationKeys.LanguagesListening,
+                LanguagesFieldKeys.Listening,
+                entryId,
+                touchTracker);
 
             var subSkillsGrid = new Grid
             {
@@ -403,10 +493,30 @@ public sealed class LanguagesSectionView : UserControl
                 Spacing = 10,
                 Children =
                 {
-                    CreateField(languageRow, TranslationKeys.LanguagesLanguage, LanguagesFieldKeys.Language),
-                    CreateField(_proficiencyComboBox, TranslationKeys.LanguagesProficiency, LanguagesFieldKeys.Proficiency),
-                    CreateField(_cefrComboBox, TranslationKeys.LanguagesCefrLevel, LanguagesFieldKeys.CefrLevel),
-                    CreateField(_certificateTextBox, TranslationKeys.LanguagesCertificate, LanguagesFieldKeys.Certificate),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.LanguagesLanguage),
+                        languageRow,
+                        LanguagesFieldKeys.Build(entryId, LanguagesFieldKeys.Language),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.LanguagesProficiency),
+                        _proficiencyComboBox,
+                        LanguagesFieldKeys.Build(entryId, LanguagesFieldKeys.Proficiency),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.LanguagesCefrLevel),
+                        _cefrComboBox,
+                        LanguagesFieldKeys.Build(entryId, LanguagesFieldKeys.CefrLevel),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.LanguagesCertificate),
+                        _certificateTextBox,
+                        LanguagesFieldKeys.Build(entryId, LanguagesFieldKeys.Certificate),
+                        _fieldRegistry,
+                        touchTracker),
                     new TextBlock { Text = _localizer.Get(TranslationKeys.LanguagesSubSkills) },
                     subSkillsGrid,
                     new StackPanel
@@ -467,55 +577,35 @@ public sealed class LanguagesSectionView : UserControl
 
         public void ClearDragVisual() => RootBorder.Opacity = 1;
 
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors)
-        {
-            foreach (var (fieldName, textBlock) in _errorTextBlocks)
-            {
-                var fieldErrors = errors
-                    .Where(error => error.FieldKey.EndsWith("." + fieldName, StringComparison.Ordinal))
-                    .Select(error => _localizer.Get(error.Message))
-                    .Distinct()
-                    .ToArray();
-                textBlock.Text = string.Join(Environment.NewLine, fieldErrors);
-            }
+        public Control? FindControlForFieldKey(string fieldKey) =>
+            _fieldRegistry.FindControlForFieldKey(fieldKey);
 
-            var errorCount = errors.Count;
-            var showBadge = errorCount > 0 && !_expandableSection.IsExpanded;
-            _errorBadgePanel.IsVisible = showBadge;
-            _errorBadgeTextBlock.IsVisible = showBadge;
-            _errorBadgeTextBlock.Text = showBadge
-                ? _localizer.Format(TranslationKeys.LanguagesValidationErrors, errorCount)
-                : string.Empty;
+        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
+        {
+            _fieldRegistry.ApplyErrors(errors, _localizer, touchTracker);
+
+            ValidationErrorBadgeFactory.Update(
+                _errorBadgePanel,
+                _errorBadgeTextBlock,
+                errors.Count,
+                !_expandableSection.IsExpanded,
+                _localizer.Format(TranslationKeys.LanguagesValidationErrors, errors.Count),
+                () => _expandableSection.IsExpanded = true);
         }
 
-        private StackPanel WrapSubSkill(ComboBox comboBox, string labelKey, string fieldName)
+        private StackPanel WrapSubSkill(
+            ComboBox comboBox,
+            string labelKey,
+            string fieldName,
+            string entryId,
+            ValidationTouchTracker touchTracker)
         {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            return new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, comboBox, error }
-            };
-        }
-
-        private StackPanel CreateField(Control input, string labelKey, string fieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, input, error }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
+            return ValidationFieldRegistry.CreateFieldPanel(
+                _localizer.Get(labelKey),
+                comboBox,
+                LanguagesFieldKeys.Build(entryId, fieldName),
+                _fieldRegistry,
+                touchTracker);
         }
 
         private AutoCompleteBox CreateLanguageAutoComplete()

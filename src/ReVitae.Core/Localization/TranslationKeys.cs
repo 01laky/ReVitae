@@ -4,9 +4,13 @@ public static class TranslationKeys
 {
     public const string HeaderSubtitle = "header.subtitle";
     public const string OpenSetup = "action.openSetup";
+    public const string OpenUploadCv = "action.openUploadCv";
     public const string OpenTemplates = "action.openTemplates";
+    public const string Confirm = "action.confirm";
+    public const string Cancel = "action.cancel";
     public const string OpenExpandPreview = "action.openExpandPreview";
     public const string MainPersonalInformation = "form.mainPersonalInformation";
+    public const string PersonalInformationValidationErrors = "personalInformation.validationErrors";
     public const string FirstName = "field.firstName";
     public const string LastName = "field.lastName";
     public const string ProfessionalTitle = "field.professionalTitle";
@@ -375,6 +379,7 @@ public static class TranslationKeys
     public const string AdditionalInformation = "form.additionalInformation";
     public const string AdditionalInformationEmptyHint = "additionalInformation.emptyHint";
     public const string AdditionalInformationContent = "additionalInformation.field.content";
+    public const string AdditionalInformationValidationErrors = "additionalInformation.validationErrors";
     public const string PreviewAdditionalInformation = "preview.additionalInformation";
     public const string ValidationAdditionalInformationContentMax = "validation.additionalInformation.content.max";
 
@@ -386,6 +391,9 @@ public static class TranslationKeys
     public const string IntroReadingPdf = "intro.readingPdf";
     public const string IntroParsingCv = "intro.parsingCv";
     public const string IntroImportRetry = "intro.importRetry";
+    public const string ReplaceCvConfirmTitle = "modal.replaceCvConfirm.title";
+    public const string ReplaceCvConfirmMessage = "modal.replaceCvConfirm.message";
+    public const string UploadCvFilePickerTitle = "import.uploadCvFilePickerTitle";
     public const string ImportPdfFileType = "import.pdfFileType";
     public const string ImportErrorFileNotFound = "import.error.fileNotFound";
     public const string ImportErrorEmptyPdf = "import.error.emptyPdf";
@@ -403,9 +411,13 @@ public static class TranslationKeys
     [
         HeaderSubtitle,
         OpenSetup,
+        OpenUploadCv,
         OpenTemplates,
+        Confirm,
+        Cancel,
         OpenExpandPreview,
         MainPersonalInformation,
+        PersonalInformationValidationErrors,
         FirstName,
         LastName,
         ProfessionalTitle,
@@ -766,6 +778,7 @@ public static class TranslationKeys
         AdditionalInformation,
         AdditionalInformationEmptyHint,
         AdditionalInformationContent,
+        AdditionalInformationValidationErrors,
         PreviewAdditionalInformation,
         ValidationAdditionalInformationContentMax,
         IntroTitle,
@@ -776,6 +789,9 @@ public static class TranslationKeys
         IntroReadingPdf,
         IntroParsingCv,
         IntroImportRetry,
+        ReplaceCvConfirmTitle,
+        ReplaceCvConfirmMessage,
+        UploadCvFilePickerTitle,
         ImportPdfFileType,
         ImportErrorFileNotFound,
         ImportErrorEmptyPdf,

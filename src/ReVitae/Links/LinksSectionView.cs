@@ -10,20 +10,32 @@ using ReVitae.Core.Cv.Links;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace ReVitae.Links;
 
-public sealed class LinksSectionView : UserControl
+public sealed class LinksSectionView : UserControl, IValidationNavigableSection
 {
+    private static readonly string[] EntryFieldOrder =
+    [
+        LinksFieldKeys.Label,
+        LinksFieldKeys.Url,
+        LinksFieldKeys.Note
+    ];
+
     private readonly ExpandableSection _section;
+    private readonly StackPanel _sectionErrorBadgePanel;
+    private readonly TextBlock _sectionErrorBadgeTextBlock;
     private readonly StackPanel _contentPanel;
     private readonly StackPanel _entriesPanel;
     private readonly TextBlock _emptyHintTextBlock;
     private readonly Button _addButton;
+    private readonly ValidationTouchTracker _touchTracker = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly List<LinkEntry> _entries = [];
     private readonly Dictionary<string, LinkEntryCard> _cardsById = new(StringComparer.Ordinal);
@@ -48,10 +60,13 @@ public sealed class LinksSectionView : UserControl
             Children = { _emptyHintTextBlock, _addButton, _entriesPanel }
         };
 
+        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionErrorBadgePanel
         };
 
         Content = _section;
@@ -62,6 +77,8 @@ public sealed class LinksSectionView : UserControl
     public event EventHandler? EntriesChanged;
 
     public IReadOnlyList<LinkEntry> Entries => _entries;
+
+    public ValidationTouchTracker TouchTracker => _touchTracker;
 
     public void SetLocalizer(AppLocalizer localizer)
     {
@@ -78,16 +95,78 @@ public sealed class LinksSectionView : UserControl
         }
     }
 
-    public void UpdateValidation(FieldValidationResult validationResult)
+    public void UpdateValidation(FieldValidationResult validationResult) =>
+        UpdateValidation(validationResult, _touchTracker);
+
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
+        var sectionErrors = validationResult.Errors
+            .Where(error => LinksFieldKeys.TryParseEntryId(error.FieldKey, out _, out _))
+            .ToArray();
+
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionErrorBadgePanel,
+            _sectionErrorBadgeTextBlock,
+            sectionErrors.Length,
+            !_section.IsExpanded,
+            _localizer,
+            TranslationKeys.CustomLinksValidationErrors,
+            () => _section.IsExpanded = true);
+
         foreach (var (entryId, card) in _cardsById)
         {
-            var errors = validationResult.Errors
+            var errors = sectionErrors
                 .Where(error => LinksFieldKeys.TryParseEntryId(error.FieldKey, out var parsedId, out _)
                     && parsedId == entryId)
                 .ToArray();
-            card.UpdateValidation(errors);
+            card.UpdateValidation(errors, touchTracker);
         }
+    }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (!LinksFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        card.SetExpanded(true);
+        var control = FindControlForFieldKey(fieldKey);
+        control?.Focus();
+        return control is not null;
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey)
+    {
+        if (!LinksFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return null;
+        }
+
+        return _cardsById.TryGetValue(entryId, out var card)
+            ? card.FindControlForFieldKey(fieldKey)
+            : null;
+    }
+
+    public IReadOnlyList<string> GetOrderedFieldKeys()
+    {
+        var keys = new List<string>(_entries.Count * EntryFieldOrder.Length);
+        foreach (var entry in _entries)
+        {
+            foreach (var fieldName in EntryFieldOrder)
+            {
+                keys.Add(LinksFieldKeys.Build(entry.Id, fieldName));
+            }
+        }
+
+        return keys;
     }
 
     public void ReplaceEntries(IReadOnlyList<LinkEntry> entries, bool expandSection = true)
@@ -178,7 +257,7 @@ public sealed class LinksSectionView : UserControl
 
         foreach (var entry in _entries)
         {
-            var card = new LinkEntryCard(this, entry, _localizer);
+            var card = new LinkEntryCard(this, entry, _localizer, _touchTracker);
             card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
@@ -284,6 +363,7 @@ public sealed class LinksSectionView : UserControl
     {
         private readonly LinksSectionView _sectionView;
         private readonly LinkEntry _entry;
+        private readonly ValidationFieldRegistry _fieldRegistry = new();
         private AppLocalizer _localizer;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
@@ -292,36 +372,20 @@ public sealed class LinksSectionView : UserControl
         private readonly TextBox _urlTextBox;
         private readonly TextBox _noteTextBox;
         private readonly TextBlock _noteCounterTextBlock;
-        private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
         private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
-        public LinkEntryCard(LinksSectionView sectionView, LinkEntry entry, AppLocalizer localizer)
+        public LinkEntryCard(
+            LinksSectionView sectionView,
+            LinkEntry entry,
+            AppLocalizer localizer,
+            ValidationTouchTracker touchTracker)
         {
             _sectionView = sectionView;
             _entry = entry;
             _localizer = localizer;
 
-            _errorBadgeTextBlock = new TextBlock
-            {
-                IsVisible = false,
-                FontWeight = FontWeight.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            _errorBadgeTextBlock.Classes.Add(UiClasses.ErrorText);
-
-            _errorBadgePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                IsVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    MaterialIconFactory.Create(MaterialIconKind.AlertCircle, 16),
-                    _errorBadgeTextBlock
-                }
-            };
+            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
             _dragArea = new Border();
             _dragArea.Classes.Add(UiClasses.DragHandle);
@@ -353,14 +417,31 @@ public sealed class LinksSectionView : UserControl
                 Children = { _dragArea, _errorBadgePanel }
             };
 
+            var entryId = _entry.Id;
             var body = new StackPanel
             {
                 Spacing = 10,
                 Children =
                 {
-                    CreateField(_labelAutoComplete, TranslationKeys.CustomLinksLabel, LinksFieldKeys.Label),
-                    CreateField(_urlTextBox, TranslationKeys.CustomLinksUrl, LinksFieldKeys.Url),
-                    CreateField(_noteTextBox, TranslationKeys.CustomLinksNote, LinksFieldKeys.Note, _noteCounterTextBlock),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CustomLinksLabel),
+                        _labelAutoComplete,
+                        LinksFieldKeys.Build(entryId, LinksFieldKeys.Label),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CustomLinksUrl),
+                        _urlTextBox,
+                        LinksFieldKeys.Build(entryId, LinksFieldKeys.Url),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CustomLinksNote),
+                        _noteTextBox,
+                        LinksFieldKeys.Build(entryId, LinksFieldKeys.Note),
+                        _fieldRegistry,
+                        touchTracker,
+                        _noteCounterTextBlock),
                     new StackPanel
                     {
                         Orientation = Orientation.Horizontal,
@@ -414,45 +495,20 @@ public sealed class LinksSectionView : UserControl
 
         public void ClearDragVisual() => RootBorder.Opacity = 1;
 
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors)
+        public Control? FindControlForFieldKey(string fieldKey) =>
+            _fieldRegistry.FindControlForFieldKey(fieldKey);
+
+        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
         {
-            foreach (var (fieldName, textBlock) in _errorTextBlocks)
-            {
-                var fieldErrors = errors
-                    .Where(error => error.FieldKey.EndsWith("." + fieldName, StringComparison.Ordinal))
-                    .Select(error => _localizer.Get(error.Message))
-                    .Distinct()
-                    .ToArray();
-                textBlock.Text = string.Join(Environment.NewLine, fieldErrors);
-            }
+            _fieldRegistry.ApplyErrors(errors, _localizer, touchTracker);
 
-            var errorCount = errors.Count;
-            var showBadge = errorCount > 0 && !_expandableSection.IsExpanded;
-            _errorBadgePanel.IsVisible = showBadge;
-            _errorBadgeTextBlock.IsVisible = showBadge;
-            _errorBadgeTextBlock.Text = showBadge
-                ? _localizer.Format(TranslationKeys.CustomLinksValidationErrors, errorCount)
-                : string.Empty;
-        }
-
-        private StackPanel CreateField(Control input, string labelKey, string fieldName, TextBlock? counter = null)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            var panel = new StackPanel { Spacing = 6 };
-            panel.Classes.Add(UiClasses.FormField);
-            panel.Children.Add(label);
-            panel.Children.Add(input);
-            panel.Children.Add(error);
-            if (counter is not null)
-            {
-                panel.Children.Add(counter);
-            }
-
-            return panel;
+            ValidationErrorBadgeFactory.Update(
+                _errorBadgePanel,
+                _errorBadgeTextBlock,
+                errors.Count,
+                !_expandableSection.IsExpanded,
+                _localizer.Format(TranslationKeys.CustomLinksValidationErrors, errors.Count),
+                () => _expandableSection.IsExpanded = true);
         }
 
         private AutoCompleteBox CreateLabelAutoComplete()

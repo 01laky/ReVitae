@@ -17,8 +17,11 @@ using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
+using ReVitae.Controls;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -43,10 +46,15 @@ public partial class MainWindow : Window
     private readonly LinksCollectionValidator _linksValidator = new();
     private readonly AdditionalInformationValidator _additionalInformationValidator = new();
     private readonly CvPdfImporter _cvPdfImporter = new();
+    private readonly ValidationTouchTracker _validationTouchTracker = new();
+    private readonly ValidationFieldRegistry _personalValidationRegistry = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private bool _isImportInProgress;
     private bool _isUpdatingLanguageSelection;
     private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
+    private StackPanel? _personalSectionErrorBadgePanel;
+    private TextBlock? _personalSectionErrorBadgeTextBlock;
+    private int _personalSectionErrorCount;
 
     private enum CvTemplateId
     {
@@ -126,6 +134,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializePersonalValidation();
         InitializeLanguageSelector();
         WorkExperienceSection.EntriesChanged += OnWorkExperienceChanged;
         EducationSection.EntriesChanged += OnEducationChanged;
@@ -215,7 +224,7 @@ public partial class MainWindow : Window
 
     private void OnOpenSetupClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible)
+        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
         {
             return;
         }
@@ -225,7 +234,7 @@ public partial class MainWindow : Window
 
     private void OnOpenTemplatesClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible)
+        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
         {
             return;
         }
@@ -236,7 +245,7 @@ public partial class MainWindow : Window
 
     private void OnOpenPreviewExpandClicked(object? sender, RoutedEventArgs e)
     {
-        if (IntroModalOverlay.IsVisible)
+        if (IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible)
         {
             return;
         }
@@ -250,7 +259,44 @@ public partial class MainWindow : Window
         SetIntroModalVisible(false);
     }
 
+    private async void OnUploadCvClicked(object? sender, RoutedEventArgs e)
+    {
+        if (IntroModalOverlay.IsVisible || _isImportInProgress)
+        {
+            return;
+        }
+
+        if (HasCvFormData())
+        {
+            SetReplaceCvConfirmModalVisible(true);
+            return;
+        }
+
+        await ImportCvFromPdfAsync(replaceExisting: false, useIntroProgressUi: false, useReplaceProgressUi: true);
+    }
+
+    private void OnReplaceCvConfirmCancelClicked(object? sender, RoutedEventArgs e)
+    {
+        SetReplaceCvConfirmModalVisible(false);
+    }
+
+    private async void OnReplaceCvConfirmOkClicked(object? sender, RoutedEventArgs e)
+    {
+        SetReplaceCvConfirmModalVisible(false);
+        await ImportCvFromPdfAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
+    }
+
+    private async void OnReplaceCvImportRetryClicked(object? sender, RoutedEventArgs e)
+    {
+        await ImportCvFromPdfAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
+    }
+
     private async void OnImportPdfClicked(object? sender, RoutedEventArgs e)
+    {
+        await ImportCvFromPdfAsync(replaceExisting: false, useIntroProgressUi: true, useReplaceProgressUi: false);
+    }
+
+    private async Task ImportCvFromPdfAsync(bool replaceExisting, bool useIntroProgressUi, bool useReplaceProgressUi)
     {
         if (_isImportInProgress)
         {
@@ -260,14 +306,26 @@ public partial class MainWindow : Window
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel?.StorageProvider is null)
         {
-            ShowIntroImportError(_localizer.Get(TranslationKeys.ExportFilePickerUnavailable));
+            if (useIntroProgressUi)
+            {
+                ShowIntroImportError(_localizer.Get(TranslationKeys.ExportFilePickerUnavailable));
+            }
+            else if (useReplaceProgressUi)
+            {
+                ShowReplaceCvImportError(_localizer.Get(TranslationKeys.ExportFilePickerUnavailable));
+            }
+
             return;
         }
+
+        var filePickerTitle = useIntroProgressUi
+            ? _localizer.Get(TranslationKeys.IntroImportPdf)
+            : _localizer.Get(TranslationKeys.UploadCvFilePickerTitle);
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(
             new FilePickerOpenOptions
             {
-                Title = _localizer.Get(TranslationKeys.IntroImportPdf),
+                Title = filePickerTitle,
                 AllowMultiple = false,
                 FileTypeFilter =
                 [
@@ -280,28 +338,74 @@ public partial class MainWindow : Window
 
         if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath)
         {
-            ResetIntroImportState();
+            if (useIntroProgressUi)
+            {
+                ResetIntroImportState();
+            }
+
             return;
         }
 
         _isImportInProgress = true;
-        SetIntroImportProgressVisible(true, _localizer.Get(TranslationKeys.IntroReadingPdf));
-        IntroErrorTextBlock.IsVisible = false;
-        IntroRetryImportButton.IsVisible = false;
+        SetImportProgressUiVisible(
+            true,
+            _localizer.Get(TranslationKeys.IntroReadingPdf),
+            useIntroProgressUi,
+            useReplaceProgressUi);
+
+        if (useIntroProgressUi)
+        {
+            IntroErrorTextBlock.IsVisible = false;
+            IntroRetryImportButton.IsVisible = false;
+        }
+        else if (useReplaceProgressUi)
+        {
+            ReplaceCvImportErrorTextBlock.IsVisible = false;
+            ReplaceCvImportRetryButton.IsVisible = false;
+        }
+
+        UploadCvButton.IsEnabled = false;
 
         try
         {
             var importResult = await Task.Run(() => _cvPdfImporter.ImportFromPdf(filePath));
-            SetIntroImportProgressVisible(true, _localizer.Get(TranslationKeys.IntroParsingCv));
+            SetImportProgressUiVisible(
+                true,
+                _localizer.Get(TranslationKeys.IntroParsingCv),
+                useIntroProgressUi,
+                useReplaceProgressUi);
 
             if (!importResult.Success)
             {
-                ShowIntroImportError(_localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadablePdf));
+                var errorMessage = _localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadablePdf);
+                if (useIntroProgressUi)
+                {
+                    ShowIntroImportError(errorMessage);
+                }
+                else if (useReplaceProgressUi)
+                {
+                    ShowReplaceCvImportError(errorMessage);
+                }
+
                 return;
             }
 
+            if (replaceExisting)
+            {
+                ClearCvForm();
+            }
+
             ApplyCvImportResult(importResult);
-            SetIntroModalVisible(false);
+
+            if (useIntroProgressUi)
+            {
+                SetIntroModalVisible(false);
+            }
+            else if (useReplaceProgressUi)
+            {
+                SetReplaceCvImportProgressModalVisible(false);
+            }
+
             UpdatePreview();
             UpdateValidationState();
             ExportStatusTextBlock.Text = string.Empty;
@@ -309,8 +413,193 @@ public partial class MainWindow : Window
         finally
         {
             _isImportInProgress = false;
-            SetIntroImportProgressVisible(false, string.Empty);
+            if (useIntroProgressUi)
+            {
+                SetIntroImportProgressVisible(false, string.Empty);
+            }
+            else if (useReplaceProgressUi && !ReplaceCvImportErrorTextBlock.IsVisible)
+            {
+                SetReplaceCvImportProgressModalVisible(false);
+            }
+
+            UploadCvButton.IsEnabled = true;
         }
+    }
+
+    private bool HasCvFormData()
+    {
+        if (HasPersonalInformationData())
+        {
+            return true;
+        }
+
+        if (WorkExperienceSection.Entries.Any(entry => entry.HasUserInput()))
+        {
+            return true;
+        }
+
+        if (EducationSection.Entries.Any(entry => entry.HasUserInput()))
+        {
+            return true;
+        }
+
+        if (SkillsSection.Entries.Any(entry => entry.HasUserInput()))
+        {
+            return true;
+        }
+
+        if (LanguagesSection.Entries.Any(entry => entry.HasUserInput()))
+        {
+            return true;
+        }
+
+        if (CertificatesSection.Entries.Any(entry => entry.HasUserInput()))
+        {
+            return true;
+        }
+
+        if (ProjectsSection.Entries.Any(entry => entry.HasUserInput()))
+        {
+            return true;
+        }
+
+        if (LinksSection.Entries.Any(entry => entry.HasUserInput()))
+        {
+            return true;
+        }
+
+        return AdditionalInformationSection.ContentModel.HasUserInput();
+    }
+
+    private bool HasPersonalInformationData()
+    {
+        return !string.IsNullOrWhiteSpace(FirstNameTextBox.Text)
+            || !string.IsNullOrWhiteSpace(LastNameTextBox.Text)
+            || !string.IsNullOrWhiteSpace(ProfessionalTitleTextBox.Text)
+            || !string.IsNullOrWhiteSpace(EmailTextBox.Text)
+            || !string.IsNullOrWhiteSpace(PhoneTextBox.Text)
+            || !string.IsNullOrWhiteSpace(LocationTextBox.Text)
+            || !string.IsNullOrWhiteSpace(LinkedInUrlTextBox.Text)
+            || !string.IsNullOrWhiteSpace(PortfolioUrlTextBox.Text)
+            || !string.IsNullOrWhiteSpace(GitHubUrlTextBox.Text)
+            || !string.IsNullOrWhiteSpace(ShortSummaryTextBox.Text);
+    }
+
+    private void ClearCvForm()
+    {
+        ClearPersonalInformationForm();
+
+        WorkExperienceSection.ReplaceEntries([], expandSection: false);
+        EducationSection.ReplaceEntries([], expandSection: false);
+        SkillsSection.ReplaceEntries([], expandSection: false);
+        LanguagesSection.ReplaceEntries([], expandSection: false);
+        CertificatesSection.ReplaceEntries([], expandSection: false);
+        ProjectsSection.ReplaceEntries([], expandSection: false);
+        LinksSection.ReplaceEntries([], expandSection: false);
+        AdditionalInformationSection.SetContent(string.Empty, expandSection: false);
+
+        PersonalInformationSection.IsExpanded = false;
+        WorkExperienceSection.SetSectionExpanded(false);
+        EducationSection.SetSectionExpanded(false);
+        SkillsSection.SetSectionExpanded(false);
+        LanguagesSection.SetSectionExpanded(false);
+        CertificatesSection.SetSectionExpanded(false);
+        ProjectsSection.SetSectionExpanded(false);
+        LinksSection.SetSectionExpanded(false);
+        AdditionalInformationSection.SetSectionExpanded(false);
+
+        _validationTouchTracker.Reset();
+        _personalValidationRegistry.ClearAll();
+    }
+
+    private void ClearPersonalInformationForm()
+    {
+        FirstNameTextBox.Text = string.Empty;
+        LastNameTextBox.Text = string.Empty;
+        ProfessionalTitleTextBox.Text = string.Empty;
+        EmailTextBox.Text = string.Empty;
+        PhoneTextBox.Text = string.Empty;
+        LocationTextBox.Text = string.Empty;
+        LinkedInUrlTextBox.Text = string.Empty;
+        PortfolioUrlTextBox.Text = string.Empty;
+        GitHubUrlTextBox.Text = string.Empty;
+        ShortSummaryTextBox.Text = string.Empty;
+
+        foreach (var textBox in new TextBox[]
+        {
+            FirstNameTextBox,
+            LastNameTextBox,
+            ProfessionalTitleTextBox,
+            EmailTextBox,
+            PhoneTextBox,
+            LocationTextBox,
+            LinkedInUrlTextBox,
+            PortfolioUrlTextBox,
+            GitHubUrlTextBox,
+            ShortSummaryTextBox
+        })
+        {
+            textBox.Classes.Remove(UiClasses.ImportHint);
+            textBox.Classes.Remove(UiClasses.FieldInvalid);
+        }
+    }
+
+    private void SetReplaceCvConfirmModalVisible(bool isVisible)
+    {
+        ReplaceCvConfirmModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            SetupModalOverlay.IsVisible = false;
+            TemplatesModalOverlay.IsVisible = false;
+            PreviewExpandModalOverlay.IsVisible = false;
+        }
+    }
+
+    private void SetReplaceCvImportProgressModalVisible(bool isVisible)
+    {
+        ReplaceCvImportProgressModalOverlay.IsVisible = isVisible;
+        if (isVisible)
+        {
+            SetupModalOverlay.IsVisible = false;
+            TemplatesModalOverlay.IsVisible = false;
+            PreviewExpandModalOverlay.IsVisible = false;
+            ReplaceCvConfirmModalOverlay.IsVisible = false;
+        }
+    }
+
+    private void SetImportProgressUiVisible(
+        bool isVisible,
+        string message,
+        bool useIntroProgressUi,
+        bool useReplaceProgressUi)
+    {
+        if (useIntroProgressUi)
+        {
+            SetIntroImportProgressVisible(isVisible, message);
+        }
+        else if (useReplaceProgressUi)
+        {
+            SetReplaceCvImportProgressVisible(isVisible, message);
+        }
+    }
+
+    private void SetReplaceCvImportProgressVisible(bool isVisible, string message)
+    {
+        SetReplaceCvImportProgressModalVisible(isVisible);
+        ReplaceCvImportProgressTextBlock.Text = message;
+        if (!isVisible)
+        {
+            ReplaceCvImportErrorTextBlock.IsVisible = false;
+            ReplaceCvImportRetryButton.IsVisible = false;
+        }
+    }
+
+    private void ShowReplaceCvImportError(string message)
+    {
+        ReplaceCvImportErrorTextBlock.Text = message;
+        ReplaceCvImportErrorTextBlock.IsVisible = true;
+        ReplaceCvImportRetryButton.IsVisible = true;
+        ReplaceCvImportProgressTextBlock.Text = string.Empty;
     }
 
     private void ApplyCvImportResult(CvImportResult result)
@@ -492,7 +781,18 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (TemplatesModalOverlay.IsVisible)
+        if (ReplaceCvConfirmModalOverlay.IsVisible)
+        {
+            SetReplaceCvConfirmModalVisible(false);
+        }
+        else if (ReplaceCvImportProgressModalOverlay.IsVisible)
+        {
+            if (!_isImportInProgress)
+            {
+                SetReplaceCvImportProgressModalVisible(false);
+            }
+        }
+        else if (TemplatesModalOverlay.IsVisible)
         {
             SetTemplatesModalVisible(false);
         }
@@ -522,8 +822,10 @@ public partial class MainWindow : Window
         var validationResult = ValidateForm();
         if (!validationResult.IsValid)
         {
+            FormValidationService.ApplyExportFailure(validationResult, _validationTouchTracker);
             UpdateValidationState(validationResult);
             ExportStatusTextBlock.Text = _localizer.Get(TranslationKeys.ExportFixValidation);
+            ScrollToFirstInvalidField(validationResult);
             return;
         }
 
@@ -565,6 +867,8 @@ public partial class MainWindow : Window
     private void ApplyLocalization()
     {
         HeaderSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.HeaderSubtitle);
+        ToolTip.SetTip(UploadCvButton, _localizer.Get(TranslationKeys.OpenUploadCv));
+        AutomationProperties.SetName(UploadCvButton, _localizer.Get(TranslationKeys.OpenUploadCv));
         ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
         ToolTip.SetTip(OpenTemplatesButton, _localizer.Get(TranslationKeys.OpenTemplates));
         ToolTip.SetTip(OpenPreviewExpandButton, _localizer.Get(TranslationKeys.OpenExpandPreview));
@@ -587,6 +891,11 @@ public partial class MainWindow : Window
         CreateNewCvButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroCreateNew);
         ImportPdfButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroImportPdf);
         IntroRetryImportButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
+        ReplaceCvConfirmTitleTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmTitle);
+        ReplaceCvConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmMessage);
+        ReplaceCvConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
+        ReplaceCvConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
+        ReplaceCvImportRetryButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
         AutomationProperties.SetName(CreateNewCvButton, _localizer.Get(TranslationKeys.IntroCreateNew));
         AutomationProperties.SetName(ImportPdfButton, _localizer.Get(TranslationKeys.IntroImportPdf));
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);
@@ -707,44 +1016,162 @@ public partial class MainWindow : Window
         validationResult ??= ValidateForm();
 
         ExportPdfButton.IsEnabled = validationResult.IsValid;
-        UpdateFieldErrorMessages(validationResult);
-        WorkExperienceSection.UpdateValidation(validationResult);
-        EducationSection.UpdateValidation(validationResult);
-        SkillsSection.UpdateValidation(validationResult);
-        LanguagesSection.UpdateValidation(validationResult);
-        CertificatesSection.UpdateValidation(validationResult);
-        ProjectsSection.UpdateValidation(validationResult);
-        LinksSection.UpdateValidation(validationResult);
-        AdditionalInformationSection.UpdateValidation(validationResult);
-        ValidationSummaryTextBlock.Text = validationResult.IsValid
-            ? string.Empty
-            : string.Join(Environment.NewLine, validationResult.Errors.Select(error => _localizer.Get(error.Message)));
+
+        var personalErrors = validationResult.Errors
+            .Where(error => IsPersonalFieldKey(error.FieldKey))
+            .ToArray();
+        _personalValidationRegistry.ApplyErrors(personalErrors, _localizer, _validationTouchTracker);
+        _personalSectionErrorCount = personalErrors.Length;
+        UpdatePersonalSectionErrorBadge();
+
+        WorkExperienceSection.UpdateValidation(validationResult, _validationTouchTracker);
+        EducationSection.UpdateValidation(validationResult, _validationTouchTracker);
+        SkillsSection.UpdateValidation(validationResult, _validationTouchTracker);
+        LanguagesSection.UpdateValidation(validationResult, _validationTouchTracker);
+        CertificatesSection.UpdateValidation(validationResult, _validationTouchTracker);
+        ProjectsSection.UpdateValidation(validationResult, _validationTouchTracker);
+        LinksSection.UpdateValidation(validationResult, _validationTouchTracker);
+        AdditionalInformationSection.UpdateValidation(validationResult, _validationTouchTracker);
     }
 
-    private void UpdateFieldErrorMessages(FieldValidationResult validationResult)
+    private void InitializePersonalValidation()
     {
-        var errorsByField = validationResult.Errors
-            .GroupBy(error => error.FieldKey)
-            .ToDictionary(
-                group => group.Key,
-                group => string.Join(Environment.NewLine, group.Select(error => error.Message)),
-                StringComparer.Ordinal);
+        (_personalSectionErrorBadgePanel, _personalSectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+        PersonalInformationSection.HeaderActions = _personalSectionErrorBadgePanel;
+        PersonalInformationSection.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == ExpandableSection.IsExpandedProperty)
+            {
+                UpdatePersonalSectionErrorBadge();
+            }
+        };
 
-        FirstNameErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.FirstName);
-        LastNameErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.LastName);
-        ProfessionalTitleErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.ProfessionalTitle);
-        EmailErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.Email);
-        PhoneErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.Phone);
-        LocationErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.Location);
-        LinkedInUrlErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.LinkedInUrl);
-        PortfolioUrlErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.PortfolioUrl);
-        GitHubUrlErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.GitHubUrl);
-        ShortSummaryErrorTextBlock.Text = GetFieldError(errorsByField, MainPersonalInformationFieldKeys.ShortSummary);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.FirstName, FirstNameTextBox, FirstNameErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.LastName, LastNameTextBox, LastNameErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.ProfessionalTitle, ProfessionalTitleTextBox, ProfessionalTitleErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.Email, EmailTextBox, EmailErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.Phone, PhoneTextBox, PhoneErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.Location, LocationTextBox, LocationErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.LinkedInUrl, LinkedInUrlTextBox, LinkedInUrlErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.PortfolioUrl, PortfolioUrlTextBox, PortfolioUrlErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.GitHubUrl, GitHubUrlTextBox, GitHubUrlErrorTextBlock);
+        RegisterPersonalField(MainPersonalInformationFieldKeys.ShortSummary, ShortSummaryTextBox, ShortSummaryErrorTextBlock);
     }
 
-    private string GetFieldError(IReadOnlyDictionary<string, string> errorsByField, string fieldKey)
+    private void RegisterPersonalField(string fieldKey, Control input, TextBlock errorTextBlock)
     {
-        return errorsByField.TryGetValue(fieldKey, out var error) ? _localizer.Get(error) : string.Empty;
+        var binding = new ValidationFieldBinding(fieldKey, input, errorTextBlock);
+        binding.WireTouchTracking(_validationTouchTracker, _ => UpdateValidationState());
+        _personalValidationRegistry.Register(binding);
+    }
+
+    private void UpdatePersonalSectionErrorBadge()
+    {
+        if (_personalSectionErrorBadgePanel is null || _personalSectionErrorBadgeTextBlock is null)
+        {
+            return;
+        }
+
+        FormValidationService.UpdateSectionErrorBadge(
+            _personalSectionErrorBadgePanel,
+            _personalSectionErrorBadgeTextBlock,
+            _personalSectionErrorCount,
+            !PersonalInformationSection.IsExpanded,
+            _localizer,
+            TranslationKeys.PersonalInformationValidationErrors,
+            () => PersonalInformationSection.IsExpanded = true);
+    }
+
+    private static bool IsPersonalFieldKey(string fieldKey)
+    {
+        return fieldKey is MainPersonalInformationFieldKeys.FirstName
+            or MainPersonalInformationFieldKeys.LastName
+            or MainPersonalInformationFieldKeys.ProfessionalTitle
+            or MainPersonalInformationFieldKeys.Email
+            or MainPersonalInformationFieldKeys.Phone
+            or MainPersonalInformationFieldKeys.Location
+            or MainPersonalInformationFieldKeys.LinkedInUrl
+            or MainPersonalInformationFieldKeys.PortfolioUrl
+            or MainPersonalInformationFieldKeys.GitHubUrl
+            or MainPersonalInformationFieldKeys.ShortSummary;
+    }
+
+    private IReadOnlyList<string> BuildOrderedFieldKeys()
+    {
+        var keys = new List<string>
+        {
+            MainPersonalInformationFieldKeys.FirstName,
+            MainPersonalInformationFieldKeys.LastName,
+            MainPersonalInformationFieldKeys.ProfessionalTitle,
+            MainPersonalInformationFieldKeys.Email,
+            MainPersonalInformationFieldKeys.Phone,
+            MainPersonalInformationFieldKeys.Location,
+            MainPersonalInformationFieldKeys.LinkedInUrl,
+            MainPersonalInformationFieldKeys.PortfolioUrl,
+            MainPersonalInformationFieldKeys.GitHubUrl,
+            MainPersonalInformationFieldKeys.ShortSummary
+        };
+
+        keys.AddRange(WorkExperienceSection.GetOrderedFieldKeys());
+        keys.AddRange(EducationSection.GetOrderedFieldKeys());
+        keys.AddRange(SkillsSection.GetOrderedFieldKeys());
+        keys.AddRange(LanguagesSection.GetOrderedFieldKeys());
+        keys.AddRange(CertificatesSection.GetOrderedFieldKeys());
+        keys.AddRange(ProjectsSection.GetOrderedFieldKeys());
+        keys.AddRange(LinksSection.GetOrderedFieldKeys());
+        keys.Add(AdditionalInformationFieldKeys.Content);
+        return keys;
+    }
+
+    private void ScrollToFirstInvalidField(FieldValidationResult validationResult)
+    {
+        var firstKey = FormValidationService.GetFirstInvalidFieldKey(
+            BuildOrderedFieldKeys(),
+            validationResult);
+        if (firstKey is null)
+        {
+            return;
+        }
+
+        ExpandAndRevealField(firstKey);
+    }
+
+    private bool ExpandAndRevealField(string fieldKey)
+    {
+        if (IsPersonalFieldKey(fieldKey))
+        {
+            PersonalInformationSection.IsExpanded = true;
+            var control = _personalValidationRegistry.FindControlForFieldKey(fieldKey);
+            control?.Focus();
+            control?.BringIntoView();
+            return control is not null;
+        }
+
+        IValidationNavigableSection[] sections =
+        [
+            WorkExperienceSection,
+            EducationSection,
+            SkillsSection,
+            LanguagesSection,
+            CertificatesSection,
+            ProjectsSection,
+            LinksSection,
+            AdditionalInformationSection
+        ];
+
+        foreach (var section in sections)
+        {
+            if (!section.ExpandAndRevealField(fieldKey))
+            {
+                continue;
+            }
+
+            var control = section.FindControlForFieldKey(fieldKey);
+            control?.BringIntoView();
+            return true;
+        }
+
+        return false;
     }
 
     private FieldValidationResult ValidateForm()

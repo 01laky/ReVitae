@@ -3,7 +3,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-397%20passing-brightgreen)](https://github.com/01laky/ReVitae)
+[![Tests](https://img.shields.io/badge/tests-489%20passing-brightgreen)](https://github.com/01laky/ReVitae)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -16,13 +16,16 @@ wrestling with formatting.
 flowchart TD
     start(["Start fresh or import a PDF"])
     sections["Fill structured CV sections"]
+    replace["Upload another PDF with replace confirmation"]
     templates["Switch preview templates anytime"]
     export(["Export a polished PDF"])
 
     start --> sections --> templates --> export
+    sections --> replace --> sections
 
     style start fill:#eef2ff,stroke:#512BD4,stroke-width:2px,color:#1e1b4b
     style sections fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
+    style replace fill:#fff7ed,stroke:#ea580c,stroke-width:1.5px,color:#7c2d12
     style templates fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
     style export fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b
 ```
@@ -54,15 +57,18 @@ ReVitae includes dedicated form sections for the core CV content:
 - Additional information
 
 Each section has focused validation, repeatable entries where needed, live
-preview updates, and localized UI text.
+preview updates, localized UI text, and inline field-level error messages.
 
 ### PDF Import
 
 On startup, ReVitae lets you either create a new CV or import an existing PDF.
+You can also upload another PDF later from the header toolbar. If the form already
+contains data, the app asks for confirmation before replacing the current CV.
 
 The importer extracts text locally, applies deterministic parsing rules, and
 populates the structured form directly. Sections with imported data are expanded
-for review, while empty sections are collapsed.
+for review, while empty sections are collapsed. Low-confidence imported fields
+are highlighted for manual review.
 
 The import flow currently supports text-based PDFs. Scanned image-only PDFs and
 OCR are not supported yet.
@@ -84,19 +90,23 @@ the form.
 
 ### Validation and Review
 
-The app validates fields while you work:
+The app validates fields while you work and shows errors inline under the related
+control:
 
 - Required personal and section fields
-- Date ranges
+- Date ranges (DatePicker fields in repeatable sections)
 - URL formats
 - Duplicate entries where relevant
 - Maximum field lengths
+- Section error badges when a collapsed section contains problems
+- Scroll-to-first-error on failed export
 - Imported low-confidence fields highlighted for review
 
 ## Product Status
 
-ReVitae is an active early-stage desktop app. The structured CV form and basic
-PDF workflow are in place. The next major product areas are local persistence,
+ReVitae is an active early-stage desktop app. The structured CV form, inline
+validation UI, intro and replace PDF import flows, template preview, and basic
+plain PDF export are in place. The next major product areas are local persistence,
 more polished template-based export, and smarter import/recommendation features.
 
 ## Roadmap
@@ -156,18 +166,24 @@ npm run lint
 ./scripts/format-cs.sh
 ```
 
+### Format Markdown
+
+```bash
+./scripts/format-md.sh
+```
+
 ## Repository Map
 
 ```text
 src/
-  ReVitae/          Avalonia desktop UI
-  ReVitae.Core/     CV models, validation, import, localization
+  ReVitae/          Avalonia desktop UI and validation presentation layer
+  ReVitae.Core/     CV models, validation rules, import, localization
 
 tests/
-  ReVitae.Tests/    Unit and parser tests
+  ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments
+  Implementation prompts and product increments (001–018)
 
 docs/
   Product concept and planning notes

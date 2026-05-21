@@ -128,11 +128,11 @@ Suggested English copy direction:
 
 - title: `Welcome to ReVitae`
 - subtitle: `Create a new CV from scratch or import an existing PDF to get started
-  faster.`
+faster.`
 - create action: `Create new CV`
 - import action: `Import from PDF`
 - helper: `PDF import works best with text-based CVs. Scanned image-only PDFs are
-  not supported yet.`
+not supported yet.`
 
 Use Material-friendly layout:
 
@@ -414,17 +414,17 @@ Compare lines case-insensitively after trimming punctuation.
 
 Suggested keyword map:
 
-| Section | Example header keywords |
-| --- | --- |
-| Summary | `summary`, `profile`, `about me`, `professional summary`, `objective`, `profil`, `zhrnutie`, `o mne` |
-| Work experience | `work experience`, `employment`, `employment history`, `professional experience`, `pracovné skúsenosti`, `kariéra` |
-| Education | `education`, `academic background`, `vzdelanie`, `štúdium` |
-| Skills | `skills`, `technical skills`, `core competencies`, `technologies`, `zručnosti`, `technológie` |
-| Languages | `languages`, `language skills`, `jazyky`, `jazykové zručnosti` |
-| Certificates | `certificates`, `certifications`, `licenses`, `certifikáty`, `certifikácie` |
-| Projects | `projects`, `selected projects`, `personal projects`, `projekty` |
-| Links | `links`, `online profiles`, `odkazy` |
-| Additional | `additional information`, `interests`, `hobbies`, `volunteering`, `awards`, `publications`, `dodatočné informácie`, `záujmy` |
+| Section         | Example header keywords                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Summary         | `summary`, `profile`, `about me`, `professional summary`, `objective`, `profil`, `zhrnutie`, `o mne`                         |
+| Work experience | `work experience`, `employment`, `employment history`, `professional experience`, `pracovné skúsenosti`, `kariéra`           |
+| Education       | `education`, `academic background`, `vzdelanie`, `štúdium`                                                                   |
+| Skills          | `skills`, `technical skills`, `core competencies`, `technologies`, `zručnosti`, `technológie`                                |
+| Languages       | `languages`, `language skills`, `jazyky`, `jazykové zručnosti`                                                               |
+| Certificates    | `certificates`, `certifications`, `licenses`, `certifikáty`, `certifikácie`                                                  |
+| Projects        | `projects`, `selected projects`, `personal projects`, `projekty`                                                             |
+| Links           | `links`, `online profiles`, `odkazy`                                                                                         |
+| Additional      | `additional information`, `interests`, `hobbies`, `volunteering`, `awards`, `publications`, `dodatočné informácie`, `záujmy` |
 
 Segmentation algorithm:
 
@@ -459,17 +459,17 @@ structure**.
 
 Extract from the top of the document:
 
-| Field | Heuristics |
-| --- | --- |
-| Email | RFC5322-like regex, first strong match |
-| Phone | phone regex supporting `+`, spaces, parentheses |
-| LinkedIn URL | contains `linkedin.com` |
-| GitHub URL | contains `github.com` |
-| Portfolio URL | first remaining `http(s)://` URL not matched above |
-| Location | line containing comma-separated city/country pattern or labeled `Location:` |
-| Professional title | short line near top, often under name, not contact info |
-| First / last name | first 1–2 non-empty lines before contact markers; split on last space for two-token names |
-| Short summary | only if a dedicated summary section was **not** detected; otherwise summary section wins |
+| Field              | Heuristics                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| Email              | RFC5322-like regex, first strong match                                                    |
+| Phone              | phone regex supporting `+`, spaces, parentheses                                           |
+| LinkedIn URL       | contains `linkedin.com`                                                                   |
+| GitHub URL         | contains `github.com`                                                                     |
+| Portfolio URL      | first remaining `http(s)://` URL not matched above                                        |
+| Location           | line containing comma-separated city/country pattern or labeled `Location:`               |
+| Professional title | short line near top, often under name, not contact info                                   |
+| First / last name  | first 1–2 non-empty lines before contact markers; split on last space for two-token names |
+| Short summary      | only if a dedicated summary section was **not** detected; otherwise summary section wins  |
 
 Name parsing is low-confidence. If uncertain:
 
@@ -517,7 +517,7 @@ For each block extract:
 - technologies from trailing line like `Technologies: C#, .NET, SQL`
 
 If only one line and bullets exist, treat first line as title/company combined and
-split on ` at ` / ` · ` / ` | ` when present.
+split on `at` / `·` / `|` when present.
 
 Create one `WorkExperienceEntry` per detected block with imported fields only.
 
@@ -569,14 +569,14 @@ Extract:
 
 Suggested mapping examples:
 
-| Detected text | Map to |
-| --- | --- |
-| `native`, `mother tongue` | `LanguageProficiency.Native` |
-| `fluent`, `full professional` | `LanguageProficiency.Fluent` |
-| `advanced`, `upper intermediate` | `LanguageProficiency.Advanced` |
+| Detected text                         | Map to                             |
+| ------------------------------------- | ---------------------------------- |
+| `native`, `mother tongue`             | `LanguageProficiency.Native`       |
+| `fluent`, `full professional`         | `LanguageProficiency.Fluent`       |
+| `advanced`, `upper intermediate`      | `LanguageProficiency.Advanced`     |
 | `intermediate`, `working proficiency` | `LanguageProficiency.Intermediate` |
-| `elementary`, `basic`, `beginner` | `LanguageProficiency.Elementary` |
-| `A1` … `C2` | matching `CefrLevel` |
+| `elementary`, `basic`, `beginner`     | `LanguageProficiency.Elementary`   |
+| `A1` … `C2`                           | matching `CefrLevel`               |
 
 If no safe mapping exists, leave proficiency/CEFR empty rather than guessing.
 
@@ -680,11 +680,11 @@ Every imported field value should receive a confidence rating from the parser.
 
 Suggested rules:
 
-| Confidence | When to use |
-| --- | --- |
-| `High` | strong pattern match (`email` regex, exact URL host match, explicit labeled field such as `Email:`) |
-| `Medium` | reasonable heuristic match (date range parsed, section block split confidently, language proficiency mapped) |
-| `Low` | weak guess (name from first line, title/company split from one combined line, category inferred from hostname only) |
+| Confidence | When to use                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------- |
+| `High`     | strong pattern match (`email` regex, exact URL host match, explicit labeled field such as `Email:`)                 |
+| `Medium`   | reasonable heuristic match (date range parsed, section block split confidently, language proficiency mapped)        |
+| `Low`      | weak guess (name from first line, title/company split from one combined line, category inferred from hostname only) |
 
 Do not emit confidence entries for fields left empty.
 
@@ -777,17 +777,17 @@ This is a core product requirement.
 Default today: sections and entry cards are expanded. After import, override as
 follows:
 
-| UI section | Expanded after import when |
-| --- | --- |
-| Personal information | `PersonalInformationImport.HasAnyData()` is true |
-| Work experience | one or more imported work entries exist |
-| Education | one or more imported education entries exist |
-| Skills | one or more imported skill groups exist |
-| Languages | one or more imported language entries exist |
-| Certificates | one or more imported certificate entries exist |
-| Projects | one or more imported project entries exist |
-| Links | one or more imported custom link entries exist |
-| Additional information | imported content is non-whitespace |
+| UI section             | Expanded after import when                       |
+| ---------------------- | ------------------------------------------------ |
+| Personal information   | `PersonalInformationImport.HasAnyData()` is true |
+| Work experience        | one or more imported work entries exist          |
+| Education              | one or more imported education entries exist     |
+| Skills                 | one or more imported skill groups exist          |
+| Languages              | one or more imported language entries exist      |
+| Certificates           | one or more imported certificate entries exist   |
+| Projects               | one or more imported project entries exist       |
+| Links                  | one or more imported custom link entries exist   |
+| Additional information | imported content is non-whitespace               |
 
 Otherwise the top-level section must be **collapsed**.
 
@@ -921,11 +921,11 @@ Suggested location:
 
 Required sample files:
 
-| File | Purpose |
-| --- | --- |
+| File                     | Purpose                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
 | `sample-cv-en-basic.pdf` | simple one-column English CV with contact info, summary, work experience, education, skills |
-| `sample-cv-sk-basic.pdf` | Slovak section headers (`Profil`, `Pracovné skúsenosti`, `Vzdelanie`, `Jazyky`) |
-| `sample-cv-en-messy.pdf` | extra blank lines, bullets, combined title/company lines, trailing unmapped text |
+| `sample-cv-sk-basic.pdf` | Slovak section headers (`Profil`, `Pracovné skúsenosti`, `Vzdelanie`, `Jazyky`)             |
+| `sample-cv-en-messy.pdf` | extra blank lines, bullets, combined title/company lines, trailing unmapped text            |
 
 Requirements for sample PDFs:
 

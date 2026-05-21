@@ -30,8 +30,9 @@
     </Style>
 
     <Style Selector="TextBlock.re-vitae-error">
-        <Setter Property="Foreground" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="Foreground" Value="#EF5350" />
         <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="FontSize" Value="12" />
     </Style>
 
     <Style Selector="TextBlock.re-vitae-secondary">
@@ -214,6 +215,56 @@
 
     <Style Selector="TextBox.re-vitae-import-hint">
         <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="TextBox.re-vitae-field-invalid">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="TextBox.re-vitae-field-invalid /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="ComboBox.re-vitae-field-invalid">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="ComboBox.re-vitae-field-invalid /template/ Border#Background">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="AutoCompleteBox.re-vitae-field-invalid">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="AutoCompleteBox.re-vitae-field-invalid /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="#EF5350" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="DatePicker.re-vitae-field-invalid">
+        <Setter Property="BorderBrush" Value="#EF5350" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="DatePicker.re-vitae-field-invalid /template/ Border">
+        <Setter Property="BorderBrush" Value="#EF5350" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="TextBox.re-vitae-field-invalid.re-vitae-import-hint">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialErrorBrush}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+
+    <Style Selector="Border.re-vitae-chip-invalid">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialErrorBrush}" />
         <Setter Property="BorderThickness" Value="1.5" />
     </Style>
 </Styles>

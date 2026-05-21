@@ -10,22 +10,40 @@ using ReVitae.Core.Cv.Certificates;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace ReVitae.Certificates;
 
-public sealed class CertificatesSectionView : UserControl
+public sealed class CertificatesSectionView : UserControl, IValidationNavigableSection
 {
+    private static readonly string[] EntryFieldOrder =
+    [
+        CertificatesFieldKeys.Name,
+        CertificatesFieldKeys.Issuer,
+        CertificatesFieldKeys.IssueMonth,
+        CertificatesFieldKeys.IssueYear,
+        CertificatesFieldKeys.DateRange,
+        CertificatesFieldKeys.ExpirationMonth,
+        CertificatesFieldKeys.ExpirationYear,
+        CertificatesFieldKeys.CredentialId,
+        CertificatesFieldKeys.CredentialUrl,
+        CertificatesFieldKeys.Description
+    ];
+
     private readonly ExpandableSection _section;
+    private readonly StackPanel _sectionErrorBadgePanel;
+    private readonly TextBlock _sectionErrorBadgeTextBlock;
     private readonly StackPanel _contentPanel;
     private readonly StackPanel _entriesPanel;
     private readonly TextBlock _emptyHintTextBlock;
     private readonly Button _addButton;
     private readonly Button _sortButton;
+    private readonly ValidationTouchTracker _touchTracker = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly List<CertificateEntry> _entries = [];
     private readonly Dictionary<string, CertificateEntryCard> _cardsById = new(StringComparer.Ordinal);
@@ -64,10 +82,13 @@ public sealed class CertificatesSectionView : UserControl
             }
         };
 
+        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionErrorBadgePanel
         };
 
         Content = _section;
@@ -78,6 +99,8 @@ public sealed class CertificatesSectionView : UserControl
     public event EventHandler? EntriesChanged;
 
     public IReadOnlyList<CertificateEntry> Entries => _entries;
+
+    public ValidationTouchTracker TouchTracker => _touchTracker;
 
     public void SetLocalizer(AppLocalizer localizer)
     {
@@ -95,16 +118,78 @@ public sealed class CertificatesSectionView : UserControl
         }
     }
 
-    public void UpdateValidation(FieldValidationResult validationResult)
+    public void UpdateValidation(FieldValidationResult validationResult) =>
+        UpdateValidation(validationResult, _touchTracker);
+
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
+        var sectionErrors = validationResult.Errors
+            .Where(error => CertificatesFieldKeys.TryParseEntryId(error.FieldKey, out _, out _))
+            .ToArray();
+
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionErrorBadgePanel,
+            _sectionErrorBadgeTextBlock,
+            sectionErrors.Length,
+            !_section.IsExpanded,
+            _localizer,
+            TranslationKeys.CertificatesValidationErrors,
+            () => _section.IsExpanded = true);
+
         foreach (var (entryId, card) in _cardsById)
         {
             var errors = validationResult.Errors
                 .Where(error => CertificatesFieldKeys.TryParseEntryId(error.FieldKey, out var parsedId, out _)
                     && parsedId == entryId)
                 .ToArray();
-            card.UpdateValidation(errors);
+            card.UpdateValidation(errors, touchTracker);
         }
+    }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (!CertificatesFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        card.SetExpanded(true);
+        var control = FindControlForFieldKey(fieldKey);
+        control?.Focus();
+        return control is not null;
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey)
+    {
+        if (!CertificatesFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return null;
+        }
+
+        return _cardsById.TryGetValue(entryId, out var card)
+            ? card.FindControlForFieldKey(fieldKey)
+            : null;
+    }
+
+    public IReadOnlyList<string> GetOrderedFieldKeys()
+    {
+        var keys = new List<string>(_entries.Count * EntryFieldOrder.Length);
+        foreach (var entry in _entries)
+        {
+            foreach (var fieldName in EntryFieldOrder)
+            {
+                keys.Add(CertificatesFieldKeys.Build(entry.Id, fieldName));
+            }
+        }
+
+        return keys;
     }
 
     public void ReplaceEntries(IReadOnlyList<CertificateEntry> entries, bool expandSection = true)
@@ -195,7 +280,7 @@ public sealed class CertificatesSectionView : UserControl
 
         foreach (var entry in _entries)
         {
-            var card = new CertificateEntryCard(this, entry, _localizer);
+            var card = new CertificateEntryCard(this, entry, _localizer, _touchTracker);
             card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
@@ -310,50 +395,33 @@ public sealed class CertificatesSectionView : UserControl
     {
         private readonly CertificatesSectionView _sectionView;
         private readonly CertificateEntry _entry;
+        private readonly ValidationFieldRegistry _fieldRegistry = new();
         private AppLocalizer _localizer;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
         private readonly TextBlock _errorBadgeTextBlock;
         private readonly TextBox _nameTextBox;
         private readonly AutoCompleteBox _issuerAutoComplete;
-        private readonly ComboBox _issueMonthComboBox;
-        private readonly TextBox _issueYearTextBox;
-        private readonly ComboBox _expirationMonthComboBox;
-        private readonly TextBox _expirationYearTextBox;
+        private readonly DatePicker _issueDatePicker;
+        private readonly DatePicker _expirationDatePicker;
         private readonly TextBox _credentialIdTextBox;
         private readonly TextBox _credentialUrlTextBox;
         private readonly TextBox _descriptionTextBox;
         private readonly TextBlock _descriptionCounterTextBlock;
-        private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
         private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
-        public CertificateEntryCard(CertificatesSectionView sectionView, CertificateEntry entry, AppLocalizer localizer)
+        public CertificateEntryCard(
+            CertificatesSectionView sectionView,
+            CertificateEntry entry,
+            AppLocalizer localizer,
+            ValidationTouchTracker touchTracker)
         {
             _sectionView = sectionView;
             _entry = entry;
             _localizer = localizer;
 
-            _errorBadgeTextBlock = new TextBlock
-            {
-                IsVisible = false,
-                FontWeight = FontWeight.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            _errorBadgeTextBlock.Classes.Add(UiClasses.ErrorText);
-
-            _errorBadgePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                IsVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    MaterialIconFactory.Create(MaterialIconKind.AlertCircle, 16),
-                    _errorBadgeTextBlock
-                }
-            };
+            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
             _dragArea = new Border();
             _dragArea.Classes.Add(UiClasses.DragHandle);
@@ -365,18 +433,14 @@ public sealed class CertificatesSectionView : UserControl
 
             _nameTextBox = CreateTextBox(OnFieldChanged);
             _issuerAutoComplete = CreateIssuerAutoComplete();
-            _issueMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _issueYearTextBox = CreateTextBox(OnFieldChanged);
-            _expirationMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _expirationYearTextBox = CreateTextBox(OnFieldChanged);
+            _issueDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
+            _expirationDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
             _credentialIdTextBox = CreateTextBox(OnFieldChanged);
             _credentialUrlTextBox = CreateTextBox(OnFieldChanged);
             _descriptionTextBox = CreateMultilineTextBox(OnFieldChanged);
             _descriptionCounterTextBlock = CreateCounterTextBlock();
 
             RegisterImportConfidenceField(CertificatesFieldKeys.Name, _nameTextBox);
-            RegisterImportConfidenceField(CertificatesFieldKeys.IssueYear, _issueYearTextBox);
-            RegisterImportConfidenceField(CertificatesFieldKeys.ExpirationYear, _expirationYearTextBox);
             RegisterImportConfidenceField(CertificatesFieldKeys.CredentialId, _credentialIdTextBox);
             RegisterImportConfidenceField(CertificatesFieldKeys.CredentialUrl, _credentialUrlTextBox);
             RegisterImportConfidenceField(CertificatesFieldKeys.Description, _descriptionTextBox);
@@ -395,32 +459,61 @@ public sealed class CertificatesSectionView : UserControl
                 Children = { _dragArea, _errorBadgePanel }
             };
 
+            var entryId = _entry.Id;
             var body = new StackPanel
             {
                 Spacing = 10,
                 Children =
                 {
-                    CreateField(_nameTextBox, TranslationKeys.CertificatesName, CertificatesFieldKeys.Name),
-                    CreateField(_issuerAutoComplete, TranslationKeys.CertificatesIssuer, CertificatesFieldKeys.Issuer),
-                    CreateDateField(
-                        _issueMonthComboBox,
-                        _issueYearTextBox,
-                        TranslationKeys.CertificatesIssueDate,
-                        CertificatesFieldKeys.IssueMonth,
-                        CertificatesFieldKeys.IssueYear),
-                    CreateDateField(
-                        _expirationMonthComboBox,
-                        _expirationYearTextBox,
-                        TranslationKeys.CertificatesExpirationDate,
-                        CertificatesFieldKeys.ExpirationMonth,
-                        CertificatesFieldKeys.ExpirationYear),
-                    CreateField(_credentialIdTextBox, TranslationKeys.CertificatesCredentialId, CertificatesFieldKeys.CredentialId),
-                    CreateField(_credentialUrlTextBox, TranslationKeys.CertificatesCredentialUrl, CertificatesFieldKeys.CredentialUrl),
-                    CreateMultilineField(
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CertificatesName),
+                        _nameTextBox,
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.Name),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CertificatesIssuer),
+                        _issuerAutoComplete,
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.Issuer),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.CertificatesIssueDate),
+                        _issueDatePicker,
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.IssueMonth),
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.IssueMonth),
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.IssueYear),
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.DateRange),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.CertificatesExpirationDate),
+                        _expirationDatePicker,
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.ExpirationMonth),
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.ExpirationMonth),
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.ExpirationYear),
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.DateRange),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CertificatesCredentialId),
+                        _credentialIdTextBox,
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.CredentialId),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CertificatesCredentialUrl),
+                        _credentialUrlTextBox,
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.CredentialUrl),
+                        _fieldRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.CertificatesDescription),
                         _descriptionTextBox,
-                        _descriptionCounterTextBlock,
-                        TranslationKeys.CertificatesDescription,
-                        CertificatesFieldKeys.Description),
+                        CertificatesFieldKeys.Build(entryId, CertificatesFieldKeys.Description),
+                        _fieldRegistry,
+                        touchTracker,
+                        _descriptionCounterTextBlock),
                     new StackPanel
                     {
                         Orientation = Orientation.Horizontal,
@@ -457,6 +550,9 @@ public sealed class CertificatesSectionView : UserControl
 
         public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
 
+        public Control? FindControlForFieldKey(string fieldKey) =>
+            _fieldRegistry.FindControlForFieldKey(fieldKey);
+
         public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
         {
             ImportConfidenceHelper.ApplyToFields(_importConfidenceFields, confidences);
@@ -474,93 +570,17 @@ public sealed class CertificatesSectionView : UserControl
 
         public void ClearDragVisual() => RootBorder.Opacity = 1;
 
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors)
+        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
         {
-            foreach (var (fieldName, textBlock) in _errorTextBlocks)
-            {
-                var fieldErrors = errors
-                    .Where(error => error.FieldKey.EndsWith("." + fieldName, StringComparison.Ordinal))
-                    .Select(error => _localizer.Get(error.Message))
-                    .Distinct()
-                    .ToArray();
-                textBlock.Text = string.Join(Environment.NewLine, fieldErrors);
-            }
+            _fieldRegistry.ApplyErrors(errors, _localizer, touchTracker);
 
-            var dateRangeError = errors.FirstOrDefault(error =>
-                error.FieldKey.EndsWith("." + CertificatesFieldKeys.DateRange, StringComparison.Ordinal));
-            if (dateRangeError is not null
-                && _errorTextBlocks.TryGetValue(CertificatesFieldKeys.IssueMonth, out var issueErrorBlock))
-            {
-                var combined = string.Join(
-                    Environment.NewLine,
-                    new[] { issueErrorBlock.Text, _localizer.Get(dateRangeError.Message) }
-                        .Where(text => !string.IsNullOrWhiteSpace(text)));
-                issueErrorBlock.Text = combined;
-            }
-
-            var errorCount = errors.Count;
-            var showBadge = errorCount > 0 && !_expandableSection.IsExpanded;
-            _errorBadgePanel.IsVisible = showBadge;
-            _errorBadgeTextBlock.IsVisible = showBadge;
-            _errorBadgeTextBlock.Text = showBadge
-                ? _localizer.Format(TranslationKeys.CertificatesValidationErrors, errorCount)
-                : string.Empty;
-        }
-
-        private StackPanel CreateField(Control input, string labelKey, string fieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, input, error }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateDateField(
-            ComboBox monthComboBox,
-            TextBox yearTextBox,
-            string labelKey,
-            string monthFieldName,
-            string yearFieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var monthError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            monthError.Classes.Add(UiClasses.ErrorText);
-            var yearError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            yearError.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[monthFieldName] = monthError;
-            _errorTextBlocks[yearFieldName] = yearError;
-
-            var row = new Grid
-            {
-                ColumnDefinitions = new ColumnDefinitions("*,*"),
-                ColumnSpacing = 8
-            };
-            row.Children.Add(monthComboBox);
-            row.Children.Add(yearTextBox);
-            Grid.SetColumn(yearTextBox, 1);
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, row, monthError, yearError }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateMultilineField(TextBox textBox, TextBlock counter, string labelKey, string fieldName)
-        {
-            var panel = CreateField(textBox, labelKey, fieldName);
-            panel.Children.Add(counter);
-            return panel;
+            ValidationErrorBadgeFactory.Update(
+                _errorBadgePanel,
+                _errorBadgeTextBlock,
+                errors.Count,
+                !_expandableSection.IsExpanded,
+                _localizer.Format(TranslationKeys.CertificatesValidationErrors, errors.Count),
+                () => _expandableSection.IsExpanded = true);
         }
 
         private AutoCompleteBox CreateIssuerAutoComplete()
@@ -580,10 +600,8 @@ public sealed class CertificatesSectionView : UserControl
         {
             _nameTextBox.Text = _entry.Name;
             _issuerAutoComplete.Text = _entry.Issuer;
-            _issueMonthComboBox.SelectedItem = _entry.IssueMonth;
-            _issueYearTextBox.Text = _entry.IssueYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _expirationMonthComboBox.SelectedItem = _entry.ExpirationMonth;
-            _expirationYearTextBox.Text = _entry.ExpirationYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            _issueDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.IssueMonth, _entry.IssueYear);
+            _expirationDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.ExpirationMonth, _entry.ExpirationYear);
             _credentialIdTextBox.Text = _entry.CredentialId;
             _credentialUrlTextBox.Text = _entry.CredentialUrl;
             _descriptionTextBox.Text = _entry.Description;
@@ -593,16 +611,14 @@ public sealed class CertificatesSectionView : UserControl
         {
             _entry.Name = _nameTextBox.Text ?? string.Empty;
             _entry.Issuer = _issuerAutoComplete.Text ?? string.Empty;
-            _entry.IssueMonth = _issueMonthComboBox.SelectedItem as int?;
-            _entry.IssueYear = ParseYear(_issueYearTextBox.Text);
-            _entry.ExpirationMonth = _expirationMonthComboBox.SelectedItem as int?;
-            _entry.ExpirationYear = ParseYear(_expirationYearTextBox.Text);
+            (_entry.IssueMonth, _entry.IssueYear) = MonthYearDateHelper.FromSelectedDate(_issueDatePicker.SelectedDate);
+            (_entry.ExpirationMonth, _entry.ExpirationYear) = MonthYearDateHelper.FromSelectedDate(_expirationDatePicker.SelectedDate);
             _entry.CredentialId = _credentialIdTextBox.Text ?? string.Empty;
             _entry.CredentialUrl = _credentialUrlTextBox.Text ?? string.Empty;
             _entry.Description = _descriptionTextBox.Text ?? string.Empty;
         }
 
-        private void OnFieldChanged(object? sender, RoutedEventArgs e)
+        private void OnFieldChanged(object? sender, EventArgs e)
         {
             SyncToEntry();
             _expandableSection.Title = _entry.BuildHeaderSummary();
@@ -610,7 +626,7 @@ public sealed class CertificatesSectionView : UserControl
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e) => OnFieldChanged(sender, e);
+        private void OnDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e) => OnFieldChanged(sender, EventArgs.Empty);
 
         private void UpdateCharacterCounters()
         {
@@ -651,26 +667,11 @@ public sealed class CertificatesSectionView : UserControl
             return counter;
         }
 
-        private static ComboBox CreateMonthComboBox(EventHandler<SelectionChangedEventArgs> onChanged)
-        {
-            var comboBox = new ComboBox
-            {
-                ItemsSource = Enumerable.Range(1, 12).Cast<int?>().ToArray(),
-                PlaceholderText = "MM"
-            };
-            comboBox.SelectionChanged += onChanged;
-            return comboBox;
-        }
-
         private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
         {
             _importConfidenceFields[CertificatesFieldKeys.Build(_entry.Id, fieldName)] = textBox;
             textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
-        private static int? ParseYear(string? text)
-        {
-            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year) ? year : null;
-        }
     }
 }

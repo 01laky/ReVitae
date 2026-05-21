@@ -26,6 +26,8 @@ public static class UiClasses
     public const string SectionTitle = "re-vitae-section-title";
     public const string Subtitle = "re-vitae-subtitle";
     public const string ErrorText = "re-vitae-error";
+    public const string FieldInvalid = "re-vitae-field-invalid";
+    public const string ChipInvalid = "re-vitae-chip-invalid";
     public const string SecondaryText = "re-vitae-secondary";
     public const string CounterText = "re-vitae-counter";
     public const string SkillChip = "re-vitae-skill-chip";

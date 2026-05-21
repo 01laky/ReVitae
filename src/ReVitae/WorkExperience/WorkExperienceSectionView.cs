@@ -10,15 +10,16 @@ using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace ReVitae.WorkExperience;
 
-public sealed class WorkExperienceSectionView : UserControl
+public sealed class WorkExperienceSectionView : UserControl, IValidationNavigableSection
 {
     private readonly ExpandableSection _section;
     private readonly StackPanel _contentPanel;
@@ -26,14 +27,20 @@ public sealed class WorkExperienceSectionView : UserControl
     private readonly TextBlock _emptyHintTextBlock;
     private readonly Button _addButton;
     private readonly Button _sortButton;
+    private readonly StackPanel _sectionErrorBadgePanel;
+    private readonly TextBlock _sectionErrorBadgeTextBlock;
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly List<WorkExperienceEntry> _entries = [];
     private readonly Dictionary<string, WorkExperienceEntryCard> _cardsById = new(StringComparer.Ordinal);
+    private ValidationTouchTracker _touchTracker = new();
+    private int _sectionErrorCount;
     private string? _dragSourceEntryId;
     private bool _suppressEntriesChanged;
 
     public WorkExperienceSectionView()
     {
+        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _entriesPanel = new StackPanel { Spacing = 12 };
         _emptyHintTextBlock = new TextBlock
         {
@@ -68,7 +75,15 @@ public sealed class WorkExperienceSectionView : UserControl
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionErrorBadgePanel
+        };
+        _section.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == ExpandableSection.IsExpandedProperty)
+            {
+                UpdateSectionErrorBadge();
+            }
         };
 
         Content = _section;
@@ -92,18 +107,69 @@ public sealed class WorkExperienceSectionView : UserControl
         {
             card.ApplyLocalization(_localizer);
         }
+
+        UpdateSectionErrorBadge();
     }
 
-    public void UpdateValidation(FieldValidationResult validationResult)
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
+        _touchTracker = touchTracker;
+
+        var sectionErrors = validationResult.Errors
+            .Where(error => WorkExperienceFieldKeys.TryParseEntryId(error.FieldKey, out _, out _))
+            .ToArray();
+        _sectionErrorCount = sectionErrors.Length;
+
         foreach (var (entryId, card) in _cardsById)
         {
-            var errors = validationResult.Errors
+            var errors = sectionErrors
                 .Where(error => WorkExperienceFieldKeys.TryParseEntryId(error.FieldKey, out var parsedId, out _)
                     && parsedId == entryId)
                 .ToArray();
-            card.UpdateValidation(errors);
+            card.UpdateValidation(errors, touchTracker);
         }
+
+        UpdateSectionErrorBadge();
+    }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (!WorkExperienceFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        return card.ExpandAndRevealField(fieldKey);
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey)
+    {
+        if (!WorkExperienceFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return null;
+        }
+
+        return _cardsById.TryGetValue(entryId, out var card)
+            ? card.FindControlForFieldKey(fieldKey)
+            : null;
+    }
+
+    public IReadOnlyList<string> GetOrderedFieldKeys()
+    {
+        var keys = new List<string>();
+        foreach (var entry in _entries)
+        {
+            keys.AddRange(WorkExperienceEntryCard.GetOrderedFieldKeys(entry.Id));
+        }
+
+        return keys;
     }
 
     public void ReplaceEntries(IReadOnlyList<WorkExperienceEntry> entries, bool expandSection = true)
@@ -163,6 +229,18 @@ public sealed class WorkExperienceSectionView : UserControl
         }
     }
 
+    private void UpdateSectionErrorBadge()
+    {
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionErrorBadgePanel,
+            _sectionErrorBadgeTextBlock,
+            _sectionErrorCount,
+            !_section.IsExpanded,
+            _localizer,
+            TranslationKeys.WorkExperienceValidationErrors,
+            () => _section.IsExpanded = true);
+    }
+
     private void RebuildEntryCards()
     {
         _entriesPanel.Children.Clear();
@@ -171,7 +249,7 @@ public sealed class WorkExperienceSectionView : UserControl
         for (var index = 0; index < _entries.Count; index++)
         {
             var entry = _entries[index];
-            var card = new WorkExperienceEntryCard(entry, _localizer, index);
+            var card = new WorkExperienceEntryCard(entry, _localizer, index, _touchTracker);
             card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
@@ -240,6 +318,8 @@ public sealed class WorkExperienceSectionView : UserControl
     {
         private readonly WorkExperienceEntry _entry;
         private readonly int _index;
+        private readonly ValidationFieldRegistry _fieldRegistry = new();
+        private ValidationTouchTracker _touchTracker;
         private AppLocalizer _localizer;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
@@ -248,10 +328,8 @@ public sealed class WorkExperienceSectionView : UserControl
         private readonly TextBox _companyTextBox;
         private readonly TextBox _locationTextBox;
         private readonly ComboBox _employmentTypeComboBox;
-        private readonly ComboBox _startMonthComboBox;
-        private readonly TextBox _startYearTextBox;
-        private readonly ComboBox _endMonthComboBox;
-        private readonly TextBox _endYearTextBox;
+        private readonly DatePicker _startDatePicker;
+        private readonly DatePicker _endDatePicker;
         private readonly CheckBox _currentlyWorkingCheckBox;
         private readonly TextBox _descriptionTextBox;
         private readonly TextBox _achievementsTextBox;
@@ -259,36 +337,22 @@ public sealed class WorkExperienceSectionView : UserControl
         private readonly TextBox _companyUrlTextBox;
         private readonly TextBlock _descriptionCounterTextBlock;
         private readonly TextBlock _achievementsCounterTextBlock;
-        private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
         private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
+        private int _errorCount;
 
-        public WorkExperienceEntryCard(WorkExperienceEntry entry, AppLocalizer localizer, int index)
+        public WorkExperienceEntryCard(
+            WorkExperienceEntry entry,
+            AppLocalizer localizer,
+            int index,
+            ValidationTouchTracker touchTracker)
         {
             _entry = entry;
             _localizer = localizer;
             _index = index;
+            _touchTracker = touchTracker;
 
-            _errorBadgeTextBlock = new TextBlock
-            {
-                IsVisible = false,
-                FontWeight = FontWeight.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            _errorBadgeTextBlock.Classes.Add(UiClasses.ErrorText);
-
-            _errorBadgePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                IsVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    MaterialIconFactory.Create(MaterialIconKind.AlertCircle, 16),
-                    _errorBadgeTextBlock
-                }
-            };
+            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
             _dragArea = new Border();
             _dragArea.Classes.Add(UiClasses.DragHandle);
@@ -303,10 +367,8 @@ public sealed class WorkExperienceSectionView : UserControl
             _companyTextBox = CreateTextBox(OnFieldChanged);
             _locationTextBox = CreateTextBox(OnFieldChanged);
             _employmentTypeComboBox = CreateEmploymentTypeComboBox();
-            _startMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _endMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _startYearTextBox = CreateTextBox(OnFieldChanged);
-            _endYearTextBox = CreateTextBox(OnFieldChanged);
+            _startDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
+            _endDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
             _currentlyWorkingCheckBox = new CheckBox();
             _currentlyWorkingCheckBox.IsCheckedChanged += OnCurrentlyWorkingChanged;
             _descriptionTextBox = CreateMultilineTextBox(OnFieldChanged);
@@ -319,8 +381,6 @@ public sealed class WorkExperienceSectionView : UserControl
             RegisterImportConfidenceField(WorkExperienceFieldKeys.JobTitle, _jobTitleTextBox);
             RegisterImportConfidenceField(WorkExperienceFieldKeys.Company, _companyTextBox);
             RegisterImportConfidenceField(WorkExperienceFieldKeys.Location, _locationTextBox);
-            RegisterImportConfidenceField(WorkExperienceFieldKeys.StartYear, _startYearTextBox);
-            RegisterImportConfidenceField(WorkExperienceFieldKeys.EndYear, _endYearTextBox);
             RegisterImportConfidenceField(WorkExperienceFieldKeys.Description, _descriptionTextBox);
             RegisterImportConfidenceField(WorkExperienceFieldKeys.Achievements, _achievementsTextBox);
             RegisterImportConfidenceField(WorkExperienceFieldKeys.Technologies, _technologiesTextBox);
@@ -340,22 +400,83 @@ public sealed class WorkExperienceSectionView : UserControl
                 Children = { _dragArea, _errorBadgePanel }
             };
 
+            var entryId = _entry.Id;
+            string FieldKey(string fieldName) => WorkExperienceFieldKeys.Build(entryId, fieldName);
+
             var body = new StackPanel
             {
                 Spacing = 10,
                 Children =
                 {
-                    CreateField(_jobTitleTextBox, TranslationKeys.WorkExperienceJobTitle, WorkExperienceFieldKeys.JobTitle),
-                    CreateField(_companyTextBox, TranslationKeys.WorkExperienceCompany, WorkExperienceFieldKeys.Company),
-                    CreateField(_locationTextBox, TranslationKeys.WorkExperienceLocation, WorkExperienceFieldKeys.Location),
-                    CreateField(_employmentTypeComboBox, TranslationKeys.WorkExperienceEmploymentType, WorkExperienceFieldKeys.EmploymentType),
-                    CreateDateField(_startMonthComboBox, _startYearTextBox, TranslationKeys.WorkExperienceStartDate, WorkExperienceFieldKeys.StartMonth, WorkExperienceFieldKeys.StartYear),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceJobTitle),
+                        _jobTitleTextBox,
+                        FieldKey(WorkExperienceFieldKeys.JobTitle),
+                        _fieldRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceCompany),
+                        _companyTextBox,
+                        FieldKey(WorkExperienceFieldKeys.Company),
+                        _fieldRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceLocation),
+                        _locationTextBox,
+                        FieldKey(WorkExperienceFieldKeys.Location),
+                        _fieldRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceEmploymentType),
+                        _employmentTypeComboBox,
+                        FieldKey(WorkExperienceFieldKeys.EmploymentType),
+                        _fieldRegistry,
+                        _touchTracker),
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceStartDate),
+                        _startDatePicker,
+                        FieldKey(WorkExperienceFieldKeys.StartMonth),
+                        FieldKey(WorkExperienceFieldKeys.StartMonth),
+                        FieldKey(WorkExperienceFieldKeys.StartYear),
+                        FieldKey(WorkExperienceFieldKeys.DateRange),
+                        _fieldRegistry,
+                        _touchTracker),
                     _currentlyWorkingCheckBox,
-                    CreateDateField(_endMonthComboBox, _endYearTextBox, TranslationKeys.WorkExperienceEndDate, WorkExperienceFieldKeys.EndMonth, WorkExperienceFieldKeys.EndYear),
-                    CreateMultilineField(_descriptionTextBox, _descriptionCounterTextBlock, TranslationKeys.WorkExperienceDescription, WorkExperienceFieldKeys.Description),
-                    CreateMultilineField(_achievementsTextBox, _achievementsCounterTextBlock, TranslationKeys.WorkExperienceAchievements, WorkExperienceFieldKeys.Achievements),
-                    CreateField(_technologiesTextBox, TranslationKeys.WorkExperienceTechnologies, WorkExperienceFieldKeys.Technologies),
-                    CreateField(_companyUrlTextBox, TranslationKeys.WorkExperienceCompanyUrl, WorkExperienceFieldKeys.CompanyUrl),
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceEndDate),
+                        _endDatePicker,
+                        FieldKey(WorkExperienceFieldKeys.EndMonth),
+                        FieldKey(WorkExperienceFieldKeys.EndMonth),
+                        FieldKey(WorkExperienceFieldKeys.EndYear),
+                        FieldKey("_endDateRange"),
+                        _fieldRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceDescription),
+                        _descriptionTextBox,
+                        FieldKey(WorkExperienceFieldKeys.Description),
+                        _fieldRegistry,
+                        _touchTracker,
+                        _descriptionCounterTextBlock),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceAchievements),
+                        _achievementsTextBox,
+                        FieldKey(WorkExperienceFieldKeys.Achievements),
+                        _fieldRegistry,
+                        _touchTracker,
+                        _achievementsCounterTextBlock),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceTechnologies),
+                        _technologiesTextBox,
+                        FieldKey(WorkExperienceFieldKeys.Technologies),
+                        _fieldRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.WorkExperienceCompanyUrl),
+                        _companyUrlTextBox,
+                        FieldKey(WorkExperienceFieldKeys.CompanyUrl),
+                        _fieldRegistry,
+                        _touchTracker),
                     new StackPanel
                     {
                         Orientation = Orientation.Horizontal,
@@ -370,6 +491,13 @@ public sealed class WorkExperienceSectionView : UserControl
                 SectionContent = body,
                 IsExpanded = true,
                 HeaderActions = headerActions
+            };
+            _expandableSection.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == ExpandableSection.IsExpandedProperty)
+                {
+                    UpdateErrorBadge();
+                }
             };
 
             RootBorder = new Border
@@ -403,6 +531,26 @@ public sealed class WorkExperienceSectionView : UserControl
 
         public Border RootBorder { get; }
 
+        public static IReadOnlyList<string> GetOrderedFieldKeys(string entryId)
+        {
+            return
+            [
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.JobTitle),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.Company),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.Location),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.EmploymentType),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.StartMonth),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.StartYear),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.DateRange),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.EndMonth),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.EndYear),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.Description),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.Achievements),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.Technologies),
+                WorkExperienceFieldKeys.Build(entryId, WorkExperienceFieldKeys.CompanyUrl)
+            ];
+        }
+
         public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
 
         public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
@@ -420,97 +568,40 @@ public sealed class WorkExperienceSectionView : UserControl
             _currentlyWorkingCheckBox.Content = _localizer.Get(TranslationKeys.WorkExperienceCurrentlyWorking);
             RefreshEmploymentTypeItems();
             UpdateCharacterCounters();
+            UpdateErrorBadge();
         }
 
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors)
+        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
         {
-            foreach (var (fieldName, textBlock) in _errorTextBlocks)
+            _errorCount = errors.Count;
+            _fieldRegistry.ApplyErrors(errors, _localizer, touchTracker);
+            UpdateErrorBadge();
+        }
+
+        public bool ExpandAndRevealField(string fieldKey)
+        {
+            _expandableSection.IsExpanded = true;
+            var control = FindControlForFieldKey(fieldKey);
+            if (control is null)
             {
-                var fieldErrors = errors
-                    .Where(error => error.FieldKey.EndsWith("." + fieldName, StringComparison.Ordinal))
-                    .Select(error => _localizer.Get(error.Message))
-                    .ToArray();
-                textBlock.Text = string.Join(Environment.NewLine, fieldErrors);
+                return false;
             }
 
-            var dateRangeError = errors.FirstOrDefault(error =>
-                error.FieldKey.EndsWith("." + WorkExperienceFieldKeys.DateRange, StringComparison.Ordinal));
-            if (dateRangeError is not null
-                && _errorTextBlocks.TryGetValue(WorkExperienceFieldKeys.StartMonth, out var startErrorBlock))
-            {
-                var combined = string.Join(
-                    Environment.NewLine,
-                    new[] { startErrorBlock.Text, _localizer.Get(dateRangeError.Message) }
-                        .Where(text => !string.IsNullOrWhiteSpace(text)));
-                startErrorBlock.Text = combined;
-            }
-
-            var errorCount = errors.Count;
-            var showBadge = errorCount > 0 && !_expandableSection.IsExpanded;
-            _errorBadgePanel.IsVisible = showBadge;
-            _errorBadgeTextBlock.IsVisible = showBadge;
-            _errorBadgeTextBlock.Text = showBadge
-                ? _localizer.Format(TranslationKeys.WorkExperienceValidationErrors, errorCount)
-                : string.Empty;
+            control.Focus();
+            return true;
         }
 
-        private StackPanel CreateField(Control input, string labelKey, string fieldName)
+        public Control? FindControlForFieldKey(string fieldKey) => _fieldRegistry.FindControlForFieldKey(fieldKey);
+
+        private void UpdateErrorBadge()
         {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock
-            {
-                TextWrapping = TextWrapping.Wrap
-            };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, input, error }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateDateField(
-            ComboBox monthComboBox,
-            TextBox yearTextBox,
-            string labelKey,
-            string monthFieldName,
-            string yearFieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var monthError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            monthError.Classes.Add(UiClasses.ErrorText);
-            var yearError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            yearError.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[monthFieldName] = monthError;
-            _errorTextBlocks[yearFieldName] = yearError;
-
-            var row = new Grid
-            {
-                ColumnDefinitions = new ColumnDefinitions("*,*"),
-                ColumnSpacing = 8
-            };
-            row.Children.Add(monthComboBox);
-            row.Children.Add(yearTextBox);
-            Grid.SetColumn(yearTextBox, 1);
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, row, monthError, yearError }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateMultilineField(TextBox textBox, TextBlock counter, string labelKey, string fieldName)
-        {
-            var panel = CreateField(textBox, labelKey, fieldName);
-            panel.Children.Add(counter);
-            return panel;
+            ValidationErrorBadgeFactory.Update(
+                _errorBadgePanel,
+                _errorBadgeTextBlock,
+                _errorCount,
+                !_expandableSection.IsExpanded,
+                _localizer.Format(TranslationKeys.WorkExperienceValidationErrors, _errorCount),
+                () => _expandableSection.IsExpanded = true);
         }
 
         private ComboBox CreateEmploymentTypeComboBox()
@@ -540,10 +631,8 @@ public sealed class WorkExperienceSectionView : UserControl
             _jobTitleTextBox.Text = _entry.JobTitle;
             _companyTextBox.Text = _entry.Company;
             _locationTextBox.Text = _entry.Location;
-            _startMonthComboBox.SelectedItem = _entry.StartMonth;
-            _startYearTextBox.Text = _entry.StartYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _endMonthComboBox.SelectedItem = _entry.EndMonth;
-            _endYearTextBox.Text = _entry.EndYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
+            _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
             _currentlyWorkingCheckBox.IsChecked = _entry.IsCurrentlyWorking;
             _descriptionTextBox.Text = _entry.Description;
             _achievementsTextBox.Text = _entry.Achievements;
@@ -560,10 +649,8 @@ public sealed class WorkExperienceSectionView : UserControl
             _entry.EmploymentType = _employmentTypeComboBox.SelectedItem is ComboBoxItem { Tag: EmploymentType employmentType }
                 ? employmentType
                 : EmploymentType.FullTime;
-            _entry.StartMonth = _startMonthComboBox.SelectedItem as int?;
-            _entry.StartYear = ParseYear(_startYearTextBox.Text);
-            _entry.EndMonth = _endMonthComboBox.SelectedItem as int?;
-            _entry.EndYear = ParseYear(_endYearTextBox.Text);
+            (_entry.StartMonth, _entry.StartYear) = MonthYearDateHelper.FromSelectedDate(_startDatePicker.SelectedDate);
+            (_entry.EndMonth, _entry.EndYear) = MonthYearDateHelper.FromSelectedDate(_endDatePicker.SelectedDate);
             _entry.IsCurrentlyWorking = _currentlyWorkingCheckBox.IsChecked == true;
             _entry.Description = _descriptionTextBox.Text ?? string.Empty;
             _entry.Achievements = _achievementsTextBox.Text ?? string.Empty;
@@ -571,7 +658,7 @@ public sealed class WorkExperienceSectionView : UserControl
             _entry.CompanyUrl = _companyUrlTextBox.Text ?? string.Empty;
         }
 
-        private void OnFieldChanged(object? sender, RoutedEventArgs e)
+        private void OnFieldChanged(object? sender, EventArgs e)
         {
             SyncToEntry();
             _expandableSection.Title = _entry.BuildHeaderSummary(_localizer.Get(TranslationKeys.WorkExperiencePresent));
@@ -581,6 +668,8 @@ public sealed class WorkExperienceSectionView : UserControl
         }
 
         private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e) => OnFieldChanged(sender, e);
+
+        private void OnDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e) => OnFieldChanged(sender, EventArgs.Empty);
 
         private void OnCurrentlyWorkingChanged(object? sender, RoutedEventArgs e) => OnFieldChanged(sender, e);
 
@@ -599,8 +688,7 @@ public sealed class WorkExperienceSectionView : UserControl
         private void UpdateEndDateVisibility()
         {
             var isCurrent = _currentlyWorkingCheckBox.IsChecked == true;
-            _endMonthComboBox.IsEnabled = !isCurrent;
-            _endYearTextBox.IsEnabled = !isCurrent;
+            _endDatePicker.IsEnabled = !isCurrent;
         }
 
         private void UpdateCharacterCounters()
@@ -633,26 +721,11 @@ public sealed class WorkExperienceSectionView : UserControl
             return counter;
         }
 
-        private static ComboBox CreateMonthComboBox(EventHandler<SelectionChangedEventArgs> onChanged)
-        {
-            var comboBox = new ComboBox
-            {
-                ItemsSource = Enumerable.Range(1, 12).Cast<int?>().ToArray(),
-                PlaceholderText = "MM"
-            };
-            comboBox.SelectionChanged += onChanged;
-            return comboBox;
-        }
-
         private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
         {
             _importConfidenceFields[WorkExperienceFieldKeys.Build(_entry.Id, fieldName)] = textBox;
             textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
-        private static int? ParseYear(string? text)
-        {
-            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year) ? year : null;
-        }
     }
 }

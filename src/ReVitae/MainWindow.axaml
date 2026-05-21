@@ -44,6 +44,16 @@
                         Spacing="8"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center">
+                <Button x:Name="UploadCvButton"
+                        Classes="re-vitae-icon-button"
+                        Click="OnUploadCvClicked"
+                        ToolTip.Tip="Upload another CV"
+                        AutomationProperties.Name="Upload another CV">
+                    <materialIcons:MaterialIcon Kind="FileUpload"
+                                                Width="24"
+                                                Height="24" />
+                </Button>
+
                 <Button x:Name="OpenSetupButton"
                         Classes="re-vitae-icon-button"
                         Click="OnOpenSetupClicked"
@@ -70,7 +80,7 @@
               Margin="0,24,0,0"
               ColumnDefinitions="*,*"
               ColumnSpacing="24">
-            <ScrollViewer Grid.Column="0">
+            <ScrollViewer x:Name="FormScrollViewer" Grid.Column="0">
                 <Border Classes="re-vitae-app-card">
                     <StackPanel Classes="re-vitae-section-body">
                         <controls:ExpandableSection x:Name="PersonalInformationSection"
@@ -186,9 +196,6 @@
                         <links:LinksSectionView x:Name="LinksSection" />
 
                         <additionalInformation:AdditionalInformationSectionView x:Name="AdditionalInformationSection" />
-
-                        <TextBlock x:Name="ValidationSummaryTextBlock"
-                                   Classes="re-vitae-error" />
 
                         <Button x:Name="ExportPdfButton"
                                 Classes="re-vitae-primary"
@@ -531,6 +538,73 @@
                             HorizontalAlignment="Right"
                             Click="OnCloseTemplatesClicked" />
                 </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="ReplaceCvConfirmModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="ReplaceCvConfirmModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="520"
+                    MinWidth="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="16"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="ReplaceCvConfirmTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="24"
+                               Text="Replace current CV?" />
+                    <TextBlock x:Name="ReplaceCvConfirmMessageTextBlock"
+                               Classes="re-vitae-secondary"
+                               TextWrapping="Wrap"
+                               Text="Importing a new PDF will replace all current CV data. Do you want to continue?" />
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="ReplaceCvConfirmCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnReplaceCvConfirmCancelClicked" />
+                        <Button x:Name="ReplaceCvConfirmOkButton"
+                                Classes="re-vitae-primary"
+                                Content="OK"
+                                Click="OnReplaceCvConfirmOkClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="ReplaceCvImportProgressModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="ReplaceCvImportProgressModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="480"
+                    MinWidth="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="12"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="ReplaceCvImportProgressTextBlock"
+                               Classes="re-vitae-secondary"
+                               Text="Reading PDF…" />
+                    <ProgressBar IsIndeterminate="True"
+                                 Height="4" />
+                    <TextBlock x:Name="ReplaceCvImportErrorTextBlock"
+                               Classes="re-vitae-error"
+                               TextWrapping="Wrap"
+                               IsVisible="False" />
+                    <Button x:Name="ReplaceCvImportRetryButton"
+                            Classes="re-vitae-secondary"
+                            Content="Try import again"
+                            HorizontalAlignment="Left"
+                            IsVisible="False"
+                            Click="OnReplaceCvImportRetryClicked" />
+                </StackPanel>
             </Border>
         </Grid>
 

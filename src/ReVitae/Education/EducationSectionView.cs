@@ -10,15 +10,16 @@ using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace ReVitae.Education;
 
-public sealed class EducationSectionView : UserControl
+public sealed class EducationSectionView : UserControl, IValidationNavigableSection
 {
     private readonly ExpandableSection _section;
     private readonly StackPanel _contentPanel;
@@ -26,9 +27,12 @@ public sealed class EducationSectionView : UserControl
     private readonly TextBlock _emptyHintTextBlock;
     private readonly Button _addButton;
     private readonly Button _sortButton;
+    private readonly StackPanel _sectionErrorBadgePanel;
+    private readonly TextBlock _sectionErrorBadgeTextBlock;
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly List<EducationEntry> _entries = [];
     private readonly Dictionary<string, EducationEntryCard> _cardsById = new(StringComparer.Ordinal);
+    private ValidationTouchTracker _touchTracker = new();
     private string? _dragSourceEntryId;
     private bool _suppressEntriesChanged;
 
@@ -49,6 +53,8 @@ public sealed class EducationSectionView : UserControl
         _sortButton.Classes.Add(UiClasses.SecondaryButton);
         _sortButton.Click += OnSortByDateClicked;
 
+        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _contentPanel = new StackPanel
         {
             Spacing = 12,
@@ -68,7 +74,8 @@ public sealed class EducationSectionView : UserControl
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionErrorBadgePanel
         };
 
         Content = _section;
@@ -94,16 +101,84 @@ public sealed class EducationSectionView : UserControl
         }
     }
 
-    public void UpdateValidation(FieldValidationResult validationResult)
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
+        _touchTracker = touchTracker;
+
+        var sectionErrors = validationResult.Errors
+            .Where(error => EducationFieldKeys.TryParseEntryId(error.FieldKey, out _, out _))
+            .ToArray();
+
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionErrorBadgePanel,
+            _sectionErrorBadgeTextBlock,
+            sectionErrors.Length,
+            !_section.IsExpanded,
+            _localizer,
+            TranslationKeys.EducationValidationErrors,
+            () => _section.IsExpanded = true);
+
         foreach (var (entryId, card) in _cardsById)
         {
-            var errors = validationResult.Errors
+            var errors = sectionErrors
                 .Where(error => EducationFieldKeys.TryParseEntryId(error.FieldKey, out var parsedId, out _)
                     && parsedId == entryId)
                 .ToArray();
-            card.UpdateValidation(errors);
+            card.UpdateValidation(errors, touchTracker);
         }
+    }
+
+    public IReadOnlyList<string> GetOrderedFieldKeys()
+    {
+        var keys = new List<string>();
+        foreach (var entry in _entries)
+        {
+            var entryId = entry.Id;
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.Institution));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.Degree));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.FieldOfStudy));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.Location));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.DegreeType));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.StartMonth));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.StartYear));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.DateRange));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.EndMonth));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.EndYear));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.Grade));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.Description));
+            keys.Add(EducationFieldKeys.Build(entryId, EducationFieldKeys.InstitutionUrl));
+        }
+
+        return keys;
+    }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (!EducationFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return false;
+        }
+
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+        card.SetExpanded(true);
+        return true;
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey)
+    {
+        if (!EducationFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return null;
+        }
+
+        return _cardsById.TryGetValue(entryId, out var card)
+            ? card.FindControlForFieldKey(fieldKey)
+            : null;
     }
 
     public void ReplaceEntries(IReadOnlyList<EducationEntry> entries, bool expandSection = true)
@@ -171,7 +246,7 @@ public sealed class EducationSectionView : UserControl
         for (var index = 0; index < _entries.Count; index++)
         {
             var entry = _entries[index];
-            var card = new EducationEntryCard(entry, _localizer, index);
+            var card = new EducationEntryCard(entry, _localizer, index, _touchTracker);
             card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
@@ -240,6 +315,7 @@ public sealed class EducationSectionView : UserControl
     {
         private readonly EducationEntry _entry;
         private readonly int _index;
+        private readonly ValidationFieldRegistry _validationRegistry = new();
         private AppLocalizer _localizer;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
@@ -249,45 +325,27 @@ public sealed class EducationSectionView : UserControl
         private readonly TextBox _fieldOfStudyTextBox;
         private readonly TextBox _locationTextBox;
         private readonly ComboBox _degreeTypeComboBox;
-        private readonly ComboBox _startMonthComboBox;
-        private readonly TextBox _startYearTextBox;
-        private readonly ComboBox _endMonthComboBox;
-        private readonly TextBox _endYearTextBox;
+        private readonly DatePicker _startDatePicker;
+        private readonly DatePicker _endDatePicker;
         private readonly CheckBox _currentlyStudyingCheckBox;
         private readonly TextBox _gradeTextBox;
         private readonly TextBox _descriptionTextBox;
         private readonly TextBox _institutionUrlTextBox;
         private readonly TextBlock _descriptionCounterTextBlock;
-        private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
         private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
-        public EducationEntryCard(EducationEntry entry, AppLocalizer localizer, int index)
+        public EducationEntryCard(
+            EducationEntry entry,
+            AppLocalizer localizer,
+            int index,
+            ValidationTouchTracker touchTracker)
         {
             _entry = entry;
             _localizer = localizer;
             _index = index;
 
-            _errorBadgeTextBlock = new TextBlock
-            {
-                IsVisible = false,
-                FontWeight = FontWeight.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            _errorBadgeTextBlock.Classes.Add(UiClasses.ErrorText);
-
-            _errorBadgePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                IsVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    MaterialIconFactory.Create(MaterialIconKind.AlertCircle, 16),
-                    _errorBadgeTextBlock
-                }
-            };
+            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
             _dragArea = new Border();
             _dragArea.Classes.Add(UiClasses.DragHandle);
@@ -303,10 +361,8 @@ public sealed class EducationSectionView : UserControl
             _fieldOfStudyTextBox = CreateTextBox(OnFieldChanged);
             _locationTextBox = CreateTextBox(OnFieldChanged);
             _degreeTypeComboBox = CreateDegreeTypeComboBox();
-            _startMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _endMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _startYearTextBox = CreateTextBox(OnFieldChanged);
-            _endYearTextBox = CreateTextBox(OnFieldChanged);
+            _startDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
+            _endDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
             _currentlyStudyingCheckBox = new CheckBox();
             _currentlyStudyingCheckBox.IsCheckedChanged += OnCurrentlyStudyingChanged;
             _gradeTextBox = CreateTextBox(OnFieldChanged);
@@ -318,8 +374,6 @@ public sealed class EducationSectionView : UserControl
             RegisterImportConfidenceField(EducationFieldKeys.Degree, _degreeTextBox);
             RegisterImportConfidenceField(EducationFieldKeys.FieldOfStudy, _fieldOfStudyTextBox);
             RegisterImportConfidenceField(EducationFieldKeys.Location, _locationTextBox);
-            RegisterImportConfidenceField(EducationFieldKeys.StartYear, _startYearTextBox);
-            RegisterImportConfidenceField(EducationFieldKeys.EndYear, _endYearTextBox);
             RegisterImportConfidenceField(EducationFieldKeys.Grade, _gradeTextBox);
             RegisterImportConfidenceField(EducationFieldKeys.Description, _descriptionTextBox);
             RegisterImportConfidenceField(EducationFieldKeys.InstitutionUrl, _institutionUrlTextBox);
@@ -338,22 +392,80 @@ public sealed class EducationSectionView : UserControl
                 Children = { _dragArea, _errorBadgePanel }
             };
 
+            var entryId = _entry.Id;
             var body = new StackPanel
             {
                 Spacing = 10,
                 Children =
                 {
-                    CreateField(_institutionTextBox, TranslationKeys.EducationInstitution, EducationFieldKeys.Institution),
-                    CreateField(_degreeTextBox, TranslationKeys.EducationDegree, EducationFieldKeys.Degree),
-                    CreateField(_fieldOfStudyTextBox, TranslationKeys.EducationFieldOfStudy, EducationFieldKeys.FieldOfStudy),
-                    CreateField(_locationTextBox, TranslationKeys.EducationLocation, EducationFieldKeys.Location),
-                    CreateField(_degreeTypeComboBox, TranslationKeys.EducationDegreeType, EducationFieldKeys.DegreeType),
-                    CreateDateField(_startMonthComboBox, _startYearTextBox, TranslationKeys.EducationStartDate, EducationFieldKeys.StartMonth, EducationFieldKeys.StartYear),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationInstitution),
+                        _institutionTextBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.Institution),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationDegree),
+                        _degreeTextBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.Degree),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationFieldOfStudy),
+                        _fieldOfStudyTextBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.FieldOfStudy),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationLocation),
+                        _locationTextBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.Location),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationDegreeType),
+                        _degreeTypeComboBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.DegreeType),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.EducationStartDate),
+                        _startDatePicker,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.StartMonth),
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.StartMonth),
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.StartYear),
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.DateRange),
+                        _validationRegistry,
+                        touchTracker),
                     _currentlyStudyingCheckBox,
-                    CreateDateField(_endMonthComboBox, _endYearTextBox, TranslationKeys.EducationEndDate, EducationFieldKeys.EndMonth, EducationFieldKeys.EndYear),
-                    CreateField(_gradeTextBox, TranslationKeys.EducationGrade, EducationFieldKeys.Grade),
-                    CreateMultilineField(_descriptionTextBox, _descriptionCounterTextBlock, TranslationKeys.EducationDescription, EducationFieldKeys.Description),
-                    CreateField(_institutionUrlTextBox, TranslationKeys.EducationInstitutionUrl, EducationFieldKeys.InstitutionUrl),
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.EducationEndDate),
+                        _endDatePicker,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.EndMonth),
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.EndMonth),
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.EndYear),
+                        EducationFieldKeys.Build(entryId, "_endDateRange"),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationGrade),
+                        _gradeTextBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.Grade),
+                        _validationRegistry,
+                        touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationDescription),
+                        _descriptionTextBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.Description),
+                        _validationRegistry,
+                        touchTracker,
+                        _descriptionCounterTextBlock),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.EducationInstitutionUrl),
+                        _institutionUrlTextBox,
+                        EducationFieldKeys.Build(entryId, EducationFieldKeys.InstitutionUrl),
+                        _validationRegistry,
+                        touchTracker),
                     new StackPanel
                     {
                         Orientation = Orientation.Horizontal,
@@ -403,6 +515,9 @@ public sealed class EducationSectionView : UserControl
 
         public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
 
+        public Control? FindControlForFieldKey(string fieldKey) =>
+            _validationRegistry.FindControlForFieldKey(fieldKey);
+
         public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
         {
             ImportConfidenceHelper.ApplyToFields(_importConfidenceFields, confidences);
@@ -420,95 +535,17 @@ public sealed class EducationSectionView : UserControl
             UpdateCharacterCounters();
         }
 
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors)
+        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
         {
-            foreach (var (fieldName, textBlock) in _errorTextBlocks)
-            {
-                var fieldErrors = errors
-                    .Where(error => error.FieldKey.EndsWith("." + fieldName, StringComparison.Ordinal))
-                    .Select(error => _localizer.Get(error.Message))
-                    .ToArray();
-                textBlock.Text = string.Join(Environment.NewLine, fieldErrors);
-            }
+            _validationRegistry.ApplyErrors(errors, _localizer, touchTracker);
 
-            var dateRangeError = errors.FirstOrDefault(error =>
-                error.FieldKey.EndsWith("." + EducationFieldKeys.DateRange, StringComparison.Ordinal));
-            if (dateRangeError is not null
-                && _errorTextBlocks.TryGetValue(EducationFieldKeys.StartMonth, out var startErrorBlock))
-            {
-                var combined = string.Join(
-                    Environment.NewLine,
-                    new[] { startErrorBlock.Text, _localizer.Get(dateRangeError.Message) }
-                        .Where(text => !string.IsNullOrWhiteSpace(text)));
-                startErrorBlock.Text = combined;
-            }
-
-            var errorCount = errors.Count;
-            var showBadge = errorCount > 0 && !_expandableSection.IsExpanded;
-            _errorBadgePanel.IsVisible = showBadge;
-            _errorBadgeTextBlock.IsVisible = showBadge;
-            _errorBadgeTextBlock.Text = showBadge
-                ? _localizer.Format(TranslationKeys.EducationValidationErrors, errorCount)
-                : string.Empty;
-        }
-
-        private StackPanel CreateField(Control input, string labelKey, string fieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock
-            {
-                TextWrapping = TextWrapping.Wrap
-            };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, input, error }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateDateField(
-            ComboBox monthComboBox,
-            TextBox yearTextBox,
-            string labelKey,
-            string monthFieldName,
-            string yearFieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var monthError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            monthError.Classes.Add(UiClasses.ErrorText);
-            var yearError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            yearError.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[monthFieldName] = monthError;
-            _errorTextBlocks[yearFieldName] = yearError;
-
-            var row = new Grid
-            {
-                ColumnDefinitions = new ColumnDefinitions("*,*"),
-                ColumnSpacing = 8
-            };
-            row.Children.Add(monthComboBox);
-            row.Children.Add(yearTextBox);
-            Grid.SetColumn(yearTextBox, 1);
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, row, monthError, yearError }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateMultilineField(TextBox textBox, TextBlock counter, string labelKey, string fieldName)
-        {
-            var panel = CreateField(textBox, labelKey, fieldName);
-            panel.Children.Add(counter);
-            return panel;
+            ValidationErrorBadgeFactory.Update(
+                _errorBadgePanel,
+                _errorBadgeTextBlock,
+                errors.Count,
+                !_expandableSection.IsExpanded,
+                _localizer.Format(TranslationKeys.EducationValidationErrors, errors.Count),
+                () => _expandableSection.IsExpanded = true);
         }
 
         private ComboBox CreateDegreeTypeComboBox()
@@ -539,10 +576,8 @@ public sealed class EducationSectionView : UserControl
             _degreeTextBox.Text = _entry.Degree;
             _fieldOfStudyTextBox.Text = _entry.FieldOfStudy;
             _locationTextBox.Text = _entry.Location;
-            _startMonthComboBox.SelectedItem = _entry.StartMonth;
-            _startYearTextBox.Text = _entry.StartYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _endMonthComboBox.SelectedItem = _entry.EndMonth;
-            _endYearTextBox.Text = _entry.EndYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
+            _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
             _currentlyStudyingCheckBox.IsChecked = _entry.IsCurrentlyStudying;
             _gradeTextBox.Text = _entry.Grade;
             _descriptionTextBox.Text = _entry.Description;
@@ -559,17 +594,15 @@ public sealed class EducationSectionView : UserControl
             _entry.DegreeType = _degreeTypeComboBox.SelectedItem is ComboBoxItem { Tag: DegreeType degreeType }
                 ? degreeType
                 : DegreeType.Bachelor;
-            _entry.StartMonth = _startMonthComboBox.SelectedItem as int?;
-            _entry.StartYear = ParseYear(_startYearTextBox.Text);
-            _entry.EndMonth = _endMonthComboBox.SelectedItem as int?;
-            _entry.EndYear = ParseYear(_endYearTextBox.Text);
+            (_entry.StartMonth, _entry.StartYear) = MonthYearDateHelper.FromSelectedDate(_startDatePicker.SelectedDate);
+            (_entry.EndMonth, _entry.EndYear) = MonthYearDateHelper.FromSelectedDate(_endDatePicker.SelectedDate);
             _entry.IsCurrentlyStudying = _currentlyStudyingCheckBox.IsChecked == true;
             _entry.Grade = _gradeTextBox.Text ?? string.Empty;
             _entry.Description = _descriptionTextBox.Text ?? string.Empty;
             _entry.InstitutionUrl = _institutionUrlTextBox.Text ?? string.Empty;
         }
 
-        private void OnFieldChanged(object? sender, RoutedEventArgs e)
+        private void OnFieldChanged(object? sender, EventArgs e)
         {
             SyncToEntry();
             _expandableSection.Title = _entry.BuildHeaderSummary(_localizer.Get(TranslationKeys.EducationPresent));
@@ -579,6 +612,8 @@ public sealed class EducationSectionView : UserControl
         }
 
         private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e) => OnFieldChanged(sender, e);
+
+        private void OnDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e) => OnFieldChanged(sender, EventArgs.Empty);
 
         private void OnCurrentlyStudyingChanged(object? sender, RoutedEventArgs e) => OnFieldChanged(sender, e);
 
@@ -597,8 +632,7 @@ public sealed class EducationSectionView : UserControl
         private void UpdateEndDateVisibility()
         {
             var isCurrent = _currentlyStudyingCheckBox.IsChecked == true;
-            _endMonthComboBox.IsEnabled = !isCurrent;
-            _endYearTextBox.IsEnabled = !isCurrent;
+            _endDatePicker.IsEnabled = !isCurrent;
         }
 
         private void UpdateCharacterCounters()
@@ -630,26 +664,11 @@ public sealed class EducationSectionView : UserControl
             return counter;
         }
 
-        private static ComboBox CreateMonthComboBox(EventHandler<SelectionChangedEventArgs> onChanged)
-        {
-            var comboBox = new ComboBox
-            {
-                ItemsSource = Enumerable.Range(1, 12).Cast<int?>().ToArray(),
-                PlaceholderText = "MM"
-            };
-            comboBox.SelectionChanged += onChanged;
-            return comboBox;
-        }
-
         private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
         {
             _importConfidenceFields[EducationFieldKeys.Build(_entry.Id, fieldName)] = textBox;
             textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
-        private static int? ParseYear(string? text)
-        {
-            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year) ? year : null;
-        }
     }
 }

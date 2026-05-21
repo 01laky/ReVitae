@@ -11,17 +11,20 @@ using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace ReVitae.Projects;
 
-public sealed class ProjectsSectionView : UserControl
+public sealed class ProjectsSectionView : UserControl, IValidationNavigableSection
 {
     private readonly ExpandableSection _section;
+    private readonly StackPanel _sectionBadgePanel;
+    private readonly TextBlock _sectionBadgeTextBlock;
     private readonly StackPanel _contentPanel;
     private readonly StackPanel _entriesPanel;
     private readonly TextBlock _emptyHintTextBlock;
@@ -65,10 +68,13 @@ public sealed class ProjectsSectionView : UserControl
             }
         };
 
+        (_sectionBadgePanel, _sectionBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionBadgePanel
         };
 
         Content = _section;
@@ -79,6 +85,8 @@ public sealed class ProjectsSectionView : UserControl
     public event EventHandler? EntriesChanged;
 
     public IReadOnlyList<ProjectEntry> Entries => _entries;
+
+    public ValidationTouchTracker TouchTracker { get; } = new();
 
     public void SetLocalizer(AppLocalizer localizer)
     {
@@ -98,14 +106,90 @@ public sealed class ProjectsSectionView : UserControl
 
     public void UpdateValidation(FieldValidationResult validationResult)
     {
+        UpdateValidation(validationResult, TouchTracker);
+    }
+
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
+    {
         foreach (var (entryId, card) in _cardsById)
         {
             var errors = validationResult.Errors
                 .Where(error => ProjectsFieldKeys.TryParseEntryId(error.FieldKey, out var parsedId, out _)
                     && parsedId == entryId)
                 .ToArray();
-            card.UpdateValidation(errors);
+            card.UpdateValidation(errors, touchTracker);
         }
+
+        var sectionErrorCount = validationResult.Errors
+            .Count(error => ProjectsFieldKeys.TryParseEntryId(error.FieldKey, out _, out _));
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionBadgePanel,
+            _sectionBadgeTextBlock,
+            sectionErrorCount,
+            !_section.IsExpanded,
+            _localizer,
+            TranslationKeys.ProjectsValidationErrors,
+            () => _section.IsExpanded = true);
+    }
+
+    public IReadOnlyList<string> GetOrderedFieldKeys()
+    {
+        var keys = new List<string>();
+        foreach (var entry in _entries)
+        {
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.Name));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.Role));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.Organization));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.StartMonth));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.StartYear));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.DateRange));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.EndMonth));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.EndYear));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.ProjectUrl));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.TechnologyName));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.BulkTechnologies));
+            foreach (var technology in entry.Technologies.Where(technology => technology.HasUserInput()))
+            {
+                keys.Add(ProjectsFieldKeys.BuildTechnology(
+                    entry.Id,
+                    technology.Id,
+                    ProjectsFieldKeys.TechnologyName));
+            }
+
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.Highlights));
+            keys.Add(ProjectsFieldKeys.Build(entry.Id, ProjectsFieldKeys.Description));
+        }
+
+        return keys;
+    }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (!ProjectsFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        card.SetExpanded(true);
+        return card.FindControlForFieldKey(fieldKey) is not null;
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey)
+    {
+        if (!ProjectsFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
+        {
+            return null;
+        }
+
+        return _cardsById.TryGetValue(entryId, out var card)
+            ? card.FindControlForFieldKey(fieldKey)
+            : null;
     }
 
     public void ReplaceEntries(IReadOnlyList<ProjectEntry> entries, bool expandSection = true)
@@ -196,7 +280,7 @@ public sealed class ProjectsSectionView : UserControl
 
         foreach (var entry in _entries)
         {
-            var card = new ProjectEntryCard(this, entry, _localizer);
+            var card = new ProjectEntryCard(this, entry, _localizer, TouchTracker);
             card.Changed += (_, _) => NotifyEntriesChanged();
             card.DuplicateRequested += (_, sourceEntry) =>
             {
@@ -311,6 +395,8 @@ public sealed class ProjectsSectionView : UserControl
     {
         private readonly ProjectsSectionView _sectionView;
         private readonly ProjectEntry _entry;
+        private ValidationTouchTracker _touchTracker;
+        private readonly ValidationFieldRegistry _validationRegistry = new();
         private AppLocalizer _localizer;
         private readonly ExpandableSection _expandableSection;
         private readonly StackPanel _errorBadgePanel;
@@ -318,10 +404,8 @@ public sealed class ProjectsSectionView : UserControl
         private readonly TextBox _nameTextBox;
         private readonly TextBox _roleTextBox;
         private readonly TextBox _organizationTextBox;
-        private readonly ComboBox _startMonthComboBox;
-        private readonly TextBox _startYearTextBox;
-        private readonly ComboBox _endMonthComboBox;
-        private readonly TextBox _endYearTextBox;
+        private readonly DatePicker _startDatePicker;
+        private readonly DatePicker _endDatePicker;
         private readonly CheckBox _currentlyActiveCheckBox;
         private readonly TextBox _projectUrlTextBox;
         private readonly AutoCompleteBox _technologyAutoComplete;
@@ -332,36 +416,21 @@ public sealed class ProjectsSectionView : UserControl
         private readonly TextBox _descriptionTextBox;
         private readonly TextBlock _highlightsCounterTextBlock;
         private readonly TextBlock _descriptionCounterTextBlock;
-        private readonly Dictionary<string, TextBlock> _errorTextBlocks = new(StringComparer.Ordinal);
         private readonly Dictionary<string, TextBox> _importConfidenceFields = new(StringComparer.Ordinal);
         private readonly Border _dragArea;
 
-        public ProjectEntryCard(ProjectsSectionView sectionView, ProjectEntry entry, AppLocalizer localizer)
+        public ProjectEntryCard(
+            ProjectsSectionView sectionView,
+            ProjectEntry entry,
+            AppLocalizer localizer,
+            ValidationTouchTracker touchTracker)
         {
             _sectionView = sectionView;
             _entry = entry;
             _localizer = localizer;
+            _touchTracker = touchTracker;
 
-            _errorBadgeTextBlock = new TextBlock
-            {
-                IsVisible = false,
-                FontWeight = FontWeight.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            _errorBadgeTextBlock.Classes.Add(UiClasses.ErrorText);
-
-            _errorBadgePanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                IsVisible = false,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
-                {
-                    MaterialIconFactory.Create(MaterialIconKind.AlertCircle, 16),
-                    _errorBadgeTextBlock
-                }
-            };
+            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
             _dragArea = new Border();
             _dragArea.Classes.Add(UiClasses.DragHandle);
@@ -374,10 +443,8 @@ public sealed class ProjectsSectionView : UserControl
             _nameTextBox = CreateTextBox(OnFieldChanged);
             _roleTextBox = CreateTextBox(OnFieldChanged);
             _organizationTextBox = CreateTextBox(OnFieldChanged);
-            _startMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _startYearTextBox = CreateTextBox(OnFieldChanged);
-            _endMonthComboBox = CreateMonthComboBox(OnSelectionChanged);
-            _endYearTextBox = CreateTextBox(OnFieldChanged);
+            _startDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
+            _endDatePicker = MonthYearDateHelper.CreatePicker(OnDateChanged);
             _currentlyActiveCheckBox = new CheckBox();
             _currentlyActiveCheckBox.IsCheckedChanged += OnCurrentlyActiveChanged;
             _projectUrlTextBox = CreateTextBox(OnFieldChanged);
@@ -398,8 +465,6 @@ public sealed class ProjectsSectionView : UserControl
             RegisterImportConfidenceField(ProjectsFieldKeys.Name, _nameTextBox);
             RegisterImportConfidenceField(ProjectsFieldKeys.Role, _roleTextBox);
             RegisterImportConfidenceField(ProjectsFieldKeys.Organization, _organizationTextBox);
-            RegisterImportConfidenceField(ProjectsFieldKeys.StartYear, _startYearTextBox);
-            RegisterImportConfidenceField(ProjectsFieldKeys.EndYear, _endYearTextBox);
             RegisterImportConfidenceField(ProjectsFieldKeys.ProjectUrl, _projectUrlTextBox);
             RegisterImportConfidenceField(ProjectsFieldKeys.BulkTechnologies, _bulkTechnologiesTextBox);
             RegisterImportConfidenceField(ProjectsFieldKeys.Highlights, _highlightsTextBox);
@@ -441,38 +506,78 @@ public sealed class ProjectsSectionView : UserControl
                 Spacing = 10,
                 Children =
                 {
-                    CreateField(_nameTextBox, TranslationKeys.ProjectsName, ProjectsFieldKeys.Name),
-                    CreateField(_roleTextBox, TranslationKeys.ProjectsRole, ProjectsFieldKeys.Role),
-                    CreateField(_organizationTextBox, TranslationKeys.ProjectsOrganization, ProjectsFieldKeys.Organization),
-                    CreateDateField(
-                        _startMonthComboBox,
-                        _startYearTextBox,
-                        TranslationKeys.ProjectsStartDate,
-                        ProjectsFieldKeys.StartMonth,
-                        ProjectsFieldKeys.StartYear),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsName),
+                        _nameTextBox,
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.Name),
+                        _validationRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsRole),
+                        _roleTextBox,
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.Role),
+                        _validationRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsOrganization),
+                        _organizationTextBox,
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.Organization),
+                        _validationRegistry,
+                        _touchTracker),
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.ProjectsStartDate),
+                        _startDatePicker,
+                        $"{_entry.Id}.start",
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.StartMonth),
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.StartYear),
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.DateRange),
+                        _validationRegistry,
+                        _touchTracker),
                     _currentlyActiveCheckBox,
-                    CreateDateField(
-                        _endMonthComboBox,
-                        _endYearTextBox,
-                        TranslationKeys.ProjectsEndDate,
-                        ProjectsFieldKeys.EndMonth,
-                        ProjectsFieldKeys.EndYear),
-                    CreateField(_projectUrlTextBox, TranslationKeys.ProjectsProjectUrl, ProjectsFieldKeys.ProjectUrl),
-                    CreateField(addTechnologyRow, TranslationKeys.ProjectsTechnologyName, ProjectsFieldKeys.TechnologyName),
-                    CreateField(_bulkTechnologiesTextBox, TranslationKeys.ProjectsBulkTechnologies, ProjectsFieldKeys.BulkTechnologies),
-                    _bulkCounterTextBlock,
+                    ValidatedDateRangeBinding.CreatePanel(
+                        _localizer.Get(TranslationKeys.ProjectsEndDate),
+                        _endDatePicker,
+                        $"{_entry.Id}.end",
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.EndMonth),
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.EndYear),
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.DateRange),
+                        _validationRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsProjectUrl),
+                        _projectUrlTextBox,
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.ProjectUrl),
+                        _validationRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsTechnologyName),
+                        addTechnologyRow,
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.TechnologyName),
+                        _validationRegistry,
+                        _touchTracker),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsBulkTechnologies),
+                        _bulkTechnologiesTextBox,
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.BulkTechnologies),
+                        _validationRegistry,
+                        _touchTracker,
+                        _bulkCounterTextBlock),
                     addFromListButton,
                     _technologiesPanel,
-                    CreateMultilineField(
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsHighlights),
                         _highlightsTextBox,
-                        _highlightsCounterTextBlock,
-                        TranslationKeys.ProjectsHighlights,
-                        ProjectsFieldKeys.Highlights),
-                    CreateMultilineField(
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.Highlights),
+                        _validationRegistry,
+                        _touchTracker,
+                        _highlightsCounterTextBlock),
+                    ValidationFieldRegistry.CreateFieldPanel(
+                        _localizer.Get(TranslationKeys.ProjectsDescription),
                         _descriptionTextBox,
-                        _descriptionCounterTextBlock,
-                        TranslationKeys.ProjectsDescription,
-                        ProjectsFieldKeys.Description),
+                        ProjectsFieldKeys.Build(_entry.Id, ProjectsFieldKeys.Description),
+                        _validationRegistry,
+                        _touchTracker,
+                        _descriptionCounterTextBlock),
                     new StackPanel
                     {
                         Orientation = Orientation.Horizontal,
@@ -534,101 +639,43 @@ public sealed class ProjectsSectionView : UserControl
 
         public void ClearDragVisual() => RootBorder.Opacity = 1;
 
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors)
-        {
-            foreach (var (fieldName, textBlock) in _errorTextBlocks)
-            {
-                var fieldErrors = errors
-                    .Where(error =>
-                    {
-                        if (ProjectsFieldKeys.TryParseTechnologyField(error.FieldKey, out _, out _, out var technologyField))
-                        {
-                            return technologyField == fieldName;
-                        }
+        public Control? FindControlForFieldKey(string fieldKey) =>
+            _validationRegistry.FindControlForFieldKey(fieldKey);
 
-                        return error.FieldKey.EndsWith("." + fieldName, StringComparison.Ordinal);
-                    })
-                    .Select(error => _localizer.Get(error.Message))
-                    .Distinct()
-                    .ToArray();
-                textBlock.Text = string.Join(Environment.NewLine, fieldErrors);
+        public void UpdateValidation(
+            IReadOnlyList<FieldValidationError> errors,
+            ValidationTouchTracker touchTracker)
+        {
+            _validationRegistry.ApplyErrors(errors, _localizer, touchTracker);
+            ValidationErrorBadgeFactory.Update(
+                _errorBadgePanel,
+                _errorBadgeTextBlock,
+                errors.Count,
+                !_expandableSection.IsExpanded,
+                _localizer.Format(TranslationKeys.ProjectsValidationErrors, errors.Count),
+                () => _expandableSection.IsExpanded = true);
+        }
+
+        private void RebuildTechnologyChips()
+        {
+            _technologiesPanel.Children.Clear();
+
+            foreach (var technology in _entry.Technologies)
+            {
+                if (!technology.HasUserInput())
+                {
+                    continue;
+                }
+
+                var chip = CreateTechnologyChip(technology);
+                _technologiesPanel.Children.Add(chip);
+                _validationRegistry.RegisterChip(
+                    ProjectsFieldKeys.BuildTechnology(
+                        _entry.Id,
+                        technology.Id,
+                        ProjectsFieldKeys.TechnologyName),
+                    new ChipValidationTarget(chip));
             }
-
-            var dateRangeError = errors.FirstOrDefault(error =>
-                error.FieldKey.EndsWith("." + ProjectsFieldKeys.DateRange, StringComparison.Ordinal));
-            if (dateRangeError is not null
-                && _errorTextBlocks.TryGetValue(ProjectsFieldKeys.StartMonth, out var startErrorBlock))
-            {
-                var combined = string.Join(
-                    Environment.NewLine,
-                    new[] { startErrorBlock.Text, _localizer.Get(dateRangeError.Message) }
-                        .Where(text => !string.IsNullOrWhiteSpace(text)));
-                startErrorBlock.Text = combined;
-            }
-
-            var errorCount = errors.Count;
-            var showBadge = errorCount > 0 && !_expandableSection.IsExpanded;
-            _errorBadgePanel.IsVisible = showBadge;
-            _errorBadgeTextBlock.IsVisible = showBadge;
-            _errorBadgeTextBlock.Text = showBadge
-                ? _localizer.Format(TranslationKeys.ProjectsValidationErrors, errorCount)
-                : string.Empty;
-        }
-
-        private StackPanel CreateField(Control input, string labelKey, string fieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            error.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[fieldName] = error;
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, input, error }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateDateField(
-            ComboBox monthComboBox,
-            TextBox yearTextBox,
-            string labelKey,
-            string monthFieldName,
-            string yearFieldName)
-        {
-            var label = new TextBlock { Text = _localizer.Get(labelKey) };
-            var monthError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            monthError.Classes.Add(UiClasses.ErrorText);
-            var yearError = new TextBlock { TextWrapping = TextWrapping.Wrap };
-            yearError.Classes.Add(UiClasses.ErrorText);
-            _errorTextBlocks[monthFieldName] = monthError;
-            _errorTextBlocks[yearFieldName] = yearError;
-
-            var row = new Grid
-            {
-                ColumnDefinitions = new ColumnDefinitions("*,*"),
-                ColumnSpacing = 8
-            };
-            row.Children.Add(monthComboBox);
-            row.Children.Add(yearTextBox);
-            Grid.SetColumn(yearTextBox, 1);
-
-            var panel = new StackPanel
-            {
-                Spacing = 6,
-                Children = { label, row, monthError, yearError }
-            };
-            panel.Classes.Add(UiClasses.FormField);
-            return panel;
-        }
-
-        private StackPanel CreateMultilineField(TextBox textBox, TextBlock counter, string labelKey, string fieldName)
-        {
-            var panel = CreateField(textBox, labelKey, fieldName);
-            panel.Children.Add(counter);
-            return panel;
         }
 
         private AutoCompleteBox CreateTechnologyAutoComplete()
@@ -657,10 +704,8 @@ public sealed class ProjectsSectionView : UserControl
             _nameTextBox.Text = _entry.Name;
             _roleTextBox.Text = _entry.Role;
             _organizationTextBox.Text = _entry.Organization;
-            _startMonthComboBox.SelectedItem = _entry.StartMonth;
-            _startYearTextBox.Text = _entry.StartYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-            _endMonthComboBox.SelectedItem = _entry.EndMonth;
-            _endYearTextBox.Text = _entry.EndYear?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            _startDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.StartMonth, _entry.StartYear);
+            _endDatePicker.SelectedDate = MonthYearDateHelper.ToSelectedDate(_entry.EndMonth, _entry.EndYear);
             _currentlyActiveCheckBox.IsChecked = _entry.IsCurrentlyActive;
             _projectUrlTextBox.Text = _entry.ProjectUrl;
             _highlightsTextBox.Text = _entry.Highlights;
@@ -672,17 +717,15 @@ public sealed class ProjectsSectionView : UserControl
             _entry.Name = _nameTextBox.Text ?? string.Empty;
             _entry.Role = _roleTextBox.Text ?? string.Empty;
             _entry.Organization = _organizationTextBox.Text ?? string.Empty;
-            _entry.StartMonth = _startMonthComboBox.SelectedItem as int?;
-            _entry.StartYear = ParseYear(_startYearTextBox.Text);
-            _entry.EndMonth = _endMonthComboBox.SelectedItem as int?;
-            _entry.EndYear = ParseYear(_endYearTextBox.Text);
+            (_entry.StartMonth, _entry.StartYear) = MonthYearDateHelper.FromSelectedDate(_startDatePicker.SelectedDate);
+            (_entry.EndMonth, _entry.EndYear) = MonthYearDateHelper.FromSelectedDate(_endDatePicker.SelectedDate);
             _entry.IsCurrentlyActive = _currentlyActiveCheckBox.IsChecked == true;
             _entry.ProjectUrl = _projectUrlTextBox.Text ?? string.Empty;
             _entry.Highlights = _highlightsTextBox.Text ?? string.Empty;
             _entry.Description = _descriptionTextBox.Text ?? string.Empty;
         }
 
-        private void OnFieldChanged(object? sender, RoutedEventArgs e)
+        private void OnFieldChanged(object? sender, EventArgs e)
         {
             SyncToEntry();
             UpdateHeaderTitle();
@@ -691,7 +734,7 @@ public sealed class ProjectsSectionView : UserControl
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e) => OnFieldChanged(sender, e);
+        private void OnDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e) => OnFieldChanged(sender, EventArgs.Empty);
 
         private void OnCurrentlyActiveChanged(object? sender, RoutedEventArgs e) => OnFieldChanged(sender, e);
 
@@ -728,21 +771,6 @@ public sealed class ProjectsSectionView : UserControl
             RebuildTechnologyChips();
             UpdateCharacterCounters();
             Changed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void RebuildTechnologyChips()
-        {
-            _technologiesPanel.Children.Clear();
-
-            foreach (var technology in _entry.Technologies)
-            {
-                if (!technology.HasUserInput())
-                {
-                    continue;
-                }
-
-                _technologiesPanel.Children.Add(CreateTechnologyChip(technology));
-            }
         }
 
         private Border CreateTechnologyChip(ProjectTechnologyItem technology)
@@ -793,8 +821,7 @@ public sealed class ProjectsSectionView : UserControl
         private void UpdateEndDateVisibility()
         {
             var isActive = _currentlyActiveCheckBox.IsChecked == true;
-            _endMonthComboBox.IsEnabled = !isActive;
-            _endYearTextBox.IsEnabled = !isActive;
+            _endDatePicker.IsEnabled = !isActive;
         }
 
         private void UpdateCharacterCounters()
@@ -840,26 +867,11 @@ public sealed class ProjectsSectionView : UserControl
             return counter;
         }
 
-        private static ComboBox CreateMonthComboBox(EventHandler<SelectionChangedEventArgs> onChanged)
-        {
-            var comboBox = new ComboBox
-            {
-                ItemsSource = Enumerable.Range(1, 12).Cast<int?>().ToArray(),
-                PlaceholderText = "MM"
-            };
-            comboBox.SelectionChanged += onChanged;
-            return comboBox;
-        }
-
         private void RegisterImportConfidenceField(string fieldName, TextBox textBox)
         {
             _importConfidenceFields[ProjectsFieldKeys.Build(_entry.Id, fieldName)] = textBox;
             textBox.TextChanged += (_, _) => textBox.Classes.Remove(UiClasses.ImportHint);
         }
 
-        private static int? ParseYear(string? text)
-        {
-            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year) ? year : null;
-        }
     }
 }

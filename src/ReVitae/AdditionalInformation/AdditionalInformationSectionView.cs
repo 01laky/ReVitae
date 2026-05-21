@@ -7,20 +7,28 @@ using ReVitae.Core.Cv.AdditionalInformation;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Validation;
+using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace ReVitae.AdditionalInformation;
 
-public sealed class AdditionalInformationSectionView : UserControl
+public sealed class AdditionalInformationSectionView : UserControl, IValidationNavigableSection
 {
+    private const string ValidationErrorsKey = TranslationKeys.AdditionalInformationValidationErrors;
+
     private readonly ExpandableSection _section;
+    private readonly StackPanel _sectionErrorBadgePanel;
+    private readonly TextBlock _sectionErrorBadgeTextBlock;
     private readonly TextBlock _emptyHintTextBlock;
     private readonly TextBox _contentTextBox;
     private readonly TextBlock _contentCounterTextBlock;
-    private readonly TextBlock _contentErrorTextBlock;
+    private readonly TextBlock _contentLabel;
+    private readonly ValidationFieldRegistry _fieldRegistry = new();
+    private readonly ValidationTouchTracker _touchTracker = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly AdditionalInformationContent _content = new();
     private bool _suppressContentChanged;
@@ -37,21 +45,26 @@ public sealed class AdditionalInformationSectionView : UserControl
         _contentCounterTextBlock = new TextBlock { HorizontalAlignment = HorizontalAlignment.Right };
         _contentCounterTextBlock.Classes.Add(UiClasses.CounterText);
 
-        _contentErrorTextBlock = new TextBlock { TextWrapping = TextWrapping.Wrap };
-        _contentErrorTextBlock.Classes.Add(UiClasses.ErrorText);
+        _contentLabel = new TextBlock();
 
-        var contentLabel = new TextBlock();
-        contentLabel.SetValue(TextBlock.NameProperty, "ContentLabel");
+        var contentErrorTextBlock = new TextBlock { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+        contentErrorTextBlock.Classes.Add(UiClasses.ErrorText);
+        var contentBinding = new ValidationFieldBinding(
+            AdditionalInformationFieldKeys.Content,
+            _contentTextBox,
+            contentErrorTextBlock);
+        contentBinding.WireTouchTracking(_touchTracker);
+        _fieldRegistry.Register(contentBinding);
 
         var contentField = new StackPanel
         {
             Spacing = 6,
             Children =
             {
-                contentLabel,
+                _contentLabel,
                 _contentTextBox,
                 _contentCounterTextBlock,
-                _contentErrorTextBlock
+                contentErrorTextBlock
             }
         };
         contentField.Classes.Add(UiClasses.FormField);
@@ -62,21 +75,23 @@ public sealed class AdditionalInformationSectionView : UserControl
             Children = { _emptyHintTextBlock, contentField }
         };
 
+        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
         _section = new ExpandableSection
         {
             SectionContent = panel,
-            IsExpanded = true
+            IsExpanded = true,
+            HeaderActions = _sectionErrorBadgePanel
         };
 
         Content = _section;
-        _contentLabel = contentLabel;
     }
-
-    private readonly TextBlock _contentLabel;
 
     public event EventHandler? ContentChanged;
 
     public AdditionalInformationContent ContentModel => _content;
+
+    public ValidationTouchTracker TouchTracker => _touchTracker;
 
     public void SetLocalizer(AppLocalizer localizer)
     {
@@ -89,15 +104,45 @@ public sealed class AdditionalInformationSectionView : UserControl
         UpdateCharacterCounter();
     }
 
-    public void UpdateValidation(FieldValidationResult validationResult)
+    public void UpdateValidation(FieldValidationResult validationResult) =>
+        UpdateValidation(validationResult, _touchTracker);
+
+    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
         var errors = validationResult.Errors
             .Where(error => error.FieldKey == AdditionalInformationFieldKeys.Content)
-            .Select(error => _localizer.Get(error.Message))
-            .Distinct()
             .ToArray();
-        _contentErrorTextBlock.Text = string.Join(Environment.NewLine, errors);
+
+        _fieldRegistry.ApplyErrors(errors, _localizer, touchTracker);
+
+        FormValidationService.UpdateSectionErrorBadge(
+            _sectionErrorBadgePanel,
+            _sectionErrorBadgeTextBlock,
+            errors.Length,
+            !_section.IsExpanded,
+            _localizer,
+            ValidationErrorsKey,
+            () => _section.IsExpanded = true);
     }
+
+    public bool ExpandAndRevealField(string fieldKey)
+    {
+        if (fieldKey != AdditionalInformationFieldKeys.Content)
+        {
+            return false;
+        }
+
+        _section.IsExpanded = true;
+        var control = FindControlForFieldKey(fieldKey);
+        control?.Focus();
+        return control is not null;
+    }
+
+    public Control? FindControlForFieldKey(string fieldKey) =>
+        _fieldRegistry.FindControlForFieldKey(fieldKey);
+
+    public IReadOnlyList<string> GetOrderedFieldKeys() =>
+        [AdditionalInformationFieldKeys.Content];
 
     public void SetContent(string content, bool expandSection = true)
     {
