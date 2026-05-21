@@ -12,17 +12,19 @@ It keeps the CV content structured and editable, while templates handle only the
 visual presentation. The goal is simple: spend time improving your CV, not
 wrestling with formatting.
 
-```text
-Start fresh or import a PDF
-          |
-          v
-Fill structured CV sections
-          |
-          v
-Switch preview templates anytime
-          |
-          v
-Export a polished PDF
+```mermaid
+flowchart TD
+    start(["Start fresh or import a PDF"])
+    sections["Fill structured CV sections"]
+    templates["Switch preview templates anytime"]
+    export(["Export a polished PDF"])
+
+    start --> sections --> templates --> export
+
+    style start fill:#eef2ff,stroke:#512BD4,stroke-width:2px,color:#1e1b4b
+    style sections fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
+    style templates fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
+    style export fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b
 ```
 
 ## Why ReVitae
