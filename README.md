@@ -242,7 +242,7 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–023)
+  Implementation prompts and product increments (001–031)
 
 docs/
   Product concept, export/import matrices (`export-formats.md`,

@@ -165,12 +165,30 @@ public static class CvSectionSegmenter
             return false;
         }
 
+        if (IsExportSubheadingLine(line))
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    private static bool IsExportSubheadingLine(string line)
+    {
+        var label = line.Trim().TrimEnd(':');
+        return label.Equals("Technologies", StringComparison.OrdinalIgnoreCase)
+            || label.Equals("Achievements", StringComparison.OrdinalIgnoreCase)
+            || label.Equals("Company URL", StringComparison.OrdinalIgnoreCase)
+            || label.Equals("Institution URL", StringComparison.OrdinalIgnoreCase);
     }
 
     private static SectionKeyword? FindBestKeyword(string line)
     {
         var normalizedLine = line.Trim().TrimEnd(':');
+        if (IsExportSubheadingLine(normalizedLine))
+        {
+            return null;
+        }
         SectionKeyword? best = null;
 
         foreach (var keyword in Keywords)

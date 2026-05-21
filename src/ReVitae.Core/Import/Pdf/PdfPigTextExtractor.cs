@@ -71,8 +71,20 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
         }
 
         var columns = SplitIntoColumns(words);
+        if (columns.Count == 2)
+        {
+            // Sidebar templates put skills/contact in the narrow column. Reading left-to-right
+            // places sidebar headers before main content and breaks section segmentation.
+            columns = columns
+                .OrderByDescending(ColumnWidth)
+                .ToArray();
+        }
+
         return string.Join("\n\n", columns.Select(ExtractColumnText).Where(text => !string.IsNullOrWhiteSpace(text)));
     }
+
+    private static double ColumnWidth(IReadOnlyList<Word> words) =>
+        words.Max(word => word.BoundingBox.Right) - words.Min(word => word.BoundingBox.Left);
 
     private static IReadOnlyList<IReadOnlyList<Word>> SplitIntoColumns(IReadOnlyList<Word> words)
     {
