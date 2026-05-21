@@ -301,6 +301,56 @@ public static class TranslationKeys
     public const string ValidationCertificatesDescriptionMax = "validation.certificates.description.max";
     public const string ValidationCertificatesIssueAfterExpiration = "validation.certificates.issueAfterExpiration";
 
+    public const string Projects = "form.projects";
+    public const string ProjectsEmptyHint = "projects.emptyHint";
+    public const string ProjectsAdd = "projects.add";
+    public const string ProjectsDuplicate = "projects.duplicate";
+    public const string ProjectsRemove = "projects.remove";
+    public const string ProjectsSortByDate = "projects.sortByDate";
+    public const string ProjectsName = "projects.field.name";
+    public const string ProjectsRole = "projects.field.role";
+    public const string ProjectsOrganization = "projects.field.organization";
+    public const string ProjectsStartDate = "projects.field.startDate";
+    public const string ProjectsEndDate = "projects.field.endDate";
+    public const string ProjectsStartMonth = "projects.field.startMonth";
+    public const string ProjectsStartYear = "projects.field.startYear";
+    public const string ProjectsEndMonth = "projects.field.endMonth";
+    public const string ProjectsEndYear = "projects.field.endYear";
+    public const string ProjectsCurrentlyActive = "projects.field.currentlyActive";
+    public const string ProjectsProjectUrl = "projects.field.projectUrl";
+    public const string ProjectsTechnologyName = "projects.field.technologyName";
+    public const string ProjectsAddTechnology = "projects.addTechnology";
+    public const string ProjectsBulkTechnologies = "projects.bulkTechnologies";
+    public const string ProjectsBulkTechnologiesPlaceholder = "projects.bulkTechnologies.placeholder";
+    public const string ProjectsAddFromList = "projects.addFromList";
+    public const string ProjectsRemoveTechnology = "projects.removeTechnology";
+    public const string ProjectsHighlights = "projects.field.highlights";
+    public const string ProjectsDescription = "projects.field.description";
+    public const string ProjectsDragToReorder = "projects.dragToReorder";
+    public const string ProjectsExpand = "projects.expand";
+    public const string ProjectsCollapse = "projects.collapse";
+    public const string ProjectsValidationErrors = "projects.validationErrors";
+    public const string ProjectsPresent = "projects.present";
+    public const string PreviewProjects = "preview.projects";
+    public const string PreviewHighlights = "preview.highlights";
+    public const string ValidationProjectsNameRequired = "validation.projects.name.required";
+    public const string ValidationProjectsNameMax = "validation.projects.name.max";
+    public const string ValidationProjectsRoleMax = "validation.projects.role.max";
+    public const string ValidationProjectsOrganizationMax = "validation.projects.organization.max";
+    public const string ValidationProjectsStartMonthInvalid = "validation.projects.startMonth.invalid";
+    public const string ValidationProjectsStartYearInvalid = "validation.projects.startYear.invalid";
+    public const string ValidationProjectsEndMonthInvalid = "validation.projects.endMonth.invalid";
+    public const string ValidationProjectsEndYearInvalid = "validation.projects.endYear.invalid";
+    public const string ValidationProjectsProjectUrlMax = "validation.projects.projectUrl.max";
+    public const string ValidationProjectsProjectUrlFormat = "validation.projects.projectUrl.format";
+    public const string ValidationProjectsHighlightsMax = "validation.projects.highlights.max";
+    public const string ValidationProjectsDescriptionMax = "validation.projects.description.max";
+    public const string ValidationProjectsTechnologyNameRequired = "validation.projects.technologyName.required";
+    public const string ValidationProjectsTechnologyNameMax = "validation.projects.technologyName.max";
+    public const string ValidationProjectsDuplicateTechnology = "validation.projects.duplicateTechnology";
+    public const string ValidationProjectsBulkTechnologiesMax = "validation.projects.bulkTechnologies.max";
+    public const string ValidationProjectsStartAfterEnd = "validation.projects.startAfterEnd";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -595,6 +645,55 @@ public static class TranslationKeys
         ValidationCertificatesCredentialUrlMax,
         ValidationCertificatesCredentialUrlFormat,
         ValidationCertificatesDescriptionMax,
-        ValidationCertificatesIssueAfterExpiration
+        ValidationCertificatesIssueAfterExpiration,
+        Projects,
+        ProjectsEmptyHint,
+        ProjectsAdd,
+        ProjectsDuplicate,
+        ProjectsRemove,
+        ProjectsSortByDate,
+        ProjectsName,
+        ProjectsRole,
+        ProjectsOrganization,
+        ProjectsStartDate,
+        ProjectsEndDate,
+        ProjectsStartMonth,
+        ProjectsStartYear,
+        ProjectsEndMonth,
+        ProjectsEndYear,
+        ProjectsCurrentlyActive,
+        ProjectsProjectUrl,
+        ProjectsTechnologyName,
+        ProjectsAddTechnology,
+        ProjectsBulkTechnologies,
+        ProjectsBulkTechnologiesPlaceholder,
+        ProjectsAddFromList,
+        ProjectsRemoveTechnology,
+        ProjectsHighlights,
+        ProjectsDescription,
+        ProjectsDragToReorder,
+        ProjectsExpand,
+        ProjectsCollapse,
+        ProjectsValidationErrors,
+        ProjectsPresent,
+        PreviewProjects,
+        PreviewHighlights,
+        ValidationProjectsNameRequired,
+        ValidationProjectsNameMax,
+        ValidationProjectsRoleMax,
+        ValidationProjectsOrganizationMax,
+        ValidationProjectsStartMonthInvalid,
+        ValidationProjectsStartYearInvalid,
+        ValidationProjectsEndMonthInvalid,
+        ValidationProjectsEndYearInvalid,
+        ValidationProjectsProjectUrlMax,
+        ValidationProjectsProjectUrlFormat,
+        ValidationProjectsHighlightsMax,
+        ValidationProjectsDescriptionMax,
+        ValidationProjectsTechnologyNameRequired,
+        ValidationProjectsTechnologyNameMax,
+        ValidationProjectsDuplicateTechnology,
+        ValidationProjectsBulkTechnologiesMax,
+        ValidationProjectsStartAfterEnd
     ];
 }

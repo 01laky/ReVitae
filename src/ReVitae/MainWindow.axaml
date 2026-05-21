@@ -9,6 +9,7 @@
         xmlns:skills="clr-namespace:ReVitae.Skills"
         xmlns:languages="clr-namespace:ReVitae.Languages"
         xmlns:certificates="clr-namespace:ReVitae.Certificates"
+        xmlns:projects="clr-namespace:ReVitae.Projects"
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="ReVitae.MainWindow"
         mc:Ignorable="d"
@@ -177,6 +178,8 @@
                         <languages:LanguagesSectionView x:Name="LanguagesSection" />
 
                         <certificates:CertificatesSectionView x:Name="CertificatesSection" />
+
+                        <projects:ProjectsSectionView x:Name="ProjectsSection" />
 
                         <TextBlock x:Name="ValidationSummaryTextBlock"
                                    Classes="re-vitae-error" />
