@@ -4,4 +4,5 @@ public sealed record PdfTextExtractionResult(
     bool Success,
     string Text,
     int PageCount,
-    string? ErrorMessageKey);
+    string? ErrorMessageKey,
+    IReadOnlyList<string>? HyperlinkUrls = null);

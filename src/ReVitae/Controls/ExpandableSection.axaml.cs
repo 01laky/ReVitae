@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -19,6 +20,8 @@ public partial class ExpandableSection : UserControl
 
     public static readonly StyledProperty<string> CollapseToolTipProperty =
         AvaloniaProperty.Register<ExpandableSection, string>(nameof(CollapseToolTip), "Collapse section");
+
+    public event EventHandler? ExpandStateChanged;
 
     public ExpandableSection()
     {
@@ -91,5 +94,6 @@ public partial class ExpandableSection : UserControl
             22);
         ToolTip.SetTip(ToggleButton, IsExpanded ? CollapseToolTip : ExpandToolTip);
         TitleTextBlock.Text = Title;
+        ExpandStateChanged?.Invoke(this, EventArgs.Empty);
     }
 }

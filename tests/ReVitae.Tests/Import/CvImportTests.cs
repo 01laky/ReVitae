@@ -1,3 +1,4 @@
+using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Import;
 using ReVitae.Core.Import.Patterns;
 using ReVitae.Core.Localization;
@@ -65,6 +66,7 @@ public sealed class DateRangeParserTests
     [Theory]
     [InlineData("01/2020 - 03/2024", 1, 2020, 3, 2024, false)]
     [InlineData("2020 - Present", null, 2020, null, null, true)]
+    [InlineData("06/2006", 6, 2006, null, null, false)]
     public void TryParse_ParsesCommonFormats(
         string input,
         int? startMonth,
@@ -204,6 +206,7 @@ public sealed class CvPdfImporterTests
             Project www.vinisto.cz
             D Education and Training
             06/2006
+            Nizna, Slovakia
             High School of Electrical Engineering
             """;
         var importer = new CvPdfImporter();
@@ -216,6 +219,7 @@ public sealed class CvPdfImporterTests
         Assert.Equal("Senior Full Stack Developer", result.Personal.ProfessionalTitle);
         Assert.Equal("01laky@gmail.com", result.Personal.Email);
         Assert.Equal("(+421) 944159982", result.Personal.Phone);
+        Assert.Equal("Turček, Slovakia 03848", result.Personal.Location);
         Assert.Equal(3, result.WorkExperienceEntries.Count);
 
         var excalibur = result.WorkExperienceEntries[0];
@@ -240,6 +244,17 @@ public sealed class CvPdfImporterTests
         var merkatos = result.WorkExperienceEntries[2];
         Assert.Equal("ReactJS, TypeScript, .NET Core", merkatos.Technologies);
         Assert.Equal("Project www.vinisto.cz", merkatos.Description);
+
+        Assert.Single(result.EducationEntries);
+        var education = result.EducationEntries[0];
+        Assert.Equal("High School", education.Degree);
+        Assert.Equal("High School of Electrical Engineering", education.Institution);
+        Assert.Equal("Nizna, Slovakia", education.Location);
+        Assert.Equal(DegreeType.HighSchool, education.DegreeType);
+        Assert.Equal(9, education.StartMonth);
+        Assert.Equal(2002, education.StartYear);
+        Assert.Equal(6, education.EndMonth);
+        Assert.Equal(2006, education.EndYear);
     }
 
     [Fact]

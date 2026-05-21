@@ -26,12 +26,17 @@ internal sealed class CvImportBuildContext
 
 public static class CvImportFieldExtractor
 {
-    public static CvImportResult Extract(CvSegmentationResult segmentation)
+    public static CvImportResult Extract(
+        CvSegmentationResult segmentation,
+        IReadOnlyList<string>? hyperlinkUrls = null)
     {
         var context = new CvImportBuildContext();
-        var personal = ExtractPersonalInformation(segmentation, context);
-        var workExperience = ExtractWorkExperience(GetBody(segmentation, CvImportSectionId.WorkExperience));
-        var education = ExtractEducation(GetBody(segmentation, CvImportSectionId.Education));
+        var personal = ExtractPersonalInformation(segmentation, context, hyperlinkUrls);
+        var sidebarSkillTokens = CollectSidebarSkillTokens(GetBody(segmentation, CvImportSectionId.Skills));
+        var workExperience = ExtractWorkExperience(
+            GetBody(segmentation, CvImportSectionId.WorkExperience),
+            sidebarSkillTokens);
+        var education = ExtractEducation(GetBody(segmentation, CvImportSectionId.Education), context);
         var skills = ExtractSkills(GetBody(segmentation, CvImportSectionId.Skills), context);
         var languages = ExtractLanguages(GetBody(segmentation, CvImportSectionId.Languages), context);
         var certificates = ExtractCertificates(GetBody(segmentation, CvImportSectionId.Certificates));
@@ -73,7 +78,8 @@ public static class CvImportFieldExtractor
 
     private static PersonalInformationImport ExtractPersonalInformation(
         CvSegmentationResult segmentation,
-        CvImportBuildContext context)
+        CvImportBuildContext context,
+        IReadOnlyList<string>? hyperlinkUrls = null)
     {
         var contactBody = GetBody(segmentation, CvImportSectionId.Contact);
         var personalSource = string.Join(
@@ -84,6 +90,10 @@ public static class CvImportFieldExtractor
         var assignedUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         var combinedHeader = personalSource;
+        if (hyperlinkUrls is { Count: > 0 })
+        {
+            combinedHeader += "\n" + string.Join('\n', hyperlinkUrls);
+        }
         var emailMatch = CvImportPatterns.Email.Match(combinedHeader);
         if (emailMatch.Success)
         {
@@ -135,6 +145,19 @@ public static class CvImportFieldExtractor
             {
                 personal.Location = value;
                 context.AddConfidence(MainPersonalInformationFieldKeys.Location, CvImportConfidence.Medium);
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(personal.Location))
+        {
+            foreach (var line in headerLines)
+            {
+                if (TryParseContactLocationLine(line, out var location))
+                {
+                    personal.Location = location;
+                    context.AddConfidence(MainPersonalInformationFieldKeys.Location, CvImportConfidence.Medium);
+                    break;
+                }
             }
         }
 
@@ -194,7 +217,9 @@ public static class CvImportFieldExtractor
         return personal;
     }
 
-    private static IReadOnlyList<WorkExperienceEntry> ExtractWorkExperience(string body)
+    private static IReadOnlyList<WorkExperienceEntry> ExtractWorkExperience(
+        string body,
+        IReadOnlySet<string> sidebarSkillTokens)
     {
         if (string.IsNullOrWhiteSpace(body))
         {
@@ -249,6 +274,11 @@ public static class CvImportFieldExtractor
             for (; lineIndex < lines.Length; lineIndex++)
             {
                 var line = lines[lineIndex];
+                if (TrySkipSidebarSkillRun(lines, ref lineIndex, sidebarSkillTokens))
+                {
+                    continue;
+                }
+
                 if (line.StartsWith("- ", StringComparison.Ordinal))
                 {
                     achievementLines.Add(line[2..]);
@@ -267,7 +297,9 @@ public static class CvImportFieldExtractor
                     continue;
                 }
 
-                if (LooksLikeSidebarSkillToken(line) || IsRepeatedJobTitleLine(line, entry.JobTitle))
+                if (IsSidebarSkillLine(line, sidebarSkillTokens)
+                    || LooksLikeSidebarSkillToken(line)
+                    || IsRepeatedJobTitleLine(line, entry.JobTitle))
                 {
                     continue;
                 }
@@ -287,7 +319,7 @@ public static class CvImportFieldExtractor
         return entries;
     }
 
-    private static IReadOnlyList<EducationEntry> ExtractEducation(string body)
+    private static IReadOnlyList<EducationEntry> ExtractEducation(string body, CvImportBuildContext context)
     {
         if (string.IsNullOrWhiteSpace(body))
         {
@@ -297,31 +329,78 @@ public static class CvImportFieldExtractor
         var entries = new List<EducationEntry>();
         foreach (var block in SplitBlocks(body))
         {
-            var lines = block.Split('\n', StringSplitOptions.TrimEntries);
+            var lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (lines.Length == 0)
             {
                 continue;
             }
 
-            var entry = new EducationEntry { Degree = lines[0] };
-            var startIndex = 1;
-            if (lines.Length > 1 && DateRangeParser.TryParse(lines[1], out var dates))
+            var entry = new EducationEntry();
+            var lineIndex = 0;
+            ParsedDateRange? dateRange = null;
+
+            if (lineIndex < lines.Length && DateRangeParser.TryParse(lines[lineIndex], out var leadingDate))
             {
-                entry.StartMonth = dates.StartMonth;
-                entry.StartYear = dates.StartYear;
-                entry.EndMonth = dates.EndMonth;
-                entry.EndYear = dates.EndYear;
-                startIndex = 2;
-            }
-            else if (lines.Length > 1)
-            {
-                entry.Institution = lines[1];
-                startIndex = 2;
+                dateRange = leadingDate;
+                lineIndex++;
+                if (lineIndex < lines.Length && LooksLikeLocationLine(lines[lineIndex]))
+                {
+                    entry.Location = lines[lineIndex];
+                    lineIndex++;
+                }
             }
 
-            if (startIndex < lines.Length)
+            var headerLines = new List<string>();
+            for (; lineIndex < lines.Length; lineIndex++)
             {
-                entry.Description = string.Join('\n', lines.Skip(startIndex)).Trim();
+                var line = lines[lineIndex];
+                if (DateRangeParser.TryParse(line, out var inlineDate))
+                {
+                    dateRange ??= inlineDate;
+                    lineIndex++;
+                    break;
+                }
+
+                if (string.IsNullOrWhiteSpace(entry.Location) && LooksLikeLocationLine(line))
+                {
+                    entry.Location = line;
+                    continue;
+                }
+
+                headerLines.Add(line);
+                if (headerLines.Count >= 2)
+                {
+                    lineIndex++;
+                    break;
+                }
+            }
+
+            AssignEducationHeader(entry, headerLines);
+
+            if (lineIndex < lines.Length
+                && DateRangeParser.TryParse(lines[lineIndex], out var trailingDate))
+            {
+                dateRange ??= trailingDate;
+                lineIndex++;
+            }
+
+            if (dateRange is not null)
+            {
+                ApplyEducationDateRange(entry, dateRange);
+                if (InferMissingEducationStartDate(entry))
+                {
+                    context.AddConfidence(
+                        EducationFieldKeys.Build(entry.Id, EducationFieldKeys.StartMonth),
+                        CvImportConfidence.Low);
+                    context.AddConfidence(
+                        EducationFieldKeys.Build(entry.Id, EducationFieldKeys.StartYear),
+                        CvImportConfidence.Low);
+                }
+            }
+
+            if (lineIndex < lines.Length)
+            {
+                entry.Description = string.Join('\n', lines.Skip(lineIndex)).Trim();
             }
 
             if (entry.HasUserInput())
@@ -437,22 +516,43 @@ public static class CvImportFieldExtractor
         var entries = new List<CertificateEntry>();
         foreach (var block in SplitBlocks(body))
         {
-            var lines = block.Split('\n', StringSplitOptions.TrimEntries);
+            var lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (lines.Length == 0)
             {
                 continue;
             }
 
-            var entry = new CertificateEntry
-            {
-                Name = lines[0],
-                Issuer = lines.Length > 1 ? lines[1] : string.Empty
-            };
+            var entry = new CertificateEntry();
+            ParsedDateRange? issueDate = null;
+            var contentLines = new List<string>();
 
-            if (lines.Length > 2)
+            foreach (var line in lines)
             {
-                entry.Description = string.Join('\n', lines.Skip(2)).Trim();
+                if (issueDate is null && DateRangeParser.TryParse(line, out var parsedDate))
+                {
+                    issueDate = parsedDate;
+                    continue;
+                }
+
+                contentLines.Add(line);
             }
+
+            if (contentLines.Count > 0)
+            {
+                entry.Name = contentLines[0];
+            }
+
+            if (contentLines.Count > 1)
+            {
+                entry.Issuer = contentLines[1];
+            }
+
+            if (contentLines.Count > 2)
+            {
+                entry.Description = string.Join('\n', contentLines.Skip(2)).Trim();
+            }
+
+            ApplyCertificateIssueDate(entry, issueDate);
 
             if (entry.HasUserInput())
             {
@@ -473,27 +573,44 @@ public static class CvImportFieldExtractor
         var entries = new List<ProjectEntry>();
         foreach (var block in SplitBlocks(body))
         {
-            var lines = block.Split('\n', StringSplitOptions.TrimEntries);
+            var lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (lines.Length == 0)
             {
                 continue;
             }
 
-            var entry = new ProjectEntry { Name = lines[0] };
-            var startIndex = 1;
-            if (lines.Length > 1 && DateRangeParser.TryParse(lines[1], out var dates))
+            var entry = new ProjectEntry();
+            var lineIndex = 0;
+            ParsedDateRange? dateRange = null;
+
+            if (DateRangeParser.TryParse(lines[0], out var leadingDate))
             {
-                entry.StartMonth = dates.StartMonth;
-                entry.StartYear = dates.StartYear;
-                entry.EndMonth = dates.EndMonth;
-                entry.EndYear = dates.EndYear;
-                startIndex = 2;
+                dateRange = leadingDate;
+                lineIndex = 1;
+            }
+
+            if (lineIndex < lines.Length && string.IsNullOrWhiteSpace(entry.Name))
+            {
+                entry.Name = lines[lineIndex++];
+            }
+
+            if (lineIndex < lines.Length
+                && dateRange is null
+                && DateRangeParser.TryParse(lines[lineIndex], out var inlineDate))
+            {
+                dateRange = inlineDate;
+                lineIndex++;
+            }
+
+            if (dateRange is not null)
+            {
+                ApplyProjectDateRange(entry, dateRange);
             }
 
             var descriptionLines = new List<string>();
-            for (; startIndex < lines.Length; startIndex++)
+            for (; lineIndex < lines.Length; lineIndex++)
             {
-                var line = lines[startIndex];
+                var line = lines[lineIndex];
                 var urlMatch = CvImportPatterns.Url.Match(line);
                 if (urlMatch.Success && string.IsNullOrWhiteSpace(entry.ProjectUrl))
                 {
@@ -698,26 +815,47 @@ public static class CvImportFieldExtractor
         out ParsedDateRange? dateRange)
     {
         dateRange = null;
+        if (TryConsumeLeadingDateSection(lines, ref lineIndex, out dateRange, out var location)
+            && !string.IsNullOrWhiteSpace(location))
+        {
+            entry.Location = location;
+        }
+    }
+
+    private static bool TryConsumeLeadingDateSection(
+        string[] lines,
+        ref int lineIndex,
+        out ParsedDateRange? dateRange,
+        out string? location)
+    {
+        dateRange = null;
+        location = null;
         if (lineIndex >= lines.Length)
         {
-            return;
+            return false;
         }
 
         if (DateRangeParser.TryParse(lines[lineIndex], out var directDate))
         {
             dateRange = directDate;
             lineIndex++;
-            return;
+            if (lineIndex < lines.Length && LooksLikeLocationLine(lines[lineIndex]))
+            {
+                location = lines[lineIndex];
+                lineIndex++;
+            }
+
+            return true;
         }
 
         if (lineIndex + 1 < lines.Length
             && LooksLikeLocationLine(lines[lineIndex])
             && DateRangeParser.TryParse(lines[lineIndex + 1], out var dateAfterLocation))
         {
-            entry.Location = lines[lineIndex];
+            location = lines[lineIndex];
             dateRange = dateAfterLocation;
             lineIndex += 2;
-            return;
+            return true;
         }
 
         for (var index = lineIndex; index < Math.Min(lines.Length, lineIndex + 3); index++)
@@ -729,12 +867,235 @@ public static class CvImportFieldExtractor
 
             if (index > lineIndex && LooksLikeLocationLine(lines[lineIndex]))
             {
-                entry.Location = lines[lineIndex];
+                location = lines[lineIndex];
             }
 
             dateRange = candidateDates;
             lineIndex = index + 1;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void AssignEducationHeader(EducationEntry entry, IReadOnlyList<string> headerLines)
+    {
+        if (headerLines.Count == 0)
+        {
             return;
+        }
+
+        if (headerLines.Count == 1)
+        {
+            var line = headerLines[0];
+            if (TrySplitDegreeInstitution(line, out var degree, out var institution))
+            {
+                entry.Degree = degree;
+                entry.Institution = institution;
+            }
+            else if (LooksLikeInstitutionName(line))
+            {
+                entry.Institution = line;
+                entry.Degree = InferDefaultDegreeLabel(line);
+                InferDegreeType(entry, line);
+            }
+            else
+            {
+                entry.Degree = line;
+            }
+
+            return;
+        }
+
+        entry.Degree = headerLines[0];
+        entry.Institution = headerLines[1];
+        InferDegreeType(entry, headerLines[1]);
+    }
+
+    private static void ApplyEducationDateRange(EducationEntry entry, ParsedDateRange range)
+    {
+        if (range.IsPresent)
+        {
+            entry.IsCurrentlyStudying = true;
+            entry.StartMonth = range.StartMonth;
+            entry.StartYear = range.StartYear;
+            return;
+        }
+
+        var hasStart = range.StartYear.HasValue;
+        var hasEnd = range.EndYear.HasValue;
+
+        if (hasStart && hasEnd)
+        {
+            entry.StartMonth = range.StartMonth;
+            entry.StartYear = range.StartYear;
+            entry.EndMonth = range.EndMonth;
+            entry.EndYear = range.EndYear;
+            return;
+        }
+
+        if (hasEnd)
+        {
+            entry.EndMonth = range.EndMonth;
+            entry.EndYear = range.EndYear;
+            return;
+        }
+
+        if (hasStart)
+        {
+            entry.EndMonth = range.StartMonth;
+            entry.EndYear = range.StartYear;
+        }
+    }
+
+    private static bool InferMissingEducationStartDate(EducationEntry entry)
+    {
+        if (entry.IsCurrentlyStudying || entry.StartYear.HasValue || !entry.EndYear.HasValue)
+        {
+            return false;
+        }
+
+        var durationYears = entry.DegreeType switch
+        {
+            DegreeType.HighSchool => 4,
+            DegreeType.Associate => 2,
+            DegreeType.Bachelor => 3,
+            DegreeType.Master => 2,
+            DegreeType.Doctorate => 4,
+            DegreeType.Certificate => 1,
+            _ => 3
+        };
+
+        entry.StartMonth = 9;
+        entry.StartYear = entry.EndYear.Value - durationYears;
+        return true;
+    }
+
+    private static void ApplyCertificateIssueDate(CertificateEntry entry, ParsedDateRange? range)
+    {
+        if (range is null)
+        {
+            return;
+        }
+
+        entry.IssueMonth = range.StartMonth ?? range.EndMonth;
+        entry.IssueYear = range.StartYear ?? range.EndYear;
+    }
+
+    private static void ApplyProjectDateRange(ProjectEntry entry, ParsedDateRange range)
+    {
+        if (range.IsPresent)
+        {
+            entry.IsCurrentlyActive = true;
+            entry.StartMonth = range.StartMonth;
+            entry.StartYear = range.StartYear;
+            return;
+        }
+
+        var hasStart = range.StartYear.HasValue;
+        var hasEnd = range.EndYear.HasValue;
+
+        if (hasStart && hasEnd)
+        {
+            entry.StartMonth = range.StartMonth;
+            entry.StartYear = range.StartYear;
+            entry.EndMonth = range.EndMonth;
+            entry.EndYear = range.EndYear;
+            return;
+        }
+
+        if (hasStart)
+        {
+            entry.StartMonth = range.StartMonth;
+            entry.StartYear = range.StartYear;
+        }
+    }
+
+    private static bool TrySplitDegreeInstitution(string line, out string degree, out string institution)
+    {
+        degree = string.Empty;
+        institution = string.Empty;
+
+        var separatorIndex = line.IndexOf(" - ", StringComparison.Ordinal);
+        if (separatorIndex > 0)
+        {
+            degree = line[..separatorIndex].Trim();
+            institution = line[(separatorIndex + 3)..].Trim();
+            return !string.IsNullOrWhiteSpace(degree) && !string.IsNullOrWhiteSpace(institution);
+        }
+
+        separatorIndex = line.IndexOf(" at ", StringComparison.OrdinalIgnoreCase);
+        if (separatorIndex > 0)
+        {
+            degree = line[..separatorIndex].Trim();
+            institution = line[(separatorIndex + 4)..].Trim();
+            return !string.IsNullOrWhiteSpace(degree) && !string.IsNullOrWhiteSpace(institution);
+        }
+
+        return false;
+    }
+
+    private static bool LooksLikeInstitutionName(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return false;
+        }
+
+        return line.Contains("high school", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("university", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("college", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("academy", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("institute", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("gymnaz", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("gymnáz", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("stredna skola", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("stredná škola", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string InferDefaultDegreeLabel(string institutionOrTitle)
+    {
+        if (institutionOrTitle.Contains("high school", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("gymnaz", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("gymnáz", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("stredna skola", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("stredná škola", StringComparison.OrdinalIgnoreCase))
+        {
+            return "High School";
+        }
+
+        if (institutionOrTitle.Contains("university", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("college", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Bachelor's degree";
+        }
+
+        return institutionOrTitle;
+    }
+
+    private static void InferDegreeType(EducationEntry entry, string institutionOrTitle)
+    {
+        if (institutionOrTitle.Contains("high school", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("gymnaz", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("gymnáz", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("stredna skola", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("stredná škola", StringComparison.OrdinalIgnoreCase))
+        {
+            entry.DegreeType = DegreeType.HighSchool;
+            return;
+        }
+
+        if (institutionOrTitle.Contains("master", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("mgr", StringComparison.OrdinalIgnoreCase))
+        {
+            entry.DegreeType = DegreeType.Master;
+            return;
+        }
+
+        if (institutionOrTitle.Contains("phd", StringComparison.OrdinalIgnoreCase)
+            || institutionOrTitle.Contains("doctor", StringComparison.OrdinalIgnoreCase))
+        {
+            entry.DegreeType = DegreeType.Doctorate;
         }
     }
 
@@ -772,6 +1133,11 @@ public static class CvImportFieldExtractor
             return false;
         }
 
+        if (ContainsTechnologyListProseIndicators(line))
+        {
+            return false;
+        }
+
         var parts = SplitCommaList(line).ToArray();
         if (parts.Length < 2 || parts.Any(part => part.Length is < 1 or > 40))
         {
@@ -783,6 +1149,206 @@ public static class CvImportFieldExtractor
             return false;
         }
 
+        return true;
+    }
+
+    private static bool ContainsTechnologyListProseIndicators(string line)
+    {
+        if (line.Length > 72)
+        {
+            return true;
+        }
+
+        if (line.Contains('.', StringComparison.Ordinal) && !line.Contains(".NET", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (char.IsLower(line[0]))
+        {
+            return true;
+        }
+
+        string[] proseTokens =
+        [
+            " using ",
+            " for ",
+            " with ",
+            " the ",
+            " to ",
+            " in ",
+            " on ",
+            " of ",
+            " a ",
+            " an ",
+            " and delivering ",
+            " and reviewed ",
+            " and maintained ",
+            " and collaborated ",
+            " and iterated ",
+            " and technical ",
+            " and user ",
+            " and backend ",
+            " and frontend ",
+            " and code ",
+            " and security",
+            " and auditability"
+        ];
+
+        var lowerLine = $" {line.ToLowerInvariant()} ";
+        if (proseTokens.Any(token => lowerLine.Contains(token, StringComparison.Ordinal)))
+        {
+            return true;
+        }
+
+        return SplitCommaList(line).Any(part =>
+            part.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length > 4
+            || Regex.IsMatch(part, @"\b(and|with|for|the|to|in|on|of|a|an)\b", RegexOptions.IgnoreCase));
+    }
+
+    private static HashSet<string> CollectSidebarSkillTokens(string skillsBody)
+    {
+        var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(skillsBody))
+        {
+            return tokens;
+        }
+
+        foreach (var line in skillsBody.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            if (line.Contains(':', StringComparison.Ordinal))
+            {
+                var parts = line.Split(':', 2);
+                if (parts.Length == 2)
+                {
+                    foreach (var skillName in SplitCommaList(parts[1]))
+                    {
+                        tokens.Add(skillName);
+                    }
+                }
+
+                continue;
+            }
+
+            if (line.StartsWith("- ", StringComparison.Ordinal))
+            {
+                tokens.Add(line[2..].Trim());
+                continue;
+            }
+
+            tokens.Add(line);
+            foreach (var skillName in SplitCommaList(line))
+            {
+                tokens.Add(skillName);
+            }
+        }
+
+        return tokens;
+    }
+
+    private static bool IsSidebarSkillLine(string line, IReadOnlySet<string> sidebarSkillTokens)
+    {
+        return sidebarSkillTokens.Contains(line.Trim());
+    }
+
+    private static bool TrySkipSidebarSkillRun(
+        string[] lines,
+        ref int lineIndex,
+        IReadOnlySet<string> sidebarSkillTokens)
+    {
+        if (!IsLikelySidebarSkillBlockLine(lines[lineIndex], sidebarSkillTokens))
+        {
+            return false;
+        }
+
+        var runLength = 1;
+        while (lineIndex + runLength < lines.Length
+               && IsLikelySidebarSkillBlockLine(lines[lineIndex + runLength], sidebarSkillTokens))
+        {
+            runLength++;
+        }
+
+        if (runLength < 2)
+        {
+            return IsSidebarSkillLine(lines[lineIndex], sidebarSkillTokens)
+                || LooksLikeSidebarSkillToken(lines[lineIndex]);
+        }
+
+        lineIndex += runLength - 1;
+        return true;
+    }
+
+    private static bool IsLikelySidebarSkillBlockLine(string line, IReadOnlySet<string> sidebarSkillTokens)
+    {
+        if (line.StartsWith("- ", StringComparison.Ordinal)
+            || line.StartsWith("Technologies:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (LooksLikeTechnologyList(line))
+        {
+            return false;
+        }
+
+        if (IsSidebarSkillLine(line, sidebarSkillTokens) || LooksLikeSidebarSkillToken(line))
+        {
+            return true;
+        }
+
+        if (line.Contains(" - ", StringComparison.Ordinal)
+            || line.Contains(" at ", StringComparison.OrdinalIgnoreCase)
+            || DateRangeParser.TryParse(line, out _)
+            || LooksLikeLocationLine(line)
+            || line.StartsWith("Project ", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return line.Length <= 40
+            && !line.Contains('.', StringComparison.Ordinal)
+            && line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length <= 4;
+    }
+
+    private static bool TryParseContactLocationLine(string line, out string location)
+    {
+        location = string.Empty;
+        if (string.IsNullOrWhiteSpace(line)
+            || CvImportPatterns.Email.IsMatch(line)
+            || CvImportPatterns.Phone.IsMatch(line)
+            || CvImportPatterns.Url.IsMatch(line)
+            || DateRangeParser.TryParse(line, out _))
+        {
+            return false;
+        }
+
+        if (line.Contains('/', StringComparison.Ordinal) && !line.Contains(',', StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (!line.Contains(',', StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var parts = line.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length != 2 || parts[0].Length < 2 || parts[1].Length < 2)
+        {
+            return false;
+        }
+
+        if (!char.IsLetter(parts[0][0]) || !char.IsLetter(parts[1][0]))
+        {
+            return false;
+        }
+
+        location = $"{parts[0]}, {parts[1]}";
         return true;
     }
 

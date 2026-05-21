@@ -1,3 +1,4 @@
+using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Import;
 using ReVitae.Core.Import.Patterns;
 using ReVitae.Core.Import.Pdf;
@@ -278,6 +279,133 @@ public sealed class CvImportFieldExtractorEdgeCaseTests
     }
 
     [Fact]
+    public void Extract_ParsesEducationWithLeadingGraduationDateLocationAndInstitution()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Education
+            06/2006
+            Bratislava, Slovakia
+            High School of Electrical Engineering
+            """;
+
+        var result = Extract(text);
+
+        Assert.Single(result.EducationEntries);
+        var education = result.EducationEntries[0];
+        Assert.Equal("High School", education.Degree);
+        Assert.Equal("High School of Electrical Engineering", education.Institution);
+        Assert.Equal("Bratislava, Slovakia", education.Location);
+        Assert.Equal(9, education.StartMonth);
+        Assert.Equal(2002, education.StartYear);
+        Assert.Equal(6, education.EndMonth);
+        Assert.Equal(2006, education.EndYear);
+    }
+
+    [Fact]
+    public void Extract_ParsesEducationWithDegreeInstitutionAndTrailingDateRange()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Education
+            BSc Computer Science
+            Technical University
+            09/2016 - 06/2020
+            Graduated with honors.
+            """;
+
+        var result = Extract(text);
+
+        Assert.Single(result.EducationEntries);
+        var education = result.EducationEntries[0];
+        Assert.Equal("BSc Computer Science", education.Degree);
+        Assert.Equal("Technical University", education.Institution);
+        Assert.Equal(9, education.StartMonth);
+        Assert.Equal(2016, education.StartYear);
+        Assert.Equal(6, education.EndMonth);
+        Assert.Equal(2020, education.EndYear);
+        Assert.Equal("Graduated with honors.", education.Description);
+    }
+
+    [Fact]
+    public void Extract_MarksInferredEducationStartDatesAsLowConfidence()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Education
+            06/2006
+            High School of Electrical Engineering
+            """;
+
+        var result = Extract(text);
+        var education = Assert.Single(result.EducationEntries);
+
+        Assert.Equal(9, education.StartMonth);
+        Assert.Equal(2002, education.StartYear);
+        Assert.Contains(
+            result.FieldConfidences,
+            confidence => confidence.FieldKey == EducationFieldKeys.Build(education.Id, EducationFieldKeys.StartMonth)
+                && confidence.Confidence == CvImportConfidence.Low);
+        Assert.Contains(
+            result.FieldConfidences,
+            confidence => confidence.FieldKey == EducationFieldKeys.Build(education.Id, EducationFieldKeys.StartYear)
+                && confidence.Confidence == CvImportConfidence.Low);
+    }
+
+    [Fact]
+    public void Extract_ParsesCertificateIssueDateOnThirdLine()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Certificates
+            AWS Solutions Architect
+            Amazon Web Services
+            2023
+            """;
+
+        var result = Extract(text);
+
+        Assert.Single(result.CertificateEntries);
+        var certificate = result.CertificateEntries[0];
+        Assert.Equal("AWS Solutions Architect", certificate.Name);
+        Assert.Equal("Amazon Web Services", certificate.Issuer);
+        Assert.Null(certificate.IssueMonth);
+        Assert.Equal(2023, certificate.IssueYear);
+    }
+
+    [Fact]
+    public void Extract_ParsesProjectWithLeadingDateRange()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Projects
+            01/2022 - 12/2022
+            ReVitae
+            Local-first CV builder.
+            """;
+
+        var result = Extract(text);
+
+        Assert.Single(result.ProjectEntries);
+        var project = result.ProjectEntries[0];
+        Assert.Equal("ReVitae", project.Name);
+        Assert.Equal(1, project.StartMonth);
+        Assert.Equal(2022, project.StartYear);
+        Assert.Equal(12, project.EndMonth);
+        Assert.Equal(2022, project.EndYear);
+    }
+
+    [Fact]
     public void Extract_EmitsExpectedConfidenceLevelsAndSectionHasData()
     {
         const string text = """
@@ -321,6 +449,119 @@ public sealed class CvImportFieldExtractorEdgeCaseTests
         var result = Extract(text);
 
         Assert.Contains(result.Warnings, warning => warning.MessageKey == TranslationKeys.ImportWarningNameUncertain);
+    }
+
+    [Fact]
+    public void Extract_ParsesContactLocationWithoutExplicitLabel()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Contact
+            Turček, Slovakia 03848
+            Slovakia / Remote / EU
+            (+421) 944159982
+            """;
+
+        var result = Extract(text);
+
+        Assert.Equal("Turček, Slovakia 03848", result.Personal.Location);
+    }
+
+    [Fact]
+    public void Extract_ParsesLinkedInAndGitHubFromHyperlinkUrls()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Contact
+            LinkedIn
+            GitHub
+            """;
+
+        var result = CvImportFieldExtractor.Extract(
+            CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text)),
+            [
+                "https://www.linkedin.com/in/jane-doe",
+                "https://github.com/janedoe"
+            ]);
+
+        Assert.Equal("https://www.linkedin.com/in/jane-doe", result.Personal.LinkedInUrl);
+        Assert.Equal("https://github.com/janedoe", result.Personal.GitHubUrl);
+    }
+
+    [Fact]
+    public void Extract_FiltersSidebarSkillBleedFromWorkExperience()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Skills
+            PostgreSQL
+            Redis
+            React
+            AI Feature Integration
+            Team leadership
+
+            Work Experience
+            Devcity s.r.o. - Senior full stack developer
+            Prague, Czechia
+            03/2023 - 01/2024
+            Worked on web application development.
+            PostgreSQL
+            Redis
+            React
+            AI Feature Integration
+            Team leadership
+            merkatos.cz s.r.o. - Frontend development leader
+            Prague, Czechia
+            03/2022 - 12/2022
+            ReactJS, TypeScript, .NET Core
+            Project www.vinisto.cz
+            """;
+
+        var result = Extract(text);
+
+        Assert.Equal(2, result.WorkExperienceEntries.Count);
+
+        var devcity = result.WorkExperienceEntries[0];
+        Assert.Contains("web application development", devcity.Description, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("PostgreSQL", devcity.Technologies, StringComparison.Ordinal);
+        Assert.DoesNotContain("Team leadership", devcity.Description, StringComparison.Ordinal);
+
+        var merkatos = result.WorkExperienceEntries[1];
+        Assert.Equal("ReactJS, TypeScript, .NET Core", merkatos.Technologies);
+        Assert.Equal("Project www.vinisto.cz", merkatos.Description);
+    }
+
+    [Fact]
+    public void Extract_DoesNotTreatWorkDescriptionCommasAsTechnologies()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Work Experience
+            Excalibur s.r.o. - Senior full stack developer
+            Kosice, Slovakia
+            01/2024 - 05/2026
+            Contributed to software architecture decisions, API boundaries,
+            and technical design for backend, frontend, and AI-assisted
+            product features.
+            Designed and iterated prompts for AI-driven functionality and
+            reviewed AI outputs in the context of product behavior,
+            correctness, and security.
+            """;
+
+        var result = Extract(text);
+        var entry = Assert.Single(result.WorkExperienceEntries);
+
+        Assert.Equal(string.Empty, entry.Technologies);
+        Assert.Contains("software architecture decisions", entry.Description, StringComparison.Ordinal);
+        Assert.Contains("correctness, and security", entry.Description, StringComparison.Ordinal);
     }
 
     private static CvImportResult Extract(string text)

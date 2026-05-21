@@ -25,10 +25,10 @@ public sealed class CvPdfImporter
             return CvImportResult.Failed(extraction.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadablePdf);
         }
 
-        return ImportFromText(extraction.Text);
+        return ImportFromText(extraction.Text, extraction.HyperlinkUrls ?? []);
     }
 
-    public CvImportResult ImportFromText(string rawText)
+    public CvImportResult ImportFromText(string rawText, IReadOnlyList<string>? hyperlinkUrls = null)
     {
         var normalized = CvTextNormalizer.Normalize(rawText);
         if (string.IsNullOrWhiteSpace(normalized))
@@ -37,7 +37,7 @@ public sealed class CvPdfImporter
         }
 
         var segmentation = CvSectionSegmenter.Segment(normalized);
-        var result = CvImportFieldExtractor.Extract(segmentation);
+        var result = CvImportFieldExtractor.Extract(segmentation, hyperlinkUrls);
         if (!result.Success)
         {
             return CvImportResult.Failed(TranslationKeys.ImportErrorNoStructuredData);

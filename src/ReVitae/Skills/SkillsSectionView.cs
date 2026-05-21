@@ -74,6 +74,7 @@ public sealed class SkillsSectionView : UserControl, IValidationNavigableSection
             IsExpanded = true,
             HeaderActions = _sectionErrorBadgePanel
         };
+        _section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
 
         Content = _section;
         _entriesPanel.AddHandler(InputElement.PointerMovedEvent, OnEntriesPanelPointerMoved, RoutingStrategies.Tunnel);
@@ -81,6 +82,8 @@ public sealed class SkillsSectionView : UserControl, IValidationNavigableSection
     }
 
     public event EventHandler? EntriesChanged;
+
+    public event EventHandler? ExpandStateChanged;
 
     public IReadOnlyList<SkillsGroupEntry> Entries => _entries;
 
@@ -623,6 +626,7 @@ public sealed class SkillsSectionView : UserControl, IValidationNavigableSection
                 IsExpanded = true,
                 HeaderActions = headerActions
             };
+            _expandableSection.ExpandStateChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
 
             RootBorder = new Border { Child = _expandableSection };
             RootBorder.Classes.Add(UiClasses.EntryCard);

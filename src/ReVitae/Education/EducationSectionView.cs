@@ -77,11 +77,14 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
             IsExpanded = true,
             HeaderActions = _sectionErrorBadgePanel
         };
+        _section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
 
         Content = _section;
     }
 
     public event EventHandler? EntriesChanged;
+
+    public event EventHandler? ExpandStateChanged;
 
     public IReadOnlyList<EducationEntry> Entries => _entries;
 
@@ -482,6 +485,7 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
                 IsExpanded = true,
                 HeaderActions = headerActions
             };
+            _expandableSection.ExpandStateChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
 
             RootBorder = new Border
             {

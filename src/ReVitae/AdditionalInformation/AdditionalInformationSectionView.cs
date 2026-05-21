@@ -83,11 +83,14 @@ public sealed class AdditionalInformationSectionView : UserControl, IValidationN
             IsExpanded = true,
             HeaderActions = _sectionErrorBadgePanel
         };
+        _section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
 
         Content = _section;
     }
 
     public event EventHandler? ContentChanged;
+
+    public event EventHandler? ExpandStateChanged;
 
     public AdditionalInformationContent ContentModel => _content;
 

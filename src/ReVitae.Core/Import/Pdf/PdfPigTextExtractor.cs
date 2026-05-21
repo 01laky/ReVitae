@@ -18,6 +18,7 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
             using var document = PdfDocument.Open(filePath);
             var pages = document.GetPages().ToArray();
             var chunks = new List<string>();
+            var hyperlinkUrls = new List<string>();
 
             foreach (var page in pages)
             {
@@ -25,6 +26,20 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
                 if (!string.IsNullOrWhiteSpace(pageText))
                 {
                     chunks.Add(pageText);
+                }
+
+                foreach (var hyperlink in page.GetHyperlinks())
+                {
+                    if (string.IsNullOrWhiteSpace(hyperlink.Uri))
+                    {
+                        continue;
+                    }
+
+                    var uri = hyperlink.Uri.Trim();
+                    if (!hyperlinkUrls.Contains(uri, StringComparer.OrdinalIgnoreCase))
+                    {
+                        hyperlinkUrls.Add(uri);
+                    }
                 }
             }
 
@@ -34,7 +49,7 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
                 return new PdfTextExtractionResult(false, string.Empty, pages.Length, TranslationKeys.ImportErrorEmptyPdf);
             }
 
-            return new PdfTextExtractionResult(true, text, pages.Length, null);
+            return new PdfTextExtractionResult(true, text, pages.Length, null, hyperlinkUrls);
         }
         catch (UglyToad.PdfPig.Exceptions.PdfDocumentEncryptedException)
         {
@@ -63,24 +78,30 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
     {
         var minX = words.Min(word => word.BoundingBox.Left);
         var maxX = words.Max(word => word.BoundingBox.Right);
-        var splitX = minX + ((maxX - minX) * 0.38);
-        var left = words.Where(word => word.BoundingBox.Left <= splitX).ToArray();
-        var right = words.Where(word => word.BoundingBox.Left > splitX).ToArray();
-
-        if (left.Length < 12 || right.Length < 12)
+        var pageWidth = maxX - minX;
+        if (pageWidth < 80)
         {
             return [words];
         }
 
-        return [left, right];
+        var splitX = minX + (pageWidth * 0.38);
+        var left = words.Where(word => word.BoundingBox.Left <= splitX).ToArray();
+        var right = words.Where(word => word.BoundingBox.Left > splitX).ToArray();
+
+        if (left.Length >= 3 && right.Length >= 3)
+        {
+            return [left, right];
+        }
+
+        return [words];
     }
 
     private static string ExtractColumnText(IReadOnlyList<Word> words)
     {
         var lines = new List<List<Word>>();
         foreach (var word in words
-            .OrderByDescending(word => word.BoundingBox.Bottom)
-            .ThenBy(word => word.BoundingBox.Left))
+                     .OrderByDescending(word => word.BoundingBox.Bottom)
+                     .ThenBy(word => word.BoundingBox.Left))
         {
             var line = lines.FirstOrDefault(candidate =>
                 Math.Abs(candidate[0].BoundingBox.Bottom - word.BoundingBox.Bottom) < 3);

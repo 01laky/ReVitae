@@ -3,7 +3,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-490%20passing-brightgreen)](https://github.com/01laky/ReVitae)
+[![Tests](https://img.shields.io/badge/tests-515%20passing-brightgreen)](https://github.com/01laky/ReVitae)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -73,10 +73,11 @@ are highlighted for manual review.
 The import flow currently supports text-based PDFs. Scanned image-only PDFs and
 OCR are not supported yet.
 
-### Template Preview
+### Template Preview and PDF Export
 
 You can switch between multiple built-in preview templates without changing your
-CV content.
+CV content. **Export PDF** downloads a polished, template-aligned PDF that uses
+the same structured data as the live preview.
 
 Current template styles include:
 
@@ -86,7 +87,9 @@ Current template styles include:
 - Dark Sidebar Accent
 
 The preview can be expanded into a larger modal and scrolls independently from
-the form.
+the form. Exported PDFs use A4 layout, support Unicode text (including Slovak and
+Czech diacritics), paginate long CVs automatically, and suggest a filename from
+the candidate name.
 
 ### Validation and Review
 
@@ -105,16 +108,16 @@ control:
 ## Product Status
 
 ReVitae is an active early-stage desktop app. The structured CV form, inline
-validation UI, intro and replace PDF import flows, template preview, and basic
-plain PDF export are in place. The next major product areas are local persistence,
-more polished template-based export, and smarter import/recommendation features.
+validation UI, intro and replace PDF import flows, template preview, and
+template-based PDF export are in place. The next major product areas are local
+persistence, richer export formats, and smarter import/recommendation features.
 
 ## Roadmap
 
 Planned areas:
 
 - Save and load local CV projects
-- Template-based PDF export improvements
+- More export formats such as DOCX or HTML
 - More import formats such as DOCX or TXT
 - Static CV quality hints
 - Optional AI-assisted import and recommendations
@@ -126,6 +129,7 @@ Planned areas:
 - Avalonia UI
 - Material.Avalonia
 - PdfPig for local PDF text extraction
+- QuestPDF for template-based PDF export
 - xUnit for tests
 - markdownlint and C# build checks
 

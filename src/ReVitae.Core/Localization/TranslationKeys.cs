@@ -23,6 +23,9 @@ public static class TranslationKeys
     public const string ShortSummary = "field.shortSummary";
     public const string ShortSummaryPlaceholder = "placeholder.shortSummary";
     public const string ExportPdf = "action.exportPdf";
+    public const string ExportSaveDialogTitle = "export.saveDialogTitle";
+    public const string ExportPdfFileType = "export.pdfFileType";
+    public const string ExportFailed = "export.failed";
     public const string Preview = "preview.title";
     public const string PreviewExpandTitle = "modal.previewExpand.title";
     public const string Setup = "modal.setup.title";
@@ -430,6 +433,9 @@ public static class TranslationKeys
         ShortSummary,
         ShortSummaryPlaceholder,
         ExportPdf,
+        ExportSaveDialogTitle,
+        ExportPdfFileType,
+        ExportFailed,
         Preview,
         PreviewExpandTitle,
         Setup,

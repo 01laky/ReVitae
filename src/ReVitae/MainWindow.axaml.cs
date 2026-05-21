@@ -15,11 +15,14 @@ using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Cv.Languages;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
+using ReVitae.Core.Export;
+using ReVitae.Core.Export.Pdf;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Controls;
 using ReVitae.Core.Validation;
 using ReVitae.Core.Validation.Presentation;
+using ReVitae.Export;
 using ReVitae.Ui;
 using ReVitae.Ui.Validation;
 using System;
@@ -27,8 +30,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using ExportWorkExperienceEntry = ReVitae.Core.Export.WorkExperienceEntry;
+using ExportEducationEntry = ReVitae.Core.Export.EducationEntry;
+using ExportSkillItem = ReVitae.Core.Export.SkillItem;
+using ExportSkillsGroup = ReVitae.Core.Export.SkillsGroup;
+using ExportLanguageEntry = ReVitae.Core.Export.LanguageEntry;
+using ExportCertificateEntry = ReVitae.Core.Export.CertificateEntry;
+using ExportProjectEntry = ReVitae.Core.Export.ProjectEntry;
 
 namespace ReVitae;
 
@@ -46,90 +55,16 @@ public partial class MainWindow : Window
     private readonly LinksCollectionValidator _linksValidator = new();
     private readonly AdditionalInformationValidator _additionalInformationValidator = new();
     private readonly CvPdfImporter _cvPdfImporter = new();
+    private readonly ICvPdfExporter _cvPdfExporter = new QuestPdfCvExporter();
     private readonly ValidationTouchTracker _validationTouchTracker = new();
     private readonly ValidationFieldRegistry _personalValidationRegistry = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private bool _isImportInProgress;
     private bool _isUpdatingLanguageSelection;
-    private CvTemplateId _selectedTemplate = CvTemplateId.CleanTopHeader;
+    private CvExportTemplateId _selectedTemplate = CvExportTemplateId.CleanTopHeader;
     private StackPanel? _personalSectionErrorBadgePanel;
     private TextBlock? _personalSectionErrorBadgeTextBlock;
     private int _personalSectionErrorCount;
-
-    private enum CvTemplateId
-    {
-        ClassicSidebar,
-        ModernSidebar,
-        CleanTopHeader,
-        DarkSidebarAccent
-    }
-
-    private sealed record WorkExperiencePreviewEntry(
-        string JobTitle,
-        string Company,
-        string Location,
-        string EmploymentTypeLabel,
-        string DateRange,
-        string? Description,
-        string? Achievements,
-        string? Technologies,
-        string? CompanyUrl);
-
-    private sealed record EducationPreviewEntry(
-        string Degree,
-        string Institution,
-        string FieldOfStudy,
-        string Location,
-        string DegreeTypeLabel,
-        string DateRange,
-        string? Grade,
-        string? Description,
-        string? InstitutionUrl);
-
-    private sealed record SkillPreviewItem(
-        string Name,
-        string ProficiencyLabel,
-        int? YearsOfExperience);
-
-    private sealed record SkillsPreviewGroup(
-        string Category,
-        IReadOnlyList<SkillPreviewItem> Skills);
-
-    private sealed record LanguagePreviewEntry(
-        string MainLine,
-        IReadOnlyList<string> SubSkillLines);
-
-    private sealed record CertificatePreviewEntry(
-        string MainLine,
-        IReadOnlyList<string> DetailLines);
-
-    private sealed record ProjectPreviewEntry(
-        string MainLine,
-        IReadOnlyList<string> DetailLines);
-
-    private sealed record CvTemplateData(
-        string FirstName,
-        string LastName,
-        string ProfessionalTitle,
-        string Email,
-        string Phone,
-        string Location,
-        string LinkedInUrl,
-        string PortfolioUrl,
-        string GitHubUrl,
-        string? ShortSummary,
-        string? PhotoPath,
-        IReadOnlyList<WorkExperiencePreviewEntry> WorkExperienceEntries,
-        IReadOnlyList<EducationPreviewEntry> EducationEntries,
-        IReadOnlyList<SkillsPreviewGroup> SkillsGroups,
-        IReadOnlyList<LanguagePreviewEntry> LanguageEntries,
-        IReadOnlyList<CertificatePreviewEntry> CertificateEntries,
-        IReadOnlyList<ProjectPreviewEntry> ProjectEntries,
-        IReadOnlyList<string> CustomLinkLines,
-        string? AdditionalInformationContent)
-    {
-        public string FullName => $"{FirstName} {LastName}".Trim();
-    }
 
     public MainWindow()
     {
@@ -144,10 +79,64 @@ public partial class MainWindow : Window
         ProjectsSection.EntriesChanged += OnProjectsChanged;
         LinksSection.EntriesChanged += OnLinksChanged;
         AdditionalInformationSection.ContentChanged += OnAdditionalInformationChanged;
+        WireValidationRefreshOnSectionExpand(PersonalInformationSection);
+        WireValidationRefreshOnSectionExpand(WorkExperienceSection);
+        WireValidationRefreshOnSectionExpand(EducationSection);
+        WireValidationRefreshOnSectionExpand(SkillsSection);
+        WireValidationRefreshOnSectionExpand(LanguagesSection);
+        WireValidationRefreshOnSectionExpand(CertificatesSection);
+        WireValidationRefreshOnSectionExpand(ProjectsSection);
+        WireValidationRefreshOnSectionExpand(LinksSection);
+        WireValidationRefreshOnSectionExpand(AdditionalInformationSection);
         ApplyLocalization();
         UpdateTemplateSelectionState();
         UpdatePreview();
         UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(ExpandableSection section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(WorkExperience.WorkExperienceSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(Education.EducationSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(Skills.SkillsSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(Languages.LanguagesSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(Certificates.CertificatesSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(Projects.ProjectsSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(Links.LinksSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
+    }
+
+    private void WireValidationRefreshOnSectionExpand(AdditionalInformation.AdditionalInformationSectionView section)
+    {
+        section.ExpandStateChanged += (_, _) => UpdateValidationState();
     }
 
     private void InitializeLanguageSelector()
@@ -751,22 +740,22 @@ public partial class MainWindow : Window
 
     private void OnSelectClassicSidebarTemplateClicked(object? sender, RoutedEventArgs e)
     {
-        SelectTemplate(CvTemplateId.ClassicSidebar);
+        SelectTemplate(CvExportTemplateId.ClassicSidebar);
     }
 
     private void OnSelectModernSidebarTemplateClicked(object? sender, RoutedEventArgs e)
     {
-        SelectTemplate(CvTemplateId.ModernSidebar);
+        SelectTemplate(CvExportTemplateId.ModernSidebar);
     }
 
     private void OnSelectCleanTopHeaderTemplateClicked(object? sender, RoutedEventArgs e)
     {
-        SelectTemplate(CvTemplateId.CleanTopHeader);
+        SelectTemplate(CvExportTemplateId.CleanTopHeader);
     }
 
     private void OnSelectDarkSidebarTemplateClicked(object? sender, RoutedEventArgs e)
     {
-        SelectTemplate(CvTemplateId.DarkSidebarAccent);
+        SelectTemplate(CvExportTemplateId.DarkSidebarAccent);
     }
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
@@ -836,15 +825,17 @@ public partial class MainWindow : Window
             return;
         }
 
+        var document = BuildExportDocument();
+
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(
             new FilePickerSaveOptions
             {
-                Title = "Export PDF",
-                SuggestedFileName = "revitae-basic-cv.pdf",
+                Title = _localizer.Get(TranslationKeys.ExportSaveDialogTitle),
+                SuggestedFileName = CvExportFilenameHelper.SuggestFilename(FirstNameTextBox.Text, LastNameTextBox.Text),
                 DefaultExtension = "pdf",
                 FileTypeChoices =
                 [
-                    new FilePickerFileType("PDF")
+                    new FilePickerFileType(_localizer.Get(TranslationKeys.ExportPdfFileType))
                     {
                         Patterns = ["*.pdf"],
                         MimeTypes = ["application/pdf"]
@@ -857,11 +848,16 @@ public partial class MainWindow : Window
             return;
         }
 
-        await using var stream = await file.OpenWriteAsync();
-        var pdfBytes = CreatePdfBytes(BuildPreviewLines());
-        await stream.WriteAsync(pdfBytes);
-
-        ExportStatusTextBlock.Text = _localizer.Format(TranslationKeys.ExportedPdfTo, file.Name);
+        try
+        {
+            await using var stream = await file.OpenWriteAsync();
+            _cvPdfExporter.Export(document, stream);
+            ExportStatusTextBlock.Text = _localizer.Format(TranslationKeys.ExportedPdfTo, file.Name);
+        }
+        catch
+        {
+            ExportStatusTextBlock.Text = _localizer.Get(TranslationKeys.ExportFailed);
+        }
     }
 
     private void ApplyLocalization()
@@ -944,7 +940,7 @@ public partial class MainWindow : Window
         PreviewExpandContentControl.Content = BuildTemplatePreview();
     }
 
-    private void SelectTemplate(CvTemplateId templateId)
+    private void SelectTemplate(CvExportTemplateId templateId)
     {
         _selectedTemplate = templateId;
         UpdateTemplateSelectionState();
@@ -954,15 +950,15 @@ public partial class MainWindow : Window
 
     private void UpdateTemplateSelectionState()
     {
-        ClassicSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.ClassicSidebar;
-        ModernSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.ModernSidebar;
-        CleanTopHeaderSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.CleanTopHeader;
-        DarkSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvTemplateId.DarkSidebarAccent;
+        ClassicSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.ClassicSidebar;
+        ModernSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.ModernSidebar;
+        CleanTopHeaderSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.CleanTopHeader;
+        DarkSidebarSelectedTextBlock.IsVisible = _selectedTemplate == CvExportTemplateId.DarkSidebarAccent;
 
-        ClassicSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.ClassicSidebar);
-        ModernSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.ModernSidebar);
-        CleanTopHeaderTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.CleanTopHeader);
-        DarkSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvTemplateId.DarkSidebarAccent);
+        ClassicSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.ClassicSidebar);
+        ModernSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.ModernSidebar);
+        CleanTopHeaderTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.CleanTopHeader);
+        DarkSidebarTemplateButton.Classes.Set("selected", _selectedTemplate == CvExportTemplateId.DarkSidebarAccent);
     }
 
     private void SetSetupModalVisible(bool isVisible)
@@ -1038,13 +1034,6 @@ public partial class MainWindow : Window
     {
         (_personalSectionErrorBadgePanel, _personalSectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
         PersonalInformationSection.HeaderActions = _personalSectionErrorBadgePanel;
-        PersonalInformationSection.PropertyChanged += (_, e) =>
-        {
-            if (e.Property == ExpandableSection.IsExpandedProperty)
-            {
-                UpdatePersonalSectionErrorBadge();
-            }
-        };
 
         RegisterPersonalField(MainPersonalInformationFieldKeys.FirstName, FirstNameTextBox, FirstNameErrorTextBlock);
         RegisterPersonalField(MainPersonalInformationFieldKeys.LastName, LastNameTextBox, LastNameErrorTextBlock);
@@ -1215,154 +1204,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private string[] BuildPreviewLines()
-    {
-        var lines = new List<string>
-        {
-            BuildFullName(),
-            NormalizeValue(ProfessionalTitleTextBox.Text),
-            string.Empty,
-            $"{_localizer.Get(TranslationKeys.Email)}: {NormalizeValue(EmailTextBox.Text)}",
-            $"{_localizer.Get(TranslationKeys.Phone)}: {NormalizeValue(PhoneTextBox.Text)}",
-            $"{_localizer.Get(TranslationKeys.Location)}: {NormalizeValue(LocationTextBox.Text)}",
-            $"{_localizer.Get(TranslationKeys.LinkedInUrl)}: {NormalizeValue(LinkedInUrlTextBox.Text)}",
-            $"{_localizer.Get(TranslationKeys.PortfolioUrl)}: {NormalizeValue(PortfolioUrlTextBox.Text)}",
-            $"{_localizer.Get(TranslationKeys.GitHubUrl)}: {NormalizeValue(GitHubUrlTextBox.Text)}",
-            string.Empty,
-            $"{_localizer.Get(TranslationKeys.Summary)}:"
-        };
-
-        lines.AddRange(BuildSummaryLines());
-        lines.AddRange(BuildWorkExperiencePdfLines());
-        lines.AddRange(BuildEducationPdfLines());
-        lines.AddRange(BuildSkillsPdfLines());
-        lines.AddRange(BuildLanguagesPdfLines());
-        lines.AddRange(BuildCertificatesPdfLines());
-        lines.AddRange(BuildProjectsPdfLines());
-        lines.AddRange(BuildCustomLinksPdfLines());
-        lines.AddRange(BuildAdditionalInformationPdfLines());
-
-        return lines.ToArray();
-    }
-
-    private IEnumerable<string> BuildWorkExperiencePdfLines()
-    {
-        var activeEntries = GetActiveWorkExperienceEntries();
-        if (activeEntries.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-
-        var lines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewWorkExperience)
-        };
-
-        foreach (var entry in activeEntries)
-        {
-            lines.Add(string.Empty);
-            lines.Add(entry.JobTitle);
-            lines.Add(BuildWorkExperienceMetaLine(entry));
-            AppendMultilineBlock(lines, entry.Description);
-            if (!string.IsNullOrWhiteSpace(entry.Achievements))
-            {
-                lines.Add(_localizer.Get(TranslationKeys.PreviewAchievements) + ":");
-                AppendMultilineBlock(lines, entry.Achievements);
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.Technologies))
-            {
-                lines.Add($"{_localizer.Get(TranslationKeys.PreviewTechnologies)}: {entry.Technologies}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.CompanyUrl))
-            {
-                lines.Add($"{_localizer.Get(TranslationKeys.WorkExperienceCompanyUrl)}: {entry.CompanyUrl}");
-            }
-        }
-
-        return lines;
-    }
-
-    private static void AppendMultilineBlock(List<string> lines, string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return;
-        }
-
-        lines.AddRange(
-            value.Replace("\r\n", "\n", StringComparison.Ordinal)
-                .Split('\n', StringSplitOptions.None));
-    }
-
-    private string BuildWorkExperienceMetaLine(WorkExperiencePreviewEntry entry)
-    {
-        var parts = new List<string> { entry.Company };
-        if (!string.IsNullOrWhiteSpace(entry.Location) && entry.Location != "-")
-        {
-            parts.Add(entry.Location);
-        }
-
-        parts.Add(entry.EmploymentTypeLabel);
-        parts.Add(entry.DateRange);
-        return string.Join(" · ", parts);
-    }
-
-    private IEnumerable<string> BuildEducationPdfLines()
-    {
-        var activeEntries = GetActiveEducationEntries();
-        if (activeEntries.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-
-        var lines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewEducation)
-        };
-
-        foreach (var entry in activeEntries)
-        {
-            lines.Add(string.Empty);
-            lines.Add(entry.Degree);
-            lines.Add(BuildEducationMetaLine(entry));
-            if (!string.IsNullOrWhiteSpace(entry.FieldOfStudy))
-            {
-                lines.Add($"{_localizer.Get(TranslationKeys.PreviewFieldOfStudy)}: {entry.FieldOfStudy}");
-            }
-
-            AppendMultilineBlock(lines, entry.Description);
-            if (!string.IsNullOrWhiteSpace(entry.Grade))
-            {
-                lines.Add($"{_localizer.Get(TranslationKeys.PreviewGrade)}: {entry.Grade}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.InstitutionUrl))
-            {
-                lines.Add($"{_localizer.Get(TranslationKeys.EducationInstitutionUrl)}: {entry.InstitutionUrl}");
-            }
-        }
-
-        return lines;
-    }
-
-    private string BuildEducationMetaLine(EducationPreviewEntry entry)
-    {
-        var parts = new List<string> { entry.Institution };
-        if (!string.IsNullOrWhiteSpace(entry.Location) && entry.Location != "-")
-        {
-            parts.Add(entry.Location);
-        }
-
-        parts.Add(entry.DegreeTypeLabel);
-        parts.Add(entry.DateRange);
-        return string.Join(" · ", parts);
-    }
-
-    private IReadOnlyList<EducationPreviewEntry> GetActiveEducationEntries()
+    private IReadOnlyList<ExportEducationEntry> GetActiveEducationEntries()
     {
         return EducationSection.Entries
             .Where(entry => entry.HasUserInput())
@@ -1370,9 +1212,9 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private EducationPreviewEntry BuildEducationPreviewEntry(EducationEntry entry)
+    private ExportEducationEntry BuildEducationPreviewEntry(ReVitae.Core.Cv.Education.EducationEntry entry)
     {
-        return new EducationPreviewEntry(
+        return new ExportEducationEntry(
             NormalizeValue(entry.Degree),
             NormalizeValue(entry.Institution),
             NormalizeOptionalValue(entry.FieldOfStudy),
@@ -1384,45 +1226,7 @@ public partial class MainWindow : Window
             entry.InstitutionUrl);
     }
 
-    private IEnumerable<string> BuildSkillsPdfLines()
-    {
-        var groups = GetActiveSkillsPreviewGroups();
-        if (groups.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-
-        var lines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewSkills)
-        };
-
-        foreach (var group in groups)
-        {
-            lines.Add(string.Empty);
-            lines.Add(group.Category);
-            foreach (var skill in group.Skills)
-            {
-                lines.Add(FormatSkillPreviewLine(skill));
-            }
-        }
-
-        return lines;
-    }
-
-    private string FormatSkillPreviewLine(SkillPreviewItem skill)
-    {
-        var parts = new List<string> { skill.Name, skill.ProficiencyLabel };
-        if (skill.YearsOfExperience is not null)
-        {
-            parts.Add($"{skill.YearsOfExperience} {_localizer.Get(TranslationKeys.PreviewYearsSuffix)}");
-        }
-
-        return string.Join(" · ", parts);
-    }
-
-    private IReadOnlyList<SkillsPreviewGroup> GetActiveSkillsPreviewGroups()
+    private IReadOnlyList<ExportSkillsGroup> GetActiveSkillsPreviewGroups()
     {
         var activeGroups = SkillsSection.Entries
             .Where(entry => entry.HasUserInput())
@@ -1438,46 +1242,22 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private SkillsPreviewGroup BuildSkillsPreviewGroup(SkillsGroupEntry group)
+    private ExportSkillsGroup BuildSkillsPreviewGroup(SkillsGroupEntry group)
     {
         var skills = group.Skills
             .Where(skill => skill.HasUserInput())
-            .Select(skill => new SkillPreviewItem(
+            .Select(skill => new ExportSkillItem(
                 skill.Name.Trim(),
                 _localizer.Get(skill.Proficiency.ToTranslationKey()),
                 skill.YearsOfExperience))
             .ToArray();
 
-        return new SkillsPreviewGroup(
+        return new ExportSkillsGroup(
             NormalizeValue(group.Category),
             skills);
     }
 
-    private IEnumerable<string> BuildLanguagesPdfLines()
-    {
-        var entries = GetActiveLanguagePreviewEntries();
-        if (entries.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-
-        var lines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewLanguages)
-        };
-
-        foreach (var entry in entries)
-        {
-            lines.Add(string.Empty);
-            lines.Add(entry.MainLine);
-            lines.AddRange(entry.SubSkillLines);
-        }
-
-        return lines;
-    }
-
-    private IReadOnlyList<LanguagePreviewEntry> GetActiveLanguagePreviewEntries()
+    private IReadOnlyList<ExportLanguageEntry> GetActiveLanguagePreviewEntries()
     {
         return LanguagesSection.Entries
             .Where(entry => entry.HasUserInput())
@@ -1485,38 +1265,14 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private LanguagePreviewEntry BuildLanguagePreviewEntry(LanguageEntry entry)
+    private ExportLanguageEntry BuildLanguagePreviewEntry(ReVitae.Core.Cv.Languages.LanguageEntry entry)
     {
-        return new LanguagePreviewEntry(
+        return new ExportLanguageEntry(
             LanguagePreviewFormatter.FormatMainLine(entry, _localizer),
             LanguagePreviewFormatter.FormatSubSkillLines(entry, _localizer));
     }
 
-    private IEnumerable<string> BuildCertificatesPdfLines()
-    {
-        var entries = GetActiveCertificatePreviewEntries();
-        if (entries.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-
-        var lines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewCertificates)
-        };
-
-        foreach (var entry in entries)
-        {
-            lines.Add(string.Empty);
-            lines.Add(entry.MainLine);
-            lines.AddRange(entry.DetailLines);
-        }
-
-        return lines;
-    }
-
-    private IReadOnlyList<CertificatePreviewEntry> GetActiveCertificatePreviewEntries()
+    private IReadOnlyList<ExportCertificateEntry> GetActiveCertificatePreviewEntries()
     {
         return CertificatesSection.Entries
             .Where(entry => entry.HasUserInput())
@@ -1524,38 +1280,14 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private CertificatePreviewEntry BuildCertificatePreviewEntry(CertificateEntry entry)
+    private ExportCertificateEntry BuildCertificatePreviewEntry(ReVitae.Core.Cv.Certificates.CertificateEntry entry)
     {
-        return new CertificatePreviewEntry(
+        return new ExportCertificateEntry(
             CertificatePreviewFormatter.FormatMainLine(entry, _localizer),
             CertificatePreviewFormatter.FormatDetailLines(entry, _localizer));
     }
 
-    private IEnumerable<string> BuildProjectsPdfLines()
-    {
-        var entries = GetActiveProjectPreviewEntries();
-        if (entries.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-
-        var lines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewProjects)
-        };
-
-        foreach (var entry in entries)
-        {
-            lines.Add(string.Empty);
-            lines.Add(entry.MainLine);
-            lines.AddRange(entry.DetailLines);
-        }
-
-        return lines;
-    }
-
-    private IReadOnlyList<ProjectPreviewEntry> GetActiveProjectPreviewEntries()
+    private IReadOnlyList<ExportProjectEntry> GetActiveProjectPreviewEntries()
     {
         return ProjectsSection.Entries
             .Where(entry => entry.HasUserInput())
@@ -1563,34 +1295,11 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private ProjectPreviewEntry BuildProjectPreviewEntry(ProjectEntry entry)
+    private ExportProjectEntry BuildProjectPreviewEntry(ReVitae.Core.Cv.Projects.ProjectEntry entry)
     {
-        return new ProjectPreviewEntry(
+        return new ExportProjectEntry(
             ProjectPreviewFormatter.FormatMainLine(entry, _localizer),
             ProjectPreviewFormatter.FormatDetailLines(entry, _localizer));
-    }
-
-    private IEnumerable<string> BuildCustomLinksPdfLines()
-    {
-        var lines = GetActiveCustomLinkLines();
-        if (lines.Count == 0)
-        {
-            return Array.Empty<string>();
-        }
-
-        var pdfLines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewCustomLinks)
-        };
-
-        foreach (var line in lines)
-        {
-            pdfLines.Add(string.Empty);
-            pdfLines.Add(line);
-        }
-
-        return pdfLines;
     }
 
     private IReadOnlyList<string> GetActiveCustomLinkLines()
@@ -1601,25 +1310,7 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private IEnumerable<string> BuildAdditionalInformationPdfLines()
-    {
-        var content = AdditionalInformationSection.ContentModel.Content?.Trim();
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return Array.Empty<string>();
-        }
-
-        var lines = new List<string>
-        {
-            string.Empty,
-            _localizer.Get(TranslationKeys.PreviewAdditionalInformation)
-        };
-
-        AppendMultilineBlock(lines, content);
-        return lines;
-    }
-
-    private IReadOnlyList<WorkExperiencePreviewEntry> GetActiveWorkExperienceEntries()
+    private IReadOnlyList<ExportWorkExperienceEntry> GetActiveWorkExperienceEntries()
     {
         return WorkExperienceSection.Entries
             .Where(entry => entry.HasUserInput())
@@ -1627,9 +1318,9 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private WorkExperiencePreviewEntry BuildWorkExperiencePreviewEntry(WorkExperienceEntry entry)
+    private ExportWorkExperienceEntry BuildWorkExperiencePreviewEntry(ReVitae.Core.Cv.WorkExperience.WorkExperienceEntry entry)
     {
-        return new WorkExperiencePreviewEntry(
+        return new ExportWorkExperienceEntry(
             NormalizeValue(entry.JobTitle),
             NormalizeValue(entry.Company),
             NormalizeOptionalValue(entry.Location),
@@ -1641,51 +1332,25 @@ public partial class MainWindow : Window
             entry.CompanyUrl);
     }
 
-    private string BuildFullName()
-    {
-        var nameParts = new[]
-        {
-            FirstNameTextBox.Text?.Trim(),
-            LastNameTextBox.Text?.Trim()
-        };
-
-        var fullName = string.Join(
-            " ",
-            Array.FindAll(nameParts, part => !string.IsNullOrWhiteSpace(part)));
-
-        return string.IsNullOrWhiteSpace(fullName) ? "-" : fullName;
-    }
-
-    private string[] BuildSummaryLines()
-    {
-        var summary = ShortSummaryTextBox.Text;
-        if (string.IsNullOrWhiteSpace(summary))
-        {
-            return new[] { "-" };
-        }
-
-        return summary
-            .Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Split('\n', StringSplitOptions.None);
-    }
-
     private Control BuildTemplatePreview()
     {
-        var data = BuildTemplateData();
+        var document = BuildExportDocument();
 
         return _selectedTemplate switch
         {
-            CvTemplateId.ClassicSidebar => BuildClassicSidebarTemplate(data),
-            CvTemplateId.ModernSidebar => BuildModernSidebarTemplate(data),
-            CvTemplateId.CleanTopHeader => BuildCleanTopHeaderTemplate(data),
-            CvTemplateId.DarkSidebarAccent => BuildDarkSidebarAccentTemplate(data),
+            CvExportTemplateId.ClassicSidebar => BuildClassicSidebarTemplate(document),
+            CvExportTemplateId.ModernSidebar => BuildModernSidebarTemplate(document),
+            CvExportTemplateId.CleanTopHeader => BuildCleanTopHeaderTemplate(document),
+            CvExportTemplateId.DarkSidebarAccent => BuildDarkSidebarAccentTemplate(document),
             _ => throw new ArgumentOutOfRangeException(nameof(_selectedTemplate))
         };
     }
 
-    private CvTemplateData BuildTemplateData()
+    private CvExportDocument BuildExportDocument()
     {
-        return new CvTemplateData(
+        return new CvExportDocument(
+            _selectedTemplate,
+            CvExportSectionLabelsFactory.Create(_localizer),
             NormalizeValue(FirstNameTextBox.Text),
             NormalizeValue(LastNameTextBox.Text),
             NormalizeValue(ProfessionalTitleTextBox.Text),
@@ -1718,26 +1383,26 @@ public partial class MainWindow : Window
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 
-    private Control BuildClassicSidebarTemplate(CvTemplateData data)
+    private Control BuildClassicSidebarTemplate(CvExportDocument document)
     {
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.36*,0.64*");
 
         var sidebarContent = new StackPanel { Spacing = 14 };
-        sidebarContent.Children.Add(CreateNameBlock(data.FirstName, data.LastName, "#F47C2C", stacked: true));
-        sidebarContent.Children.Add(CreateContactSection(data));
+        sidebarContent.Children.Add(CreateNameBlock(document.FirstName, document.LastName, "#F47C2C", stacked: true));
+        sidebarContent.Children.Add(CreateContactSection(document));
 
         var content = CreateContentStack();
-        content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
-        AddWorkExperienceSection(content, data);
-        AddEducationSection(content, data);
-        AddSkillsSection(content, data);
-        AddLanguagesSection(content, data);
-        AddCertificatesSection(content, data);
-        AddProjectsSection(content, data);
-        AddCustomLinksSection(content, data);
-        AddAdditionalInformationSection(content, data);
-        content.Children.Add(CreateSection(_localizer.Get(TranslationKeys.ContactLinks), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
+        content.Children.Add(CreateSection(document.Labels.Summary, CvExportPreviewContentBuilder.BuildSummary(document)));
+        AddWorkExperienceSection(content, document);
+        AddEducationSection(content, document);
+        AddSkillsSection(content, document);
+        AddLanguagesSection(content, document);
+        AddCertificatesSection(content, document);
+        AddProjectsSection(content, document);
+        AddCustomLinksSection(content, document);
+        AddAdditionalInformationSection(content, document);
+        content.Children.Add(CreateSection(document.Labels.ContactLinks, CvExportPreviewContentBuilder.BuildContactLinksLines(document)));
 
         root.Children.Add(CreateSidebarPanel(Brush.Parse("#D8D8D8"), sidebarContent));
         var contentPanel = WrapContentPanel(content);
@@ -1747,13 +1412,16 @@ public partial class MainWindow : Window
         return root;
     }
 
-    private Control BuildModernSidebarTemplate(CvTemplateData data)
+    private Control BuildModernSidebarTemplate(CvExportDocument document)
     {
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
 
         var sidebarContent = new StackPanel { Spacing = 14 };
-        sidebarContent.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Contact), BuildLines(_localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl)));
+        sidebarContent.Children.Add(CreateSection(document.Labels.Contact, CvExportPreviewContentBuilder.BuildLines(
+            document.Labels.Phone, document.Phone,
+            document.Labels.Email, document.Email,
+            document.Labels.LinkedInUrl, document.LinkedInUrl)));
 
         var content = new Grid
         {
@@ -1767,20 +1435,20 @@ public partial class MainWindow : Window
             {
                 Background = Brush.Parse("#4A4A4A"),
                 Padding = new Thickness(TemplateContentPadding, 12),
-                Child = CreateText(data.FullName, 26, Brushes.White, FontWeight.Bold)
+                Child = CreateText(document.FullName, 26, Brushes.White, FontWeight.Bold)
             });
 
         var body = CreateContentStack();
-        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Profile), GetSummary(data)));
-        AddWorkExperienceSection(body, data);
-        AddEducationSection(body, data);
-        AddSkillsSection(body, data);
-        AddLanguagesSection(body, data);
-        AddCertificatesSection(body, data);
-        AddProjectsSection(body, data);
-        AddCustomLinksSection(body, data);
-        AddAdditionalInformationSection(body, data);
-        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Digital), BuildLines(_localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
+        body.Children.Add(CreateSection(document.Labels.Profile, CvExportPreviewContentBuilder.BuildSummary(document)));
+        AddWorkExperienceSection(body, document);
+        AddEducationSection(body, document);
+        AddSkillsSection(body, document);
+        AddLanguagesSection(body, document);
+        AddCertificatesSection(body, document);
+        AddProjectsSection(body, document);
+        AddCustomLinksSection(body, document);
+        AddAdditionalInformationSection(body, document);
+        body.Children.Add(CreateSection(document.Labels.Digital, CvExportPreviewContentBuilder.BuildDigitalLines(document)));
         var wrappedBody = WrapContentPanel(body);
         Grid.SetRow(wrappedBody, 1);
         content.Children.Add(wrappedBody);
@@ -1792,7 +1460,7 @@ public partial class MainWindow : Window
         return root;
     }
 
-    private Control BuildCleanTopHeaderTemplate(CvTemplateData data)
+    private Control BuildCleanTopHeaderTemplate(CvExportDocument document)
     {
         var root = new StackPanel
         {
@@ -1806,14 +1474,14 @@ public partial class MainWindow : Window
         };
 
         var namePanel = new StackPanel { Spacing = 6 };
-        namePanel.Children.Add(CreateText(data.FullName, 30, Brushes.White, FontWeight.Bold));
-        namePanel.Children.Add(CreateText(data.ProfessionalTitle, 14, Brushes.White, FontWeight.SemiBold));
+        namePanel.Children.Add(CreateText(document.FullName, 30, Brushes.White, FontWeight.Bold));
+        namePanel.Children.Add(CreateText(document.ProfessionalTitle, 14, Brushes.White, FontWeight.SemiBold));
         header.Children.Add(namePanel);
 
         var contact = new StackPanel { Spacing = 3 };
-        contact.Children.Add(CreateText($"{_localizer.Get(TranslationKeys.Email)}: {data.Email}", 11, Brushes.White, FontWeight.SemiBold));
-        contact.Children.Add(CreateText($"{_localizer.Get(TranslationKeys.Phone)}: {data.Phone}", 11, Brushes.White, FontWeight.SemiBold));
-        contact.Children.Add(CreateText($"{_localizer.Get(TranslationKeys.Location)}: {data.Location}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"{document.Labels.Email}: {document.Email}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"{document.Labels.Phone}: {document.Phone}", 11, Brushes.White, FontWeight.SemiBold));
+        contact.Children.Add(CreateText($"{document.Labels.Location}: {document.Location}", 11, Brushes.White, FontWeight.SemiBold));
         Grid.SetColumn(contact, 1);
         header.Children.Add(contact);
 
@@ -1826,29 +1494,29 @@ public partial class MainWindow : Window
             });
 
         var body = CreateContentStack();
-        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Summary), GetSummary(data)));
-        AddWorkExperienceSection(body, data);
-        AddEducationSection(body, data);
-        AddSkillsSection(body, data);
-        AddLanguagesSection(body, data);
-        AddCertificatesSection(body, data);
-        AddProjectsSection(body, data);
-        AddCustomLinksSection(body, data);
-        AddAdditionalInformationSection(body, data);
-        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Links), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
+        body.Children.Add(CreateSection(document.Labels.Summary, CvExportPreviewContentBuilder.BuildSummary(document)));
+        AddWorkExperienceSection(body, document);
+        AddEducationSection(body, document);
+        AddSkillsSection(body, document);
+        AddLanguagesSection(body, document);
+        AddCertificatesSection(body, document);
+        AddProjectsSection(body, document);
+        AddCustomLinksSection(body, document);
+        AddAdditionalInformationSection(body, document);
+        body.Children.Add(CreateSection(document.Labels.Links, CvExportPreviewContentBuilder.BuildLinksLines(document)));
         root.Children.Add(WrapContentPanel(body));
 
         return root;
     }
 
-    private Control BuildDarkSidebarAccentTemplate(CvTemplateData data)
+    private Control BuildDarkSidebarAccentTemplate(CvExportDocument document)
     {
         var root = CreatePreviewRoot();
         root.ColumnDefinitions = new ColumnDefinitions("0.34*,0.66*");
 
         var sidebarContent = new StackPanel { Spacing = 16 };
-        sidebarContent.Children.Add(CreateText(_localizer.Get(TranslationKeys.Contact).ToUpperInvariant(), 16, Brushes.White, FontWeight.Bold));
-        sidebarContent.Children.Add(CreateText(BuildLines(_localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Location), data.Location), 11, Brushes.White, FontWeight.Normal));
+        sidebarContent.Children.Add(CreateText(document.Labels.Contact.ToUpperInvariant(), 16, Brushes.White, FontWeight.Bold));
+        sidebarContent.Children.Add(CreateText(CvExportPreviewContentBuilder.BuildContactLines(document), 11, Brushes.White, FontWeight.Normal));
 
         var content = new StackPanel
         {
@@ -1865,24 +1533,24 @@ public partial class MainWindow : Window
                 {
                     Children =
                     {
-                        CreateText(data.FullName.ToUpperInvariant(), 28, Brushes.White, FontWeight.Bold),
-                        CreateText(data.ProfessionalTitle.ToUpperInvariant(), 14, Brushes.White, FontWeight.SemiBold)
+                        CreateText(document.FullName.ToUpperInvariant(), 28, Brushes.White, FontWeight.Bold),
+                        CreateText(document.ProfessionalTitle.ToUpperInvariant(), 14, Brushes.White, FontWeight.SemiBold)
                     }
                 }
             });
 
         var body = CreateContentStack();
         body.Background = Brush.Parse("#F2F2F2");
-        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Objective), GetSummary(data)));
-        AddWorkExperienceSection(body, data);
-        AddEducationSection(body, data);
-        AddSkillsSection(body, data);
-        AddLanguagesSection(body, data);
-        AddCertificatesSection(body, data);
-        AddProjectsSection(body, data);
-        AddCustomLinksSection(body, data);
-        AddAdditionalInformationSection(body, data);
-        body.Children.Add(CreateSection(_localizer.Get(TranslationKeys.Online), BuildLines(_localizer.Get(TranslationKeys.LinkedInUrl), data.LinkedInUrl, _localizer.Get(TranslationKeys.PortfolioUrl), data.PortfolioUrl, _localizer.Get(TranslationKeys.GitHubUrl), data.GitHubUrl)));
+        body.Children.Add(CreateSection(document.Labels.Objective, CvExportPreviewContentBuilder.BuildSummary(document)));
+        AddWorkExperienceSection(body, document);
+        AddEducationSection(body, document);
+        AddSkillsSection(body, document);
+        AddLanguagesSection(body, document);
+        AddCertificatesSection(body, document);
+        AddProjectsSection(body, document);
+        AddCustomLinksSection(body, document);
+        AddAdditionalInformationSection(body, document);
+        body.Children.Add(CreateSection(document.Labels.Online, CvExportPreviewContentBuilder.BuildOnlineLines(document)));
         content.Children.Add(WrapContentPanel(body, Brush.Parse("#F2F2F2")));
 
         root.Children.Add(CreateSidebarPanel(Brush.Parse("#2F3A45"), sidebarContent));
@@ -1943,223 +1611,129 @@ public partial class MainWindow : Window
         return panel;
     }
 
-    private Control CreateContactSection(CvTemplateData data)
+    private Control CreateContactSection(CvExportDocument document)
     {
-        return CreateSection(_localizer.Get(TranslationKeys.Contact), BuildLines(_localizer.Get(TranslationKeys.Email), data.Email, _localizer.Get(TranslationKeys.Phone), data.Phone, _localizer.Get(TranslationKeys.Location), data.Location));
+        return CreateSection(document.Labels.Contact, CvExportPreviewContentBuilder.BuildContactLines(document));
     }
 
-    private void AddWorkExperienceSection(StackPanel panel, CvTemplateData data)
+    private void AddWorkExperienceSection(StackPanel panel, CvExportDocument document)
     {
-        if (data.WorkExperienceEntries.Count == 0)
+        if (document.WorkExperienceEntries.Count == 0)
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(_localizer.Get(TranslationKeys.PreviewWorkExperience), BuildWorkExperiencePreviewContent(data)));
+        panel.Children.Add(CreateSection(document.Labels.PreviewWorkExperience, BuildWorkExperiencePreviewContent(document)));
     }
 
-    private string BuildWorkExperiencePreviewContent(CvTemplateData data)
+    private static string BuildWorkExperiencePreviewContent(CvExportDocument document)
     {
-        var entries = new List<string>();
-        foreach (var entry in data.WorkExperienceEntries)
-        {
-            var block = new List<string>
-            {
-                entry.JobTitle,
-                BuildWorkExperienceMetaLine(entry)
-            };
-
-            if (!string.IsNullOrWhiteSpace(entry.Description))
-            {
-                block.Add(entry.Description);
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.Achievements))
-            {
-                block.Add($"{_localizer.Get(TranslationKeys.PreviewAchievements)}:{Environment.NewLine}{entry.Achievements}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.Technologies))
-            {
-                block.Add($"{_localizer.Get(TranslationKeys.PreviewTechnologies)}: {entry.Technologies}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.CompanyUrl))
-            {
-                block.Add($"{_localizer.Get(TranslationKeys.WorkExperienceCompanyUrl)}: {entry.CompanyUrl}");
-            }
-
-            entries.Add(string.Join(Environment.NewLine, block));
-        }
-
-        return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
+        return CvExportPreviewContentBuilder.BuildWorkExperiencePreviewContent(document);
     }
 
-    private void AddEducationSection(StackPanel panel, CvTemplateData data)
+    private void AddEducationSection(StackPanel panel, CvExportDocument document)
     {
-        if (data.EducationEntries.Count == 0)
+        if (document.EducationEntries.Count == 0)
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(_localizer.Get(TranslationKeys.PreviewEducation), BuildEducationPreviewContent(data)));
+        panel.Children.Add(CreateSection(document.Labels.PreviewEducation, BuildEducationPreviewContent(document)));
     }
 
-    private string BuildEducationPreviewContent(CvTemplateData data)
+    private static string BuildEducationPreviewContent(CvExportDocument document)
     {
-        var entries = new List<string>();
-        foreach (var entry in data.EducationEntries)
-        {
-            var block = new List<string>
-            {
-                entry.Degree,
-                BuildEducationMetaLine(entry)
-            };
-
-            if (!string.IsNullOrWhiteSpace(entry.FieldOfStudy))
-            {
-                block.Add($"{_localizer.Get(TranslationKeys.PreviewFieldOfStudy)}: {entry.FieldOfStudy}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.Description))
-            {
-                block.Add(entry.Description);
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.Grade))
-            {
-                block.Add($"{_localizer.Get(TranslationKeys.PreviewGrade)}: {entry.Grade}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(entry.InstitutionUrl))
-            {
-                block.Add($"{_localizer.Get(TranslationKeys.EducationInstitutionUrl)}: {entry.InstitutionUrl}");
-            }
-
-            entries.Add(string.Join(Environment.NewLine, block));
-        }
-
-        return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
+        return CvExportPreviewContentBuilder.BuildEducationPreviewContent(document);
     }
 
-    private void AddSkillsSection(StackPanel panel, CvTemplateData data)
+    private void AddSkillsSection(StackPanel panel, CvExportDocument document)
     {
-        if (data.SkillsGroups.Count == 0)
+        if (document.SkillsGroups.Count == 0)
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(_localizer.Get(TranslationKeys.PreviewSkills), BuildSkillsPreviewContent(data)));
+        panel.Children.Add(CreateSection(document.Labels.PreviewSkills, BuildSkillsPreviewContent(document)));
     }
 
-    private string BuildSkillsPreviewContent(CvTemplateData data)
+    private static string BuildSkillsPreviewContent(CvExportDocument document)
     {
-        var groups = new List<string>();
-        foreach (var group in data.SkillsGroups)
-        {
-            var lines = new List<string> { group.Category };
-            lines.AddRange(group.Skills.Select(FormatSkillPreviewLine));
-            groups.Add(string.Join(Environment.NewLine, lines));
-        }
-
-        return string.Join($"{Environment.NewLine}{Environment.NewLine}", groups);
+        return CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document);
     }
 
-    private void AddLanguagesSection(StackPanel panel, CvTemplateData data)
+    private void AddLanguagesSection(StackPanel panel, CvExportDocument document)
     {
-        if (data.LanguageEntries.Count == 0)
+        if (document.LanguageEntries.Count == 0)
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(_localizer.Get(TranslationKeys.PreviewLanguages), BuildLanguagesPreviewContent(data)));
+        panel.Children.Add(CreateSection(document.Labels.PreviewLanguages, BuildLanguagesPreviewContent(document)));
     }
 
-    private string BuildLanguagesPreviewContent(CvTemplateData data)
+    private static string BuildLanguagesPreviewContent(CvExportDocument document)
     {
-        var entries = new List<string>();
-        foreach (var entry in data.LanguageEntries)
-        {
-            var block = new List<string> { entry.MainLine };
-            block.AddRange(entry.SubSkillLines);
-            entries.Add(string.Join(Environment.NewLine, block));
-        }
-
-        return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
+        return CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document);
     }
 
-    private void AddCertificatesSection(StackPanel panel, CvTemplateData data)
+    private void AddCertificatesSection(StackPanel panel, CvExportDocument document)
     {
-        if (data.CertificateEntries.Count == 0)
+        if (document.CertificateEntries.Count == 0)
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(
-            _localizer.Get(TranslationKeys.PreviewCertificates),
-            BuildCertificatesPreviewContent(data)));
+        panel.Children.Add(CreateSection(document.Labels.PreviewCertificates, BuildCertificatesPreviewContent(document)));
     }
 
-    private string BuildCertificatesPreviewContent(CvTemplateData data)
+    private static string BuildCertificatesPreviewContent(CvExportDocument document)
     {
-        var entries = new List<string>();
-        foreach (var entry in data.CertificateEntries)
-        {
-            var block = new List<string> { entry.MainLine };
-            block.AddRange(entry.DetailLines);
-            entries.Add(string.Join(Environment.NewLine, block));
-        }
-
-        return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
+        return CvExportPreviewContentBuilder.BuildCertificatesPreviewContent(document);
     }
 
-    private void AddProjectsSection(StackPanel panel, CvTemplateData data)
+    private void AddProjectsSection(StackPanel panel, CvExportDocument document)
     {
-        if (data.ProjectEntries.Count == 0)
+        if (document.ProjectEntries.Count == 0)
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(
-            _localizer.Get(TranslationKeys.PreviewProjects),
-            BuildProjectsPreviewContent(data)));
+        panel.Children.Add(CreateSection(document.Labels.PreviewProjects, BuildProjectsPreviewContent(document)));
     }
 
-    private string BuildProjectsPreviewContent(CvTemplateData data)
+    private static string BuildProjectsPreviewContent(CvExportDocument document)
     {
-        var entries = new List<string>();
-        foreach (var entry in data.ProjectEntries)
-        {
-            var block = new List<string> { entry.MainLine };
-            block.AddRange(entry.DetailLines);
-            entries.Add(string.Join(Environment.NewLine, block));
-        }
-
-        return string.Join($"{Environment.NewLine}{Environment.NewLine}", entries);
+        return CvExportPreviewContentBuilder.BuildProjectsPreviewContent(document);
     }
 
-    private void AddCustomLinksSection(StackPanel panel, CvTemplateData data)
+    private void AddCustomLinksSection(StackPanel panel, CvExportDocument document)
     {
-        if (data.CustomLinkLines.Count == 0)
+        if (document.CustomLinkLines.Count == 0)
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(
-            _localizer.Get(TranslationKeys.PreviewCustomLinks),
-            string.Join(Environment.NewLine, data.CustomLinkLines)));
+        panel.Children.Add(CreateSection(document.Labels.PreviewCustomLinks, BuildCustomLinksPreviewContent(document)));
     }
 
-    private void AddAdditionalInformationSection(StackPanel panel, CvTemplateData data)
+    private static string BuildCustomLinksPreviewContent(CvExportDocument document)
     {
-        if (string.IsNullOrWhiteSpace(data.AdditionalInformationContent))
+        return CvExportPreviewContentBuilder.BuildCustomLinksPreviewContent(document);
+    }
+
+    private void AddAdditionalInformationSection(StackPanel panel, CvExportDocument document)
+    {
+        if (string.IsNullOrWhiteSpace(document.AdditionalInformationContent))
         {
             return;
         }
 
-        panel.Children.Add(CreateSection(
-            _localizer.Get(TranslationKeys.PreviewAdditionalInformation),
-            data.AdditionalInformationContent));
+        panel.Children.Add(CreateSection(document.Labels.PreviewAdditionalInformation, BuildAdditionalInformationPreviewContent(document)));
+    }
+
+    private static string BuildAdditionalInformationPreviewContent(CvExportDocument document)
+    {
+        return CvExportPreviewContentBuilder.BuildAdditionalInformationPreviewContent(document);
     }
 
     private static Control CreateSection(string title, string content)
@@ -2189,105 +1763,8 @@ public partial class MainWindow : Window
         };
     }
 
-    private static string BuildLines(params string[] labelValuePairs)
-    {
-        var lines = new List<string>();
-        for (var index = 0; index < labelValuePairs.Length; index += 2)
-        {
-            var label = labelValuePairs[index];
-            var value = labelValuePairs[index + 1];
-            if (!string.IsNullOrWhiteSpace(value) && value != "-")
-            {
-                lines.Add($"{label}: {value}");
-            }
-        }
-
-        return lines.Count == 0 ? "-" : string.Join(Environment.NewLine, lines);
-    }
-
-    private static string GetSummary(CvTemplateData data)
-    {
-        return string.IsNullOrWhiteSpace(data.ShortSummary) ? "-" : data.ShortSummary;
-    }
-
     private static string NormalizeValue(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
-    }
-
-    private static byte[] CreatePdfBytes(IReadOnlyList<string> lines)
-    {
-        var content = new StringBuilder();
-        content.AppendLine("BT");
-        content.AppendLine("/F1 14 Tf");
-        content.AppendLine("72 760 Td");
-
-        for (var index = 0; index < lines.Count; index++)
-        {
-            if (index > 0)
-            {
-                content.AppendLine("0 -24 Td");
-            }
-
-            content.Append('(');
-            content.Append(EscapePdfText(lines[index]));
-            content.AppendLine(") Tj");
-        }
-
-        content.AppendLine("ET");
-
-        var contentText = content.ToString();
-        var objects = new[]
-        {
-            "<< /Type /Catalog /Pages 2 0 R >>",
-            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-            $"<< /Length {Encoding.ASCII.GetByteCount(contentText)} >>\nstream\n{contentText}endstream"
-        };
-
-        using var stream = new MemoryStream();
-        using var writer = new StreamWriter(stream, Encoding.ASCII, leaveOpen: true);
-        var offsets = new List<long> { 0 };
-
-        writer.WriteLine("%PDF-1.4");
-
-        for (var index = 0; index < objects.Length; index++)
-        {
-            writer.Flush();
-            offsets.Add(stream.Position);
-            writer.WriteLine($"{index + 1} 0 obj");
-            writer.WriteLine(objects[index]);
-            writer.WriteLine("endobj");
-        }
-
-        writer.Flush();
-        var xrefOffset = stream.Position;
-
-        writer.WriteLine("xref");
-        writer.WriteLine($"0 {objects.Length + 1}");
-        writer.WriteLine("0000000000 65535 f ");
-
-        for (var index = 1; index < offsets.Count; index++)
-        {
-            writer.WriteLine($"{offsets[index]:D10} 00000 n ");
-        }
-
-        writer.WriteLine("trailer");
-        writer.WriteLine($"<< /Size {objects.Length + 1} /Root 1 0 R >>");
-        writer.WriteLine("startxref");
-        writer.WriteLine(xrefOffset);
-        writer.WriteLine("%%EOF");
-        writer.Flush();
-
-        return stream.ToArray();
-    }
-
-    private static string EscapePdfText(string text)
-    {
-        return text
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("(", "\\(", StringComparison.Ordinal)
-            .Replace(")", "\\)", StringComparison.Ordinal);
     }
 }

@@ -78,18 +78,14 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
             IsExpanded = true,
             HeaderActions = _sectionErrorBadgePanel
         };
-        _section.PropertyChanged += (_, e) =>
-        {
-            if (e.Property == ExpandableSection.IsExpandedProperty)
-            {
-                UpdateSectionErrorBadge();
-            }
-        };
+        _section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
 
         Content = _section;
     }
 
     public event EventHandler? EntriesChanged;
+
+    public event EventHandler? ExpandStateChanged;
 
     public IReadOnlyList<WorkExperienceEntry> Entries => _entries;
 
@@ -493,13 +489,7 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
                 IsExpanded = true,
                 HeaderActions = headerActions
             };
-            _expandableSection.PropertyChanged += (_, e) =>
-            {
-                if (e.Property == ExpandableSection.IsExpandedProperty)
-                {
-                    UpdateErrorBadge();
-                }
-            };
+            _expandableSection.ExpandStateChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
 
             RootBorder = new Border
             {
