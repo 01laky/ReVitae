@@ -54,14 +54,13 @@ public partial class MainWindow : Window
     private bool _isImportInProgress;
     private bool _isUpdatingLanguageSelection;
     private CvExportTemplateId _selectedTemplate = CvExportTemplateId.CleanTopHeader;
-    private StackPanel? _personalSectionErrorBadgePanel;
-    private TextBlock? _personalSectionErrorBadgeTextBlock;
     private int _personalSectionErrorCount;
     private string? _lastExportedFilePath;
 
     public MainWindow()
     {
         InitializeComponent();
+        InitializeQualityHintsUi();
         InitializePersonalValidation();
         InitializeLanguageSelector();
         WorkExperienceSection.EntriesChanged += OnWorkExperienceChanged;
@@ -557,6 +556,7 @@ public partial class MainWindow : Window
 
         _validationTouchTracker.Reset();
         _personalValidationRegistry.ClearAll();
+        ResetQualityHintState();
     }
 
     private void ClearPersonalInformationForm()
@@ -697,6 +697,8 @@ public partial class MainWindow : Window
         PersonalInformationSection.IsExpanded = IsSectionExpanded(result, CvImportSectionId.PersonalInformation);
 
         ApplyImportConfidence(result.FieldConfidences);
+        _lastImportConfidences = result.FieldConfidences;
+        _showQualitySnackbarAfterImport = true;
     }
 
     private void ShowImportWarnings(CvImportResult result)
@@ -1189,6 +1191,7 @@ public partial class MainWindow : Window
         ShortSummaryLabelTextBlock.Text = _localizer.Get(TranslationKeys.ShortSummary);
         ShortSummaryTextBox.PlaceholderText = _localizer.Get(TranslationKeys.ShortSummaryPlaceholder);
         ExportPdfButton.Content = _localizer.Get(TranslationKeys.Export);
+        QualityHintExportReviewButton.Content = _localizer.Get(TranslationKeys.QualityHintExportReview);
         ExportModalTitleTextBlock.Text = _localizer.Get(TranslationKeys.ExportModalTitle);
         ExportModalSubtitleTextBlock.Text = _localizer.Get(TranslationKeys.ExportModalSubtitle);
         ExportModalBottomCloseButton.Content = _localizer.Get(TranslationKeys.ExportModalClose);
@@ -1358,13 +1361,11 @@ public partial class MainWindow : Window
         ProjectsSection.UpdateValidation(validationResult, _validationTouchTracker);
         LinksSection.UpdateValidation(validationResult, _validationTouchTracker);
         AdditionalInformationSection.UpdateValidation(validationResult, _validationTouchTracker);
+        UpdateQualityHints();
     }
 
     private void InitializePersonalValidation()
     {
-        (_personalSectionErrorBadgePanel, _personalSectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
-        PersonalInformationSection.HeaderActions = _personalSectionErrorBadgePanel;
-
         RegisterPersonalField(MainPersonalInformationFieldKeys.FirstName, FirstNameTextBox, FirstNameErrorTextBlock);
         RegisterPersonalField(MainPersonalInformationFieldKeys.LastName, LastNameTextBox, LastNameErrorTextBlock);
         RegisterPersonalField(MainPersonalInformationFieldKeys.ProfessionalTitle, ProfessionalTitleTextBox, ProfessionalTitleErrorTextBlock);
@@ -1386,14 +1387,14 @@ public partial class MainWindow : Window
 
     private void UpdatePersonalSectionErrorBadge()
     {
-        if (_personalSectionErrorBadgePanel is null || _personalSectionErrorBadgeTextBlock is null)
+        if (_personalHeaderBadges is null)
         {
             return;
         }
 
         FormValidationService.UpdateSectionErrorBadge(
-            _personalSectionErrorBadgePanel,
-            _personalSectionErrorBadgeTextBlock,
+            _personalHeaderBadges.ErrorBadgePanel,
+            _personalHeaderBadges.ErrorBadgeTextBlock,
             _personalSectionErrorCount,
             !PersonalInformationSection.IsExpanded,
             _localizer,

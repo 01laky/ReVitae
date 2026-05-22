@@ -10,9 +10,11 @@ using ReVitae.Core.Cv.Projects;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
+using ReVitae.Core.Quality;
 using ReVitae.Core.Validation;
 using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Quality;
 using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
@@ -20,11 +22,10 @@ using System.Linq;
 
 namespace ReVitae.Projects;
 
-public sealed class ProjectsSectionView : UserControl, IValidationNavigableSection
+public sealed class ProjectsSectionView : UserControl, IValidationNavigableSection, IQualityHintSection
 {
     private readonly ExpandableSection _section;
-    private readonly StackPanel _sectionBadgePanel;
-    private readonly TextBlock _sectionBadgeTextBlock;
+    private readonly SectionHeaderBadges _headerBadges;
     private readonly StackPanel _contentPanel;
     private readonly StackPanel _entriesPanel;
     private readonly TextBlock _emptyHintTextBlock;
@@ -40,6 +41,8 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
 
     public ProjectsSectionView()
     {
+        _headerBadges = new SectionHeaderBadges();
+
         _entriesPanel = new StackPanel { Spacing = 12 };
         _emptyHintTextBlock = new TextBlock { TextWrapping = TextWrapping.Wrap };
         _emptyHintTextBlock.Classes.Add(UiClasses.SecondaryText);
@@ -68,13 +71,11 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
             }
         };
 
-        (_sectionBadgePanel, _sectionBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
-
         _section = new ExpandableSection
         {
             SectionContent = _contentPanel,
             IsExpanded = true,
-            HeaderActions = _sectionBadgePanel
+            HeaderActions = _headerBadges.Root
         };
         _section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
 
@@ -107,6 +108,24 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
         }
     }
 
+    public void ApplyQualityHints(
+        IReadOnlyList<CvQualityHint> sectionHints,
+        AppLocalizer localizer,
+        Func<CvQualityHint, bool>? navigateToHint,
+        Action<CvQualityHint>? dismissHint,
+        Action? flyoutOpened)
+    {
+        QualityHintsService.UpdateSectionQualityBadge(
+            _headerBadges.QualityBadgePanel,
+            _headerBadges.QualityBadgeTextBlock,
+            sectionHints,
+            localizer,
+            _section.Title ?? string.Empty,
+            navigateToHint,
+            dismissHint,
+            flyoutOpened);
+    }
+
     public void UpdateValidation(FieldValidationResult validationResult)
     {
         UpdateValidation(validationResult, TouchTracker);
@@ -126,8 +145,8 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
         var sectionErrorCount = validationResult.Errors
             .Count(error => ProjectsFieldKeys.TryParseEntryId(error.FieldKey, out _, out _));
         FormValidationService.UpdateSectionErrorBadge(
-            _sectionBadgePanel,
-            _sectionBadgeTextBlock,
+            _headerBadges.ErrorBadgePanel,
+            _headerBadges.ErrorBadgeTextBlock,
             sectionErrorCount,
             !_section.IsExpanded,
             _localizer,

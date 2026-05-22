@@ -511,6 +511,33 @@ public static class TranslationKeys
     public const string ImportRasterImageFileType = "import.rasterImageFileType";
     public const string ImportForceOcr = "import.forceOcr";
 
+    public const string QualityHintFlyoutTitle = "quality.flyoutTitle";
+    public const string QualityHintGoToField = "quality.goToField";
+    public const string QualityHintDismiss = "quality.dismiss";
+    public const string QualityHintBadgeCount = "quality.badgeCount";
+    public const string QualityHintBadgeAccessibility = "quality.badgeAccessibility";
+    public const string QualityHintSnackbarAfterImport = "quality.snackbarAfterImport";
+    public const string QualityHintSnackbarFirstSession = "quality.snackbarFirstSession";
+    public const string QualityHintExportSummary = "quality.exportSummary";
+    public const string QualityHintExportReview = "quality.exportReview";
+    public const string QualityHintPersonalSummaryTooShort = "quality.personal.summaryTooShort";
+    public const string QualityHintPersonalSummaryTooLong = "quality.personal.summaryTooLong";
+    public const string QualityHintPersonalSummaryMissing = "quality.personal.summaryMissing";
+    public const string QualityHintPersonalMissingTitle = "quality.personal.missingTitle";
+    public const string QualityHintWorkSectionEmpty = "quality.work.sectionEmpty";
+    public const string QualityHintWorkMissingDescription = "quality.work.missingDescription";
+    public const string QualityHintWorkGenericDescription = "quality.work.genericDescription";
+    public const string QualityHintEducationSectionEmpty = "quality.education.sectionEmpty";
+    public const string QualityHintSkillsSingleLargeGroup = "quality.skills.singleLargeGroup";
+    public const string QualityHintSkillsSectionEmpty = "quality.skills.sectionEmpty";
+    public const string QualityHintLanguagesSectionEmpty = "quality.languages.sectionEmpty";
+    public const string QualityHintLinksDuplicatePersonalUrl = "quality.links.duplicatePersonalUrl";
+    public const string QualityHintCertificatesSectionEmpty = "quality.certificates.sectionEmpty";
+    public const string QualityHintProjectsSectionEmpty = "quality.projects.sectionEmpty";
+    public const string QualityHintProjectsMissingDescription = "quality.projects.missingDescription";
+    public const string QualityHintImportReviewSection = "quality.import.reviewSection";
+    public const string QualityHintImportReviewField = "quality.import.reviewField";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -1011,6 +1038,32 @@ public static class TranslationKeys
         ImportErrorOcrUnavailable,
         ImportErrorOcrFailed,
         ImportRasterImageFileType,
-        ImportForceOcr
+        ImportForceOcr,
+        QualityHintFlyoutTitle,
+        QualityHintGoToField,
+        QualityHintDismiss,
+        QualityHintBadgeCount,
+        QualityHintBadgeAccessibility,
+        QualityHintSnackbarAfterImport,
+        QualityHintSnackbarFirstSession,
+        QualityHintExportSummary,
+        QualityHintExportReview,
+        QualityHintPersonalSummaryTooShort,
+        QualityHintPersonalSummaryTooLong,
+        QualityHintPersonalSummaryMissing,
+        QualityHintPersonalMissingTitle,
+        QualityHintWorkSectionEmpty,
+        QualityHintWorkMissingDescription,
+        QualityHintWorkGenericDescription,
+        QualityHintEducationSectionEmpty,
+        QualityHintSkillsSingleLargeGroup,
+        QualityHintSkillsSectionEmpty,
+        QualityHintLanguagesSectionEmpty,
+        QualityHintLinksDuplicatePersonalUrl,
+        QualityHintCertificatesSectionEmpty,
+        QualityHintProjectsSectionEmpty,
+        QualityHintProjectsMissingDescription,
+        QualityHintImportReviewSection,
+        QualityHintImportReviewField
     ];
 }

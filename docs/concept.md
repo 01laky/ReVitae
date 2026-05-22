@@ -116,6 +116,7 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - Inline field validation with export scroll-to-first-error,
 - Internationalization across supported UI languages,
 - Import confidence hints on uncertain parsed fields.
+- **Static CV quality hints** — deterministic rules in Core (`CvQualityAnalyzer`), section badges with flyout, session dismiss, import-aware review hints, export-area summary (see [`prompts/034-cv-quality-hints.md`](../prompts/034-cv-quality-hints.md)).
 - Robust education parsing for PDF layout artifacts (institution names split
   across blank lines merge into a single entry).
 
@@ -128,7 +129,6 @@ Documentation:
 Still open for later phases:
 
 - durable save/load UX beyond interchange JSON files,
-- static CV quality hints,
 - optional AI-assisted import and recommendations,
 - installers or packaged binaries for each supported platform.
 

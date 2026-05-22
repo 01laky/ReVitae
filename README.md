@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-889%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-957%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -64,7 +64,8 @@ ReVitae includes dedicated form sections for the core CV content:
 - Additional information
 
 Each section has focused validation, repeatable entries where needed, live
-preview updates, localized UI text, and inline field-level error messages.
+preview updates, localized UI text, inline field-level error messages, and
+**static quality hints** (section badge → flyout with suggestions; does not block export).
 
 **Profile photo (optional):** upload JPEG, PNG, or WebP up to **15 MB** from the
 top of Personal information. JPEGs are EXIF-orientation normalized on save. Click
@@ -171,8 +172,7 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 Planned areas:
 
 - Save and load local CV projects (native `.revitae.json` interchange is documented in [`docs/revitae-project-json.md`](docs/revitae-project-json.md); export already supports `.revitae.json`)
-- OCR / scanned PDF improvements and richer layout-aware parsing
-- Static CV quality hints
+- ReVitae-exported PDF re-import (template-aware parsing)
 - Optional AI-assisted import and recommendations
 - Installer/package builds for supported platforms
 

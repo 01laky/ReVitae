@@ -250,6 +250,19 @@
 
                         <additionalInformation:AdditionalInformationSectionView x:Name="AdditionalInformationSection" />
 
+                        <StackPanel x:Name="QualityHintExportSummaryPanel"
+                                    Orientation="Horizontal"
+                                    Spacing="8"
+                                    IsVisible="False">
+                            <TextBlock x:Name="QualityHintExportSummaryTextBlock"
+                                       Classes="re-vitae-secondary"
+                                       VerticalAlignment="Center" />
+                            <Button x:Name="QualityHintExportReviewButton"
+                                    Classes="re-vitae-secondary"
+                                    Content="Review"
+                                    Click="OnQualityHintExportReviewClicked" />
+                        </StackPanel>
+
                         <Button x:Name="ExportPdfButton"
                                 Classes="re-vitae-primary"
                                 Content="Export"
@@ -803,5 +816,17 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <Border x:Name="QualityHintSnackbarBorder"
+                Grid.Row="1"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,16"
+                Padding="16,10"
+                IsVisible="False">
+            <TextBlock x:Name="QualityHintSnackbarTextBlock"
+                       TextWrapping="Wrap"
+                       MaxWidth="520" />
+        </Border>
     </Grid>
 </Window>

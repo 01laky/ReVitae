@@ -9,9 +9,11 @@ using ReVitae.Controls;
 using ReVitae.Core.Cv.Education;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
+using ReVitae.Core.Quality;
 using ReVitae.Core.Validation;
 using ReVitae.Core.Validation.Presentation;
 using ReVitae.Ui;
+using ReVitae.Ui.Quality;
 using ReVitae.Ui.Validation;
 using System;
 using System.Collections.Generic;
@@ -19,7 +21,7 @@ using System.Linq;
 
 namespace ReVitae.Education;
 
-public sealed class EducationSectionView : UserControl, IValidationNavigableSection
+public sealed class EducationSectionView : UserControl, IValidationNavigableSection, IQualityHintSection
 {
     private readonly ExpandableSection _section;
     private readonly StackPanel _contentPanel;
@@ -27,8 +29,7 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
     private readonly TextBlock _emptyHintTextBlock;
     private readonly Button _addButton;
     private readonly Button _sortButton;
-    private readonly StackPanel _sectionErrorBadgePanel;
-    private readonly TextBlock _sectionErrorBadgeTextBlock;
+    private readonly SectionHeaderBadges _headerBadges;
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private readonly List<EducationEntry> _entries = [];
     private readonly Dictionary<string, EducationEntryCard> _cardsById = new(StringComparer.Ordinal);
@@ -38,6 +39,8 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
 
     public EducationSectionView()
     {
+        _headerBadges = new SectionHeaderBadges();
+
         _entriesPanel = new StackPanel { Spacing = 12 };
         _emptyHintTextBlock = new TextBlock
         {
@@ -52,8 +55,6 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
         _sortButton = new Button { HorizontalAlignment = HorizontalAlignment.Left };
         _sortButton.Classes.Add(UiClasses.SecondaryButton);
         _sortButton.Click += OnSortByDateClicked;
-
-        (_sectionErrorBadgePanel, _sectionErrorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
 
         _contentPanel = new StackPanel
         {
@@ -75,7 +76,7 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
         {
             SectionContent = _contentPanel,
             IsExpanded = true,
-            HeaderActions = _sectionErrorBadgePanel
+            HeaderActions = _headerBadges.Root
         };
         _section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
 
@@ -104,6 +105,24 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
         }
     }
 
+    public void ApplyQualityHints(
+        IReadOnlyList<CvQualityHint> sectionHints,
+        AppLocalizer localizer,
+        Func<CvQualityHint, bool>? navigateToHint,
+        Action<CvQualityHint>? dismissHint,
+        Action? flyoutOpened)
+    {
+        QualityHintsService.UpdateSectionQualityBadge(
+            _headerBadges.QualityBadgePanel,
+            _headerBadges.QualityBadgeTextBlock,
+            sectionHints,
+            localizer,
+            _section.Title ?? string.Empty,
+            navigateToHint,
+            dismissHint,
+            flyoutOpened);
+    }
+
     public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
     {
         _touchTracker = touchTracker;
@@ -113,8 +132,8 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
             .ToArray();
 
         FormValidationService.UpdateSectionErrorBadge(
-            _sectionErrorBadgePanel,
-            _sectionErrorBadgeTextBlock,
+            _headerBadges.ErrorBadgePanel,
+            _headerBadges.ErrorBadgeTextBlock,
             sectionErrors.Length,
             !_section.IsExpanded,
             _localizer,
