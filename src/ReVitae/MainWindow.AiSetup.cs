@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using ReVitae.Core.Ai;
+using ReVitae.Core.Ai.Download;
 using ReVitae.Core.Ai.Ollama;
 using ReVitae.Core.Localization;
 using System;
@@ -20,15 +21,24 @@ public partial class MainWindow
     private readonly ISystemProfileDetector _systemProfileDetector = new SystemProfileDetector();
     private readonly IOllamaRuntimeProbe _ollamaRuntimeProbe = new OllamaRuntimeProbe();
     private readonly IDiskSpaceChecker _diskSpaceChecker = new DiskSpaceChecker();
-    private readonly OllamaPullClient _ollamaPullClient = new();
-    private readonly AiSettingsStorage _aiSettingsStorage = new();
+    private readonly AiModelLifecycleService _aiModelLifecycleService = new();
+
+    private enum AiModelPendingAction
+    {
+        None,
+        Uninstall,
+        CleanStaleDownload,
+    }
 
     private CancellationTokenSource? _aiDetectionCts;
-    private CancellationTokenSource? _aiPullCts;
     private AiSystemDetectionResult? _aiDetectionResult;
     private string? _aiSelectedModelId;
     private AiModelRecommendation? _aiPendingDownloadRecommendation;
+    private AiModelPendingAction _aiPendingModelAction = AiModelPendingAction.None;
+    private string? _aiPendingModelActionModelId;
     private readonly Dictionary<string, Border> _aiModelCards = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, AiModelInstallationStatus> _aiModelInstallationStatuses =
+        new(StringComparer.Ordinal);
 
     private void OnOpenAiSetupClicked(object? sender, RoutedEventArgs e)
     {
@@ -49,29 +59,49 @@ public partial class MainWindow
     {
         if (!isVisible)
         {
-            CancelAiSetupOperations();
+            CancelAiDetectionOnly();
         }
 
         if (isVisible)
         {
             HideOtherContentModals(AiSetupModalOverlay);
-            ResetAiSetupModalUi();
-            StartAiSetupDetection();
+
+            if (_aiDownloadCoordinator.HasActiveJob)
+            {
+                EnterAiSetupDownloadMode();
+            }
+            else
+            {
+                ResetAiSetupModalUi();
+            }
+
+            if (_aiDetectionResult is null)
+            {
+                StartAiSetupDetection();
+            }
+            else
+            {
+                UpdateAiSetupDownloadButtonState();
+            }
+
+            UpdateAiDownloadUi();
         }
 
         AiSetupModalOverlay.IsVisible = isVisible;
         UpdateModalSizes();
+        UpdateAiDownloadUi();
     }
 
-    private void CancelAiSetupOperations()
+    private void CancelAiDetectionOnly()
     {
         _aiDetectionCts?.Cancel();
         _aiDetectionCts?.Dispose();
         _aiDetectionCts = null;
+    }
 
-        _aiPullCts?.Cancel();
-        _aiPullCts?.Dispose();
-        _aiPullCts = null;
+    private void CancelAiSetupOperations()
+    {
+        CancelAiDetectionOnly();
     }
 
     private void ResetAiSetupModalUi()
@@ -79,7 +109,10 @@ public partial class MainWindow
         _aiDetectionResult = null;
         _aiSelectedModelId = null;
         _aiPendingDownloadRecommendation = null;
+        _aiPendingModelAction = AiModelPendingAction.None;
+        _aiPendingModelActionModelId = null;
         _aiModelCards.Clear();
+        _aiModelInstallationStatuses.Clear();
         AiSetupModelsPanel.Children.Clear();
 
         AiSetupDetectionProgressPanel.IsVisible = true;
@@ -92,12 +125,19 @@ public partial class MainWindow
         AiSetupPullProgressBar.IsVisible = false;
         AiSetupPullProgressBar.IsIndeterminate = true;
         AiSetupDownloadConfirmPanel.IsVisible = false;
+        AiSetupDownloadStopConfirmPanel.IsVisible = false;
+        AiSetupModelActionConfirmPanel.IsVisible = false;
+        AiSetupDownloadJobBanner.IsVisible = false;
         AiSetupDownloadButton.IsEnabled = false;
     }
 
     private void StartAiSetupDetection()
     {
-        CancelAiSetupOperations();
+        CancelAiDetectionOnly();
+        AiSetupDetectionProgressPanel.IsVisible = true;
+        AiSetupDetectionFailedPanel.IsVisible = false;
+        AiSetupContentScrollViewer.IsVisible = _aiDetectionResult is not null ||
+                                                 _aiDownloadCoordinator.HasActiveJob;
         _aiDetectionCts = new CancellationTokenSource();
         var token = _aiDetectionCts.Token;
         _ = RunAiSetupDetectionAsync(token);
@@ -170,11 +210,12 @@ public partial class MainWindow
     private void ApplyAiSetupDetectionResult(AiSystemDetectionResult detectionResult)
     {
         _aiDetectionResult = detectionResult;
-        _aiSelectedModelId = detectionResult.RecommendedModel?.Id;
+        _aiSelectedModelId = PickDefaultSelectedModelId(detectionResult);
 
         AiSetupDetectionProgressPanel.IsVisible = false;
         AiSetupDetectionFailedPanel.IsVisible = false;
         AiSetupContentScrollViewer.IsVisible = true;
+        AiSetupDownloadRefreshSystemButton.IsVisible = false;
 
         RenderAiSetupSystemDetails(detectionResult);
 
@@ -193,6 +234,7 @@ public partial class MainWindow
         RenderAiSetupRecommendedCard(detectionResult);
         RenderAiSetupModelCards(detectionResult);
         UpdateAiSetupDownloadButtonState();
+        UpdateAiDownloadUi();
     }
 
     private void RenderAiSetupSystemDetails(AiSystemDetectionResult detectionResult)
@@ -236,10 +278,20 @@ public partial class MainWindow
     {
         AiSetupModelsPanel.Children.Clear();
         _aiModelCards.Clear();
+        _aiModelInstallationStatuses.Clear();
+
+        var installationStatuses = _aiModelLifecycleService.AnalyzeCatalog(
+            detectionResult.Ollama,
+            _aiDownloadCoordinator.CurrentSnapshot,
+            _aiDownloadCoordinator.HasActiveJob);
 
         foreach (var recommendation in detectionResult.Models)
         {
-            var card = BuildAiModelCard(recommendation, detectionResult);
+            var installationStatus = installationStatuses.First(status =>
+                string.Equals(status.Model.Id, recommendation.Model.Id, StringComparison.Ordinal));
+            _aiModelInstallationStatuses[recommendation.Model.Id] = installationStatus;
+
+            var card = BuildAiModelCard(recommendation, installationStatus);
             _aiModelCards[recommendation.Model.Id] = card;
             AiSetupModelsPanel.Children.Add(card);
         }
@@ -247,24 +299,28 @@ public partial class MainWindow
         UpdateAiModelCardSelectionVisuals();
     }
 
-    private Border BuildAiModelCard(AiModelRecommendation recommendation, AiSystemDetectionResult detectionResult)
+    private Border BuildAiModelCard(
+        AiModelRecommendation recommendation,
+        AiModelInstallationStatus installationStatus)
     {
-        var isInstalled = detectionResult.Ollama.InstalledModelTags.Any(tag =>
-            string.Equals(tag, recommendation.Model.OllamaModelTag, StringComparison.OrdinalIgnoreCase) ||
-            tag.StartsWith($"{recommendation.Model.OllamaModelTag}:", StringComparison.OrdinalIgnoreCase));
+        var isInstalled = installationStatus.Presence == AiModelInstallPresence.Installed;
+        var hasStaleDownload = installationStatus.Presence == AiModelInstallPresence.StaleDownload;
+        var isActiveDownload = installationStatus.Presence == AiModelInstallPresence.ActiveDownload;
 
         var card = new Border
         {
             Classes = { "re-vitae-app-card" },
             Padding = new Thickness(14),
-            Cursor = recommendation.IsDownloadAllowed
+            Cursor = recommendation.IsDownloadAllowed && !_aiDownloadCoordinator.HasActiveJob
                 ? new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
                 : null,
         };
 
         card.PointerReleased += (_, _) =>
         {
-            if (!recommendation.IsDownloadAllowed)
+            if (!recommendation.IsDownloadAllowed ||
+                _aiDownloadCoordinator.HasActiveJob ||
+                isInstalled)
             {
                 return;
             }
@@ -296,18 +352,17 @@ public partial class MainWindow
             });
         }
 
-        if (isInstalled)
-        {
-            titleRow.Children.Add(new TextBlock
-            {
-                Text = _localizer.Get(TranslationKeys.AiSetupAlreadyDownloaded),
-                Classes = { "re-vitae-secondary" },
-                FontSize = 12,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            });
-        }
-
         content.Children.Add(titleRow);
+
+        var (statusText, statusClass) = GetModelInstallationStatusPresentation(installationStatus);
+        content.Children.Add(new TextBlock
+        {
+            Text = statusText,
+            Classes = { statusClass },
+            FontSize = 13,
+            FontWeight = FontWeight.SemiBold,
+        });
+
         content.Children.Add(new TextBlock
         {
             Text = _localizer.Format(
@@ -338,10 +393,80 @@ public partial class MainWindow
             });
         }
 
+        var actionsRow = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Spacing = 8,
+            Margin = new Thickness(0, 6, 0, 0),
+        };
+
+        if (isInstalled)
+        {
+            var removeButton = new Button
+            {
+                Content = _localizer.Get(TranslationKeys.AiSetupModelRemove),
+                Classes = { "re-vitae-secondary" },
+                IsEnabled = installationStatus.CanUninstall,
+            };
+            removeButton.Click += (_, _) => BeginAiModelActionConfirm(
+                recommendation.Model.Id,
+                AiModelPendingAction.Uninstall);
+            actionsRow.Children.Add(removeButton);
+        }
+
+        if (installationStatus.CanCleanStaleDownload)
+        {
+            var cleanButton = new Button
+            {
+                Content = _localizer.Get(TranslationKeys.AiSetupModelCleanStale),
+                Classes = { "re-vitae-secondary" },
+            };
+            cleanButton.Click += (_, _) => BeginAiModelActionConfirm(
+                recommendation.Model.Id,
+                AiModelPendingAction.CleanStaleDownload);
+            actionsRow.Children.Add(cleanButton);
+        }
+
+        if (actionsRow.Children.Count > 0)
+        {
+            content.Children.Add(actionsRow);
+        }
+
         card.Child = content;
         card.Tag = recommendation;
-        card.Opacity = recommendation.IsDownloadAllowed ? 1.0 : 0.5;
+        card.Opacity = recommendation.IsDownloadAllowed &&
+                       !_aiDownloadCoordinator.HasActiveJob &&
+                       !isInstalled &&
+                       !isActiveDownload
+            ? 1.0
+            : isInstalled || hasStaleDownload
+                ? 1.0
+                : 0.5;
         return card;
+    }
+
+    private (string Text, string CssClass) GetModelInstallationStatusPresentation(
+        AiModelInstallationStatus installationStatus) =>
+        installationStatus.Presence switch
+        {
+            AiModelInstallPresence.Installed =>
+                (_localizer.Get(TranslationKeys.AiSetupModelStatusDownloaded), "re-vitae-primary"),
+            AiModelInstallPresence.ActiveDownload =>
+                (_localizer.Get(TranslationKeys.AiSetupModelStatusDownloading), "re-vitae-primary"),
+            AiModelInstallPresence.StaleDownload =>
+                (_localizer.Get(TranslationKeys.AiSetupModelStaleDownload), "re-vitae-error"),
+            _ => (_localizer.Get(TranslationKeys.AiSetupModelStatusNotDownloaded), "re-vitae-secondary"),
+        };
+
+    private void RefreshAiSetupModelCardsIfVisible()
+    {
+        if (!AiSetupModalOverlay.IsVisible || _aiDetectionResult is null)
+        {
+            return;
+        }
+
+        RenderAiSetupModelCards(_aiDetectionResult);
+        UpdateAiSetupDownloadButtonState();
     }
 
     private void UpdateAiModelCardSelectionVisuals()
@@ -358,6 +483,12 @@ public partial class MainWindow
 
     private void UpdateAiSetupDownloadButtonState()
     {
+        if (_aiDownloadCoordinator.HasActiveJob)
+        {
+            AiSetupDownloadButton.IsEnabled = false;
+            return;
+        }
+
         if (_aiDetectionResult is null || string.IsNullOrWhiteSpace(_aiSelectedModelId))
         {
             AiSetupDownloadButton.IsEnabled = false;
@@ -373,15 +504,160 @@ public partial class MainWindow
             return;
         }
 
-        var isInstalled = _aiDetectionResult.Ollama.InstalledModelTags.Any(tag =>
-            string.Equals(tag, selected.Model.OllamaModelTag, StringComparison.OrdinalIgnoreCase) ||
-            tag.StartsWith($"{selected.Model.OllamaModelTag}:", StringComparison.OrdinalIgnoreCase));
+        var isInstalled = _aiModelInstallationStatuses.TryGetValue(_aiSelectedModelId, out var installationStatus)
+            ? installationStatus.Presence == AiModelInstallPresence.Installed
+            : IsAiModelInstalled(_aiDetectionResult, selected.Model.OllamaModelTag);
+        var canDownload = selected.IsDownloadAllowed &&
+                          !isInstalled &&
+                          !AiSetupDownloadConfirmPanel.IsVisible &&
+                          !AiSetupModelActionConfirmPanel.IsVisible;
 
-        AiSetupDownloadButton.IsEnabled = selected.IsDownloadAllowed &&
-                                           _aiDetectionResult.Ollama.IsReachable &&
-                                           !isInstalled &&
-                                           AiSetupDownloadConfirmPanel.IsVisible == false &&
-                                           AiSetupPullProgressBar.IsVisible == false;
+        AiSetupDownloadButton.IsEnabled = canDownload;
+
+        if (canDownload && AiSetupStatusTextBlock.IsVisible &&
+            AiSetupStatusTextBlock.Classes.Contains("re-vitae-error") &&
+            (AiSetupStatusTextBlock.Text == _localizer.Get(TranslationKeys.AiSetupOllamaNotInstalled) ||
+             AiSetupStatusTextBlock.Text == _localizer.Format(
+                 TranslationKeys.AiSetupOllamaNotRunning,
+                 OllamaHost.DisplayAddress)))
+        {
+            AiSetupStatusTextBlock.IsVisible = false;
+        }
+    }
+
+    private static string? PickDefaultSelectedModelId(AiSystemDetectionResult detectionResult)
+    {
+        var recommendedId = detectionResult.RecommendedModel?.Id;
+        if (recommendedId is not null &&
+            TryGetSelectableRecommendation(detectionResult, recommendedId) is not null)
+        {
+            return recommendedId;
+        }
+
+        return detectionResult.Models
+            .FirstOrDefault(recommendation => TryGetSelectableRecommendation(
+                detectionResult,
+                recommendation.Model.Id) is not null)
+            ?.Model.Id ?? recommendedId;
+    }
+
+    private static AiModelRecommendation? TryGetSelectableRecommendation(
+        AiSystemDetectionResult detectionResult,
+        string modelId)
+    {
+        var recommendation = detectionResult.Models.FirstOrDefault(model =>
+            string.Equals(model.Model.Id, modelId, StringComparison.Ordinal));
+
+        if (recommendation is null ||
+            !recommendation.IsDownloadAllowed ||
+            IsAiModelInstalled(detectionResult, recommendation.Model.OllamaModelTag))
+        {
+            return null;
+        }
+
+        return recommendation;
+    }
+
+    private static bool IsAiModelInstalled(
+        AiSystemDetectionResult detectionResult,
+        string ollamaModelTag) =>
+        AiModelInstallationMatcher.IsModelInstalled(detectionResult.Ollama.InstalledModelTags, ollamaModelTag);
+
+    private void BeginAiModelActionConfirm(string modelId, AiModelPendingAction action)
+    {
+        if (_aiDetectionResult is null ||
+            _aiDownloadCoordinator.HasActiveJob ||
+            AiSetupDownloadConfirmPanel.IsVisible)
+        {
+            return;
+        }
+
+        var model = _aiDetectionResult.Models
+            .FirstOrDefault(entry => string.Equals(entry.Model.Id, modelId, StringComparison.Ordinal))
+            ?.Model;
+        if (model is null)
+        {
+            return;
+        }
+
+        _aiPendingModelAction = action;
+        _aiPendingModelActionModelId = modelId;
+
+        var confirmKey = action == AiModelPendingAction.Uninstall
+            ? TranslationKeys.AiSetupModelRemoveConfirm
+            : TranslationKeys.AiSetupModelCleanStaleConfirm;
+        AiSetupModelActionConfirmTextBlock.Text = _localizer.Format(
+            confirmKey,
+            _localizer.Get(model.DisplayNameKey));
+        AiSetupModelActionConfirmPanel.IsVisible = true;
+        UpdateAiSetupDownloadButtonState();
+    }
+
+    private void OnAiSetupModelActionConfirmCancelClicked(object? sender, RoutedEventArgs e)
+    {
+        _aiPendingModelAction = AiModelPendingAction.None;
+        _aiPendingModelActionModelId = null;
+        AiSetupModelActionConfirmPanel.IsVisible = false;
+        UpdateAiSetupDownloadButtonState();
+    }
+
+    private async void OnAiSetupModelActionConfirmOkClicked(object? sender, RoutedEventArgs e)
+    {
+        var action = _aiPendingModelAction;
+        var modelId = _aiPendingModelActionModelId;
+        _aiPendingModelAction = AiModelPendingAction.None;
+        _aiPendingModelActionModelId = null;
+        AiSetupModelActionConfirmPanel.IsVisible = false;
+
+        if (_aiDetectionResult is null || modelId is null || action == AiModelPendingAction.None)
+        {
+            return;
+        }
+
+        var model = _aiDetectionResult.Models
+            .FirstOrDefault(entry => string.Equals(entry.Model.Id, modelId, StringComparison.Ordinal))
+            ?.Model;
+        if (model is null)
+        {
+            return;
+        }
+
+        AiModelLifecycleResult result;
+        if (action == AiModelPendingAction.Uninstall)
+        {
+            result = await _aiModelLifecycleService.TryUninstallModelAsync(
+                    model,
+                    _aiDetectionResult.Ollama,
+                    _aiDownloadCoordinator.HasActiveJob)
+                .ConfigureAwait(true);
+        }
+        else
+        {
+            result = await _aiModelLifecycleService.TryCleanStaleDownloadAsync(
+                    model,
+                    _aiDetectionResult.Ollama,
+                    _aiDownloadCoordinator.HasActiveJob)
+                .ConfigureAwait(true);
+        }
+
+        if (!result.Succeeded)
+        {
+            ShowAiSetupStatus(
+                result.ErrorMessageKey == TranslationKeys.AiSetupOllamaNotRunning
+                    ? _localizer.Format(TranslationKeys.AiSetupOllamaNotRunning, OllamaHost.DisplayAddress)
+                    : _localizer.Get(result.ErrorMessageKey ?? TranslationKeys.AiSetupModelRemoveFailed),
+                isError: true);
+            UpdateAiSetupDownloadButtonState();
+            return;
+        }
+
+        _aiDownloadCoordinator.ResetIfJobMatches(modelId);
+        ShowAiSetupStatus(
+            _localizer.Get(action == AiModelPendingAction.Uninstall
+                ? TranslationKeys.AiSetupModelRemoveComplete
+                : TranslationKeys.AiSetupModelCleanStaleComplete),
+            isError: false);
+        StartAiSetupDetection();
     }
 
     private void OnAiSetupDetectionRetryClicked(object? sender, RoutedEventArgs e)
@@ -405,9 +681,17 @@ public partial class MainWindow
             return;
         }
 
-        if (!_aiDetectionResult.Ollama.IsReachable)
+        if (!selected.IsDownloadAllowed)
         {
-            ShowAiSetupStatus(_localizer.Get(TranslationKeys.AiSetupOllamaNotRunning), isError: true);
+            ShowAiSetupStatus(
+                _localizer.Get(TranslationKeys.AiSetupRequiresMoreMemory),
+                isError: true);
+            return;
+        }
+
+        if (IsAiModelInstalled(_aiDetectionResult, selected.Model.OllamaModelTag))
+        {
+            ShowAiSetupStatus(_localizer.Get(TranslationKeys.AiSetupAlreadyDownloaded), isError: false);
             return;
         }
 
@@ -444,7 +728,7 @@ public partial class MainWindow
         UpdateAiSetupDownloadButtonState();
     }
 
-    private async void OnAiSetupDownloadConfirmOkClicked(object? sender, RoutedEventArgs e)
+    private void OnAiSetupDownloadConfirmOkClicked(object? sender, RoutedEventArgs e)
     {
         var selected = _aiPendingDownloadRecommendation;
         _aiPendingDownloadRecommendation = null;
@@ -455,69 +739,17 @@ public partial class MainWindow
             return;
         }
 
-        _aiPullCts?.Cancel();
-        _aiPullCts?.Dispose();
-        _aiPullCts = new CancellationTokenSource();
-        var token = _aiPullCts.Token;
-
-        AiSetupPullProgressBar.IsVisible = true;
-        AiSetupPullProgressBar.IsIndeterminate = true;
-        AiSetupStatusTextBlock.IsVisible = true;
-        AiSetupStatusTextBlock.Classes.Clear();
-        AiSetupStatusTextBlock.Classes.Add("re-vitae-secondary");
-        AiSetupStatusTextBlock.Text = _localizer.Format(TranslationKeys.AiSetupPullProgress, string.Empty);
-        UpdateAiSetupDownloadButtonState();
-
-        var progress = new Progress<OllamaPullProgress>(pullProgress =>
+        if (!_aiDownloadCoordinator.TryStart(selected.Model, selected.RequiresOversizedWarning))
         {
-            Dispatcher.UIThread.Post(() => ApplyAiPullProgress(pullProgress));
-        });
-
-        var result = await Task.Run(() =>
-            _ollamaPullClient.PullAsync(selected.Model.OllamaModelTag, progress, token)).ConfigureAwait(true);
-
-        if (token.IsCancellationRequested || result.Outcome == OllamaPullOutcome.Cancelled)
-        {
-            AiSetupPullProgressBar.IsVisible = false;
-            AiSetupStatusTextBlock.IsVisible = false;
-            UpdateAiSetupDownloadButtonState();
-            return;
-        }
-
-        if (result.Outcome != OllamaPullOutcome.Succeeded)
-        {
-            AiSetupPullProgressBar.IsVisible = false;
             ShowAiSetupStatus(_localizer.Get(TranslationKeys.AiSetupPullFailed), isError: true);
             UpdateAiSetupDownloadButtonState();
             return;
         }
 
-        _aiSettingsStorage.Save(new AiSettingsSnapshot(
-            selected.Model.Id,
-            selected.Model.OllamaModelTag,
-            DateTimeOffset.UtcNow));
-
-        AiSetupPullProgressBar.IsVisible = false;
-        ShowAiSetupStatus(_localizer.Get(TranslationKeys.AiSetupPullComplete), isError: false);
-        StartAiSetupDetection();
-    }
-
-    private void ApplyAiPullProgress(OllamaPullProgress pullProgress)
-    {
-        if (pullProgress.Total is > 0 && pullProgress.Completed is >= 0)
-        {
-            AiSetupPullProgressBar.IsIndeterminate = false;
-            AiSetupPullProgressBar.Maximum = pullProgress.Total.Value;
-            AiSetupPullProgressBar.Value = pullProgress.Completed.Value;
-        }
-        else
-        {
-            AiSetupPullProgressBar.IsIndeterminate = true;
-        }
-
-        AiSetupStatusTextBlock.Text = _localizer.Format(
-            TranslationKeys.AiSetupPullProgress,
-            pullProgress.Status);
+        EnterAiSetupDownloadMode();
+        AiSetupStatusTextBlock.IsVisible = false;
+        UpdateAiSetupDownloadButtonState();
+        UpdateAiDownloadUi();
     }
 
     private void ShowAiSetupStatus(string message, bool isError)
@@ -531,7 +763,6 @@ public partial class MainWindow
     private void ApplyAiSetupLocalization()
     {
         ToolTip.SetTip(OpenAiSetupButton, _localizer.Get(TranslationKeys.OpenAiSetup));
-        AutomationProperties.SetName(OpenAiSetupButton, _localizer.Get(TranslationKeys.OpenAiSetup));
         AiSetupTitleTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupTitle);
         AiSetupDetectingTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupDetecting);
         AiSetupDetectionFailedTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupDetectionFailed);
@@ -542,6 +773,8 @@ public partial class MainWindow
         AiSetupDownloadButton.Content = _localizer.Get(TranslationKeys.AiSetupDownload);
         AiSetupDownloadConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
         AiSetupDownloadConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
+        AiSetupModelActionConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
+        AiSetupModelActionConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
 
         var closeLabel = _localizer.Get(TranslationKeys.Close);
         AiSetupBottomCloseButton.Content = closeLabel;

@@ -560,6 +560,8 @@ public static class TranslationKeys
     public const string AiSetupDownloadConfirm = "modal.aiSetup.downloadConfirm";
     public const string AiSetupDownloadConfirmOversized = "modal.aiSetup.downloadConfirmOversized";
     public const string AiSetupOllamaNotRunning = "modal.aiSetup.ollamaNotRunning";
+    public const string AiSetupOllamaNotInstalled = "modal.aiSetup.ollamaNotInstalled";
+    public const string AiSetupOllamaInstallFailed = "modal.aiSetup.ollamaInstallFailed";
     public const string AiSetupPullProgress = "modal.aiSetup.pullProgress";
     public const string AiSetupPullComplete = "modal.aiSetup.pullComplete";
     public const string AiSetupPullFailed = "modal.aiSetup.pullFailed";
@@ -570,6 +572,39 @@ public static class TranslationKeys
     public const string AiSetupDiskSpaceUnknown = "modal.aiSetup.diskSpaceUnknown";
     public const string AiSetupAllModels = "modal.aiSetup.allModels";
     public const string AiSetupModelMeta = "modal.aiSetup.modelMeta";
+    public const string AiSetupModelRemove = "modal.aiSetup.modelRemove";
+    public const string AiSetupModelRemoveConfirm = "modal.aiSetup.modelRemoveConfirm";
+    public const string AiSetupModelCleanStale = "modal.aiSetup.modelCleanStale";
+    public const string AiSetupModelCleanStaleConfirm = "modal.aiSetup.modelCleanStaleConfirm";
+    public const string AiSetupModelRemoveFailed = "modal.aiSetup.modelRemoveFailed";
+    public const string AiSetupModelRemoveBlockedActiveDownload = "modal.aiSetup.modelRemoveBlockedActiveDownload";
+    public const string AiSetupModelRemoveComplete = "modal.aiSetup.modelRemoveComplete";
+    public const string AiSetupModelCleanStaleComplete = "modal.aiSetup.modelCleanStaleComplete";
+    public const string AiSetupModelStaleDownload = "modal.aiSetup.modelStaleDownload";
+    public const string AiSetupModelStatusDownloaded = "modal.aiSetup.modelStatusDownloaded";
+    public const string AiSetupModelStatusNotDownloaded = "modal.aiSetup.modelStatusNotDownloaded";
+    public const string AiSetupModelStatusDownloading = "modal.aiSetup.modelStatusDownloading";
+    public const string AiDownloadDockTooltip = "aiDownload.dockTooltip";
+    public const string AiDownloadBannerTitle = "aiDownload.bannerTitle";
+    public const string AiDownloadBannerPaused = "aiDownload.bannerPaused";
+    public const string AiDownloadPercent = "aiDownload.percent";
+    public const string AiDownloadPercentUnknown = "aiDownload.percentUnknown";
+    public const string AiDownloadPause = "aiDownload.pause";
+    public const string AiDownloadResume = "aiDownload.resume";
+    public const string AiDownloadStop = "aiDownload.stop";
+    public const string AiDownloadStopConfirm = "aiDownload.stopConfirm";
+    public const string AiDownloadResumeOnStartup = "aiDownload.resumeOnStartup";
+    public const string AiDownloadOllamaRequired = "aiDownload.ollamaRequired";
+    public const string AiDownloadPreparingEngine = "aiDownload.preparingEngine";
+    public const string AiDownloadDownloadingEngine = "aiDownload.downloadingEngine";
+    public const string AiDownloadStartingEngine = "aiDownload.startingEngine";
+    public const string AiDownloadPullingModel = "aiDownload.pullingModel";
+    public const string AiDownloadRestartingAfterRecovery = "aiDownload.restartingAfterRecovery";
+    public const string AiDownloadFailed = "aiDownload.failed";
+    public const string AiDownloadCompleted = "aiDownload.completed";
+    public const string AiDownloadRefreshSystem = "aiDownload.refreshSystem";
+    public const string AiDownloadInsufficientDiskSpace = "aiDownload.insufficientDiskSpace";
+    public const string AiDownloadHeaderInProgress = "aiDownload.headerInProgress";
     public const string AiModelGemma2_2bName = "aiModel.gemma2_2b.name";
     public const string AiModelPhi3MiniName = "aiModel.phi3Mini.name";
     public const string AiModelLlama32_3bName = "aiModel.llama32_3b.name";
@@ -1131,6 +1166,8 @@ public static class TranslationKeys
         AiSetupDownloadConfirm,
         AiSetupDownloadConfirmOversized,
         AiSetupOllamaNotRunning,
+        AiSetupOllamaNotInstalled,
+        AiSetupOllamaInstallFailed,
         AiSetupPullProgress,
         AiSetupPullComplete,
         AiSetupPullFailed,
@@ -1141,6 +1178,39 @@ public static class TranslationKeys
         AiSetupDiskSpaceUnknown,
         AiSetupAllModels,
         AiSetupModelMeta,
+        AiSetupModelRemove,
+        AiSetupModelRemoveConfirm,
+        AiSetupModelCleanStale,
+        AiSetupModelCleanStaleConfirm,
+        AiSetupModelRemoveFailed,
+        AiSetupModelRemoveBlockedActiveDownload,
+        AiSetupModelRemoveComplete,
+        AiSetupModelCleanStaleComplete,
+        AiSetupModelStaleDownload,
+        AiSetupModelStatusDownloaded,
+        AiSetupModelStatusNotDownloaded,
+        AiSetupModelStatusDownloading,
+        AiDownloadDockTooltip,
+        AiDownloadBannerTitle,
+        AiDownloadBannerPaused,
+        AiDownloadPercent,
+        AiDownloadPercentUnknown,
+        AiDownloadPause,
+        AiDownloadResume,
+        AiDownloadStop,
+        AiDownloadStopConfirm,
+        AiDownloadResumeOnStartup,
+        AiDownloadOllamaRequired,
+        AiDownloadPreparingEngine,
+        AiDownloadDownloadingEngine,
+        AiDownloadStartingEngine,
+        AiDownloadPullingModel,
+        AiDownloadRestartingAfterRecovery,
+        AiDownloadFailed,
+        AiDownloadCompleted,
+        AiDownloadRefreshSystem,
+        AiDownloadInsufficientDiskSpace,
+        AiDownloadHeaderInProgress,
         AiModelGemma2_2bName,
         AiModelPhi3MiniName,
         AiModelLlama32_3bName,

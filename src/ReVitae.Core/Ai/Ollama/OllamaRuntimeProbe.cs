@@ -10,11 +10,10 @@ public interface IOllamaRuntimeProbe
 
 public sealed class OllamaRuntimeProbe : IOllamaRuntimeProbe
 {
-    private static readonly Uri TagsUri = new("http://127.0.0.1:11434/api/tags");
     private readonly HttpClient _httpClient;
 
     public OllamaRuntimeProbe()
-        : this(new HttpClient { Timeout = TimeSpan.FromSeconds(1) })
+        : this(new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
     {
     }
 
@@ -27,7 +26,9 @@ public sealed class OllamaRuntimeProbe : IOllamaRuntimeProbe
     {
         try
         {
-            using var response = await _httpClient.GetAsync(TagsUri, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClient
+                .GetAsync(OllamaHost.TagsUri, cancellationToken)
+                .ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 return new OllamaRuntimeStatus(false, []);

@@ -13,4 +13,9 @@ public static class ReVitaeLocalDataPaths
     {
         return Path.Combine(GetReVitaeRootDirectory(), "ai-settings.json");
     }
+
+    public static string GetAiDownloadJobFilePath()
+    {
+        return Path.Combine(GetReVitaeRootDirectory(), "ai-download-job.json");
+    }
 }

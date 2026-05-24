@@ -457,6 +457,8 @@ Update README prompts map line to `001–036`.
 
 ## Out of Scope (Follow-Up Prompts)
 
+- Moving download orchestration to a background coordinator with pause/resume (prompt
+  **037**),
 - **037** — Cloud provider (OpenAI-compatible) configuration in same modal,
 - **038** — First AI feature (improve work description / quality hint assist),
 - **039** — AI-assisted import fallback,
@@ -477,6 +479,8 @@ Update README prompts map line to `001–036`.
 6. Models with insufficient detected RAM have **Download disabled**
    (`IsDownloadAllowed == false`) and visible “requires more memory” copy.
 7. Download requires confirmation and uses Ollama pull when Ollama is reachable.
+   **Note:** pause/resume, global dock, and crash recovery are specified in prompt **037**
+   (v1 pull runs inside the modal and cancels when the modal closes).
 8. **Disk space check** blocks pull when free space on the local-data volume is below
    `ApproxDownloadBytes × 1.1`; user sees a localized error (no partial download).
 9. **Privacy banner** visible in Ready state; states detection is local-only and no

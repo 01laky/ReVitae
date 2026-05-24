@@ -9,6 +9,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **Resumable AI model download** (prompt **037**): background Ollama pull via
+  `AiModelDownloadCoordinator`; bottom-left progress dock; modal download banner
+  with Pause / Resume / Stop; startup auto-resume with exponential backoff;
+  atomic `ai-download-job.json`; header robot badge during active download;
+  ~4 s success dwell; disk-full recovery messaging; monotonic
+  `AiDownloadDisplayProgress`; **50+** focused download / lifecycle / Ollama tests.
+- **Managed Ollama install**: `OllamaInstaller` with resumable zip download,
+  `OllamaServeSupervisor`, and managed paths under `%LocalAppData%/ReVitae/ollama/`
+  when no system Ollama is present.
+- **AI model lifecycle**: per-card installation status (downloaded / downloading /
+  stale); **Remove model** and **Clean up failed download** via
+  `AiModelLifecycleService` and Ollama `DELETE /api/delete`.
 - **AI setup modal** (prompt **036**): header robot icon opens in-window setup
   with loader on every open; local OS/CPU/RAM/disk/Ollama detection; privacy
   banner; **11** curated Ollama instruct models; RAM-tier recommendations;
@@ -65,6 +77,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Changed
 
+- AI download pause/resume: progress callbacks no longer overwrite **Paused** state;
+  `PauseAsync` waits for pull cancellation; UI progress throttle runs on the UI
+  thread with a fixed refresh interval.
 - Certificate import: labeled fields, inline `·` headers, credential ID lines no
   longer mis-parse as year-only dates; expiration and split `Issued:` lines.
 - Work import: standalone `Present` line after split date ranges.

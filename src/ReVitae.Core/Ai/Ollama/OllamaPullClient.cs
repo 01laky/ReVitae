@@ -4,13 +4,20 @@ using System.Text.Json;
 
 namespace ReVitae.Core.Ai.Ollama;
 
-public sealed class OllamaPullClient
+public interface IOllamaPullClient
 {
-    private static readonly Uri PullUri = new("http://127.0.0.1:11434/api/pull");
+    Task<OllamaPullResult> PullAsync(
+        string modelTag,
+        IProgress<OllamaPullProgress>? progress,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed class OllamaPullClient : IOllamaPullClient
+{
     private readonly HttpClient _httpClient;
 
     public OllamaPullClient()
-        : this(new HttpClient())
+        : this(new HttpClient { Timeout = Timeout.InfiniteTimeSpan })
     {
     }
 
@@ -26,7 +33,7 @@ public sealed class OllamaPullClient
     {
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, PullUri);
+            using var request = new HttpRequestMessage(HttpMethod.Post, OllamaHost.PullUri);
             request.Content = new StringContent(
                 JsonSerializer.Serialize(new { name = modelTag }),
                 Encoding.UTF8,

@@ -51,4 +51,18 @@ public sealed class AiSettingsStorage
         var json = JsonSerializer.Serialize(snapshot, JsonOptions);
         File.WriteAllText(_filePath, json);
     }
+
+    public void Clear()
+    {
+        try
+        {
+            if (File.Exists(_filePath))
+            {
+                File.Delete(_filePath);
+            }
+        }
+        catch
+        {
+        }
+    }
 }

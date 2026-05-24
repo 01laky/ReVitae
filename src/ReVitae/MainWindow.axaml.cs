@@ -60,6 +60,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeAiDownload();
         InitializeQualityHintsUi();
         InitializePersonalValidation();
         InitializeLanguageSelector();
@@ -772,6 +773,11 @@ public partial class MainWindow : Window
         {
             ResetIntroImportState();
         }
+        else
+        {
+            ScheduleAiDownloadRecoveryWhenIntroDismissed();
+            UpdateAiDownloadUi();
+        }
     }
 
     private void ResetIntroImportState()
@@ -1242,6 +1248,7 @@ public partial class MainWindow : Window
         ToolTip.SetTip(QualityHintModalTopCloseButton, closeLabel);
         AutomationProperties.SetName(QualityHintModalTopCloseButton, closeLabel);
         ApplyAiSetupLocalization();
+        ApplyAiDownloadLocalization();
         RefreshTemplateCardLabels();
     }
 

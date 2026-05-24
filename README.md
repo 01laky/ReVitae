@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1028%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1090%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -47,6 +47,48 @@ Most CV workflows mix content and layout together. ReVitae separates them.
 - The app runs locally by default.
 - Imported documents are treated as drafts, not as magic.
 
+## Local AI — download that survives interruptions
+
+ReVitae helps you bring a **local AI model** onto your machine without
+babysitting a modal. Start a download from the **AI setup** panel (header robot
+icon), keep editing your CV, pause for lunch, or close the app — when you
+return, the bottom-left progress dock and automatic recovery pick up where
+Ollama left off.
+
+```mermaid
+flowchart LR
+    confirm["Confirm download"]
+    engine["Auto-install Ollama\nif missing"]
+    dock["Bottom-left dock\nname • % • status"]
+    bg["Continues in background\nmodal can close"]
+    pause["Pause / Resume / Stop"]
+    manage["Remove model /\nclean failed download"]
+    recover["App restart → auto-resume\n(Ollama layer cache)"]
+    done["Success → ai-settings.json"]
+
+    confirm --> engine --> dock --> bg
+    bg --> pause
+    bg --> manage
+    bg --> recover
+    bg --> done
+    pause --> bg
+    manage --> bg
+    recover --> bg
+```
+
+**Key guarantees:**
+
+- **Background download** — close the AI modal; progress stays in the corner.
+- **Pause and resume** — stop the stream safely; Ollama continues from cached layers.
+- **Survives restarts** — force-quit or crash; ReVitae resumes on next launch.
+- **Managed Ollama** — ReVitae can install and run a local engine when none is present.
+- **Model lifecycle** — per-model status, remove installed models, clean stale downloads.
+- **Monotonic progress** — percent updates smoothly even when Ollama resets layer totals.
+- **Local-only** — detection and files stay on your device.
+- **11 curated models** — RAM-aware recommendations with disk-space checks.
+
+Full user guide: [`docs/ai-setup.md`](docs/ai-setup.md).
+
 ## Current Highlights
 
 ### Structured CV Builder
@@ -77,14 +119,13 @@ do not extract photos.
 
 ### AI setup (local models, Phase 2 foundation)
 
-The header **robot icon** (between Upload and Setup) opens an **AI setup** modal.
-Each open runs local system detection (OS, CPU, RAM, disk, Ollama status), shows
-a **recommended** Ollama model, and lists **11 curated instruct models** to
-download when Ollama is running. Models one RAM tier above your strict fit can
-still be downloaded **with a warning**; larger tiers stay disabled. Downloads
-require confirmation, check free disk space, and persist the choice to
-`%LocalAppData%/ReVitae/ai-settings.json`. No cloud AI or CV rewriting yet —
-see [`docs/ai-setup.md`](docs/ai-setup.md).
+See **[Local AI — download that survives interruptions](#local-ai--download-that-survives-interruptions)**
+above for the headline behavior. The header **robot icon** opens **AI setup**:
+system detection, **11 curated Ollama instruct models**, RAM-tier recommendations,
+managed Ollama install, background download with pause/resume/stop, per-model
+status badges, remove/clean actions, bottom-left progress dock, startup recovery,
+and persistence to `%LocalAppData%/ReVitae/`. No cloud AI or CV rewriting yet —
+details in [`docs/ai-setup.md`](docs/ai-setup.md).
 
 ### CV import (multi-format)
 
@@ -169,9 +210,11 @@ validation UI, template preview, **optional profile photo** (prompt **023**),
 **multi-format export** (15 formats via `CvDocumentExporter`), and
 **multi-format CV import** (prompt **021**) through `CvDocumentImporter` are in
 place. Intro / replace flows cover PDF plus the additional structured and
-text-native formats listed above. **AI setup** (prompt **036**) adds local
-Ollama model detection and download; CV AI features remain planned. Next major
-themes remain **local persistence** and AI-assisted import / recommendations.
+text-native formats listed above. **AI setup** (prompts **036**–**037**) adds local Ollama model detection, managed
+engine install, **resumable background download** with dock and startup recovery,
+model lifecycle management (remove / clean stale), and monotonic progress display;
+CV AI features remain planned. Next major themes remain **local persistence** and
+AI-assisted import / recommendations.
 
 ### Versioning
 
@@ -265,7 +308,7 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–036)
+  Implementation prompts and product increments (001–037)
 
 docs/
   Product concept, export/import matrices (`export-formats.md`,

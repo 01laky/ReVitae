@@ -28,6 +28,9 @@ public static class AiModelCatalog
         Entry("llama33-70b", TranslationKeys.AiModelLlama33_70bName, 43 * Gb, 64 * Gb, AiModelTier.ExtraLarge, "llama3.3:70b", 90),
     ];
 
+    public static AiModelCatalogEntry? TryGetById(string id) =>
+        Default.FirstOrDefault(entry => string.Equals(entry.Id, id, StringComparison.Ordinal));
+
     private static AiModelCatalogEntry Entry(
         string id,
         string displayNameKey,

@@ -72,3 +72,28 @@ public enum OllamaPullOutcome
 }
 
 public sealed record OllamaPullResult(OllamaPullOutcome Outcome, string? ErrorMessage);
+
+public enum AiDownloadJobState
+{
+    Idle = 0,
+    Downloading = 1,
+    Paused = 2,
+    Interrupted = 3,
+    Completed = 4,
+    Failed = 5,
+    Stopped = 6,
+}
+
+public sealed record AiDownloadJobSnapshot(
+    Guid JobId,
+    string SelectedModelId,
+    string OllamaModelTag,
+    string DisplayNameKey,
+    AiDownloadJobState State,
+    bool RequiresOversizedWarning,
+    long? CompletedBytes,
+    long? TotalBytes,
+    string? StatusText,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset LastUpdatedAtUtc,
+    string? ErrorMessageKey);

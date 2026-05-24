@@ -69,9 +69,20 @@
                         Click="OnOpenAiSetupClicked"
                         ToolTip.Tip="Open AI setup"
                         AutomationProperties.Name="Open AI setup">
-                    <materialIcons:MaterialIcon Kind="Robot"
-                                                Width="24"
-                                                Height="24" />
+                    <Panel Width="24"
+                           Height="24">
+                        <materialIcons:MaterialIcon Kind="Robot"
+                                                    Width="24"
+                                                    Height="24" />
+                        <Ellipse x:Name="AiDownloadHeaderBadge"
+                                 Width="8"
+                                 Height="8"
+                                 Fill="#2563EB"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Top"
+                                 Margin="0,-2,-2,0"
+                                 IsVisible="False" />
+                    </Panel>
                 </Button>
 
                 <Button x:Name="OpenSetupButton"
@@ -456,7 +467,80 @@
                     </Grid>
 
                     <Grid Grid.Row="1"
-                          Margin="0,14,0,0">
+                          Margin="0,14,0,0"
+                          RowDefinitions="Auto,*">
+                        <Border x:Name="AiSetupDownloadJobBanner"
+                                Grid.Row="0"
+                                Classes="re-vitae-app-card"
+                                Padding="16"
+                                Margin="0,0,0,12"
+                                IsVisible="False">
+                            <StackPanel Spacing="10">
+                                <TextBlock x:Name="AiSetupDownloadBannerTitleTextBlock"
+                                           Classes="re-vitae-app-title"
+                                           FontSize="16" />
+                                <Grid ColumnDefinitions="*,Auto"
+                                      ColumnSpacing="8">
+                                    <ProgressBar x:Name="AiSetupDownloadBannerProgressBar"
+                                                 Grid.Column="0"
+                                                 Height="6" />
+                                    <TextBlock x:Name="AiSetupDownloadBannerPercentTextBlock"
+                                               Grid.Column="1"
+                                               Classes="re-vitae-secondary"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                                <TextBlock x:Name="AiSetupDownloadBannerStatusTextBlock"
+                                           Classes="re-vitae-secondary"
+                                           FontSize="12"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="AiSetupDownloadBannerErrorTextBlock"
+                                           Classes="re-vitae-error"
+                                           IsVisible="False"
+                                           TextWrapping="Wrap" />
+                                <StackPanel x:Name="AiSetupDownloadBannerActionsPanel"
+                                            Orientation="Horizontal"
+                                            Spacing="10">
+                                    <Button x:Name="AiSetupDownloadPauseButton"
+                                            Classes="re-vitae-secondary"
+                                            Content="Pause"
+                                            Click="OnAiDownloadPauseClicked" />
+                                    <Button x:Name="AiSetupDownloadResumeButton"
+                                            Classes="re-vitae-primary"
+                                            Content="Resume"
+                                            IsVisible="False"
+                                            Click="OnAiDownloadResumeClicked" />
+                                    <Button x:Name="AiSetupDownloadStopButton"
+                                            Classes="re-vitae-secondary"
+                                            Content="Stop download"
+                                            Click="OnAiDownloadStopClicked" />
+                                </StackPanel>
+                                <StackPanel x:Name="AiSetupDownloadStopConfirmPanel"
+                                            Spacing="10"
+                                            IsVisible="False">
+                                    <TextBlock x:Name="AiSetupDownloadStopConfirmTextBlock"
+                                               TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="10"
+                                                HorizontalAlignment="Right">
+                                        <Button x:Name="AiSetupDownloadStopConfirmCancelButton"
+                                                Classes="re-vitae-secondary"
+                                                Content="Cancel"
+                                                Click="OnAiDownloadStopConfirmCancelClicked" />
+                                        <Button x:Name="AiSetupDownloadStopConfirmOkButton"
+                                                Classes="re-vitae-primary"
+                                                Content="OK"
+                                                Click="OnAiDownloadStopConfirmOkClicked" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <Button x:Name="AiSetupDownloadRefreshSystemButton"
+                                        Classes="re-vitae-secondary"
+                                        Content="Refresh system info"
+                                        IsVisible="False"
+                                        Click="OnAiSetupDownloadRefreshSystemClicked" />
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Grid.Row="1">
                         <StackPanel x:Name="AiSetupDetectionProgressPanel"
                                     Spacing="12"
                                     VerticalAlignment="Center"
@@ -556,8 +640,27 @@
                                                 Click="OnAiSetupDownloadConfirmOkClicked" />
                                     </StackPanel>
                                 </StackPanel>
+                                <StackPanel x:Name="AiSetupModelActionConfirmPanel"
+                                            Spacing="10"
+                                            IsVisible="False">
+                                    <TextBlock x:Name="AiSetupModelActionConfirmTextBlock"
+                                               TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="10"
+                                                HorizontalAlignment="Right">
+                                        <Button x:Name="AiSetupModelActionConfirmCancelButton"
+                                                Classes="re-vitae-secondary"
+                                                Content="Cancel"
+                                                Click="OnAiSetupModelActionConfirmCancelClicked" />
+                                        <Button x:Name="AiSetupModelActionConfirmOkButton"
+                                                Classes="re-vitae-primary"
+                                                Content="OK"
+                                                Click="OnAiSetupModelActionConfirmOkClicked" />
+                                    </StackPanel>
+                                </StackPanel>
                             </StackPanel>
                         </ScrollViewer>
+                        </Grid>
                     </Grid>
 
                     <StackPanel Grid.Row="2"
@@ -1044,6 +1147,75 @@
                        FontSize="15"
                        LineHeight="22"
                        MaxWidth="720" />
+        </Border>
+
+        <Border x:Name="AiDownloadDockOverlay"
+                Grid.RowSpan="2"
+                Classes="re-vitae-app-card"
+                IsVisible="False"
+                MaxWidth="340"
+                Margin="16"
+                Padding="14"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom">
+            <StackPanel Spacing="8">
+                <TextBlock x:Name="AiDownloadDockModelTextBlock"
+                           Classes="re-vitae-app-title"
+                           FontSize="14"
+                           TextWrapping="Wrap"
+                           Cursor="Hand"
+                           PointerReleased="OnAiDownloadDockClicked" />
+                <Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="8">
+                    <ProgressBar x:Name="AiDownloadDockProgressBar"
+                                 Grid.Column="0"
+                                 Height="6"
+                                 MinWidth="180" />
+                    <TextBlock x:Name="AiDownloadDockPercentTextBlock"
+                               Grid.Column="1"
+                               Classes="re-vitae-secondary"
+                               VerticalAlignment="Center" />
+                </Grid>
+                <TextBlock x:Name="AiDownloadDockStatusTextBlock"
+                           Classes="re-vitae-secondary"
+                           FontSize="12"
+                           TextTrimming="CharacterEllipsis" />
+                <StackPanel x:Name="AiDownloadDockActionsPanel"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <Button x:Name="AiDownloadDockPauseButton"
+                            Classes="re-vitae-secondary"
+                            Content="Pause"
+                            Click="OnAiDownloadPauseClicked" />
+                    <Button x:Name="AiDownloadDockResumeButton"
+                            Classes="re-vitae-primary"
+                            Content="Resume"
+                            IsVisible="False"
+                            Click="OnAiDownloadResumeClicked" />
+                    <Button x:Name="AiDownloadDockStopButton"
+                            Classes="re-vitae-secondary"
+                            Content="Stop download"
+                            Click="OnAiDownloadStopClicked" />
+                </StackPanel>
+                <StackPanel x:Name="AiDownloadDockStopConfirmPanel"
+                            Spacing="8"
+                            IsVisible="False">
+                    <TextBlock x:Name="AiDownloadDockStopConfirmTextBlock"
+                               TextWrapping="Wrap"
+                               FontSize="12" />
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="8">
+                        <Button x:Name="AiDownloadDockStopConfirmCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnAiDownloadStopConfirmCancelClicked" />
+                        <Button x:Name="AiDownloadDockStopConfirmOkButton"
+                                Classes="re-vitae-primary"
+                                Content="OK"
+                                Click="OnAiDownloadStopConfirmOkClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>
