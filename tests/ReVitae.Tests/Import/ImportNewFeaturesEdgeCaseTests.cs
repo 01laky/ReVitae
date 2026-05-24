@@ -304,35 +304,30 @@ public sealed class PdfPigDeferredSidebarEdgeCaseTests
 
 public sealed class CvImportDiagnosticsLoggerEdgeCaseTests
 {
-    private static readonly string LogPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "ReVitae",
-        "import-debug.log");
-
     [Fact]
     public void Import_WritesDebugLogContainingPipelineStages()
     {
         var previous = Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG");
+        var previousLogPath = Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG");
         Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG", "1");
 
         using var temp = new TempImportDirectory();
+        var logPath = temp.FilePath("import-debug.log", string.Empty);
+        Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG", logPath);
+
         var path = temp.FilePath("debug-log.pdf", SidebarLayoutPdfWriter.Create(
             SidebarLayoutPdfWriter.CreateSinglePageTwoColumnLayout()));
         var marker = Guid.NewGuid().ToString("N");
-        var snapshot = File.Exists(LogPath) ? File.GetAttributes(LogPath) : FileAttributes.Normal;
-        if (File.Exists(LogPath))
-        {
-            File.WriteAllText(LogPath, $"marker:{marker}\n");
-        }
+        File.WriteAllText(logPath, $"marker:{marker}\n");
 
         try
         {
             var result = CvDocumentImporter.Import(path);
 
             Assert.True(result.Success, result.ErrorMessageKey);
-            Assert.True(File.Exists(LogPath));
+            Assert.True(File.Exists(logPath));
 
-            var log = File.ReadAllText(LogPath);
+            var log = File.ReadAllText(logPath);
             Assert.StartsWith($"marker:{marker}", log, StringComparison.Ordinal);
             Assert.Contains("--- 1. Text extraction ---", log, StringComparison.Ordinal);
             Assert.Contains("--- 2. Normalization ---", log, StringComparison.Ordinal);
@@ -345,10 +340,7 @@ public sealed class CvImportDiagnosticsLoggerEdgeCaseTests
         finally
         {
             Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG", previous);
-            if (File.Exists(LogPath))
-            {
-                File.SetAttributes(LogPath, snapshot);
-            }
+            Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG", previousLogPath);
         }
     }
 
@@ -356,23 +348,28 @@ public sealed class CvImportDiagnosticsLoggerEdgeCaseTests
     public void Import_SkipsDebugLogAppendWhenEnvVarDisabled()
     {
         var previous = Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG");
+        var previousLogPath = Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG");
         Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG", "0");
 
         using var temp = new TempImportDirectory();
+        var logPath = temp.FilePath("import-debug.log", string.Empty);
+        Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG", logPath);
+
         var path = temp.FilePath("debug-disabled.pdf", MinimalPdfWriter.CreateFromLines(["Jane Doe", "jane@example.com"]));
         var marker = Guid.NewGuid().ToString("N");
-        File.WriteAllText(LogPath, $"marker:{marker}\n");
+        File.WriteAllText(logPath, $"marker:{marker}\n");
 
         try
         {
             var result = CvDocumentImporter.Import(path);
 
             Assert.True(result.Success, result.ErrorMessageKey);
-            Assert.Equal($"marker:{marker}", File.ReadAllText(LogPath).TrimEnd());
+            Assert.Equal($"marker:{marker}", File.ReadAllText(logPath).TrimEnd());
         }
         finally
         {
             Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG", previous);
+            Environment.SetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG", previousLogPath);
         }
     }
 }

@@ -24,14 +24,7 @@ public partial class MainWindow
     private void InitializeQualityHintsUi()
     {
         _personalHeaderBadges = new SectionHeaderBadges();
-        var personalActions = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            Spacing = 8,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Children = { _personalHeaderBadges.ErrorBadgePanel, _personalHeaderBadges.QualityBadgePanel }
-        };
-        PersonalInformationSection.HeaderActions = personalActions;
+        PersonalInformationSection.HeaderActions = _personalHeaderBadges.Root;
 
         _qualitySnackbarPresenter = new QualityHintSnackbarPresenter(
             QualityHintSnackbarBorder,

@@ -10,13 +10,18 @@ internal static class CvImportDiagnosticsLogger
     private static readonly object Gate = new();
     private static Stopwatch? _sessionStopwatch;
 
-    public static string LogFilePath { get; } = Path.Combine(
+    public static string LogFilePath =>
+        Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG") is { Length: > 0 } customPath
+            ? customPath
+            : DefaultLogFilePath;
+
+    private static string DefaultLogFilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "ReVitae",
         "import-debug.log");
 
     public static bool IsEnabled =>
-        !string.Equals(Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG"), "0", StringComparison.Ordinal);
+        string.Equals(Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG"), "1", StringComparison.Ordinal);
 
     public static void BeginSession(string filePath, CvImportFormat format, long fileSizeBytes)
     {
