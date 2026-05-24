@@ -585,7 +585,7 @@ No change required (already references 038).
 
 ## Out of Scope (Follow-Up Prompts)
 
-- **039** — First AI CV feature using active backend (rewrite, hints),
+- **039** — Universal AI CV completion — see [`039-universal-ai-cv-completion.md`](039-universal-ai-cv-completion.md),
 - **040** — AI-assisted import fallback,
 - OAuth / SSO for providers,
 - Together AI, xAI, Cohere as dedicated rows,
