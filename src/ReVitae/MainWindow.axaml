@@ -1235,6 +1235,123 @@
             </Border>
         </Grid>
 
+        <Grid x:Name="AiSuggestionModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="AiSuggestionModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="720"
+                    MaxHeight="640"
+                    MinWidth="400"
+                    MinHeight="280"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <TextBlock x:Name="AiCvSuggestionTitleTextBlock"
+                                   Classes="re-vitae-app-title"
+                                   FontSize="22"
+                                   Text="AI suggestion"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="AiCvSuggestionTopCloseButton"
+                                Grid.Column="1"
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnCloseAiSuggestionModalClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="22"
+                                                        Height="22" />
+                        </Button>
+                    </Grid>
+
+                    <StackPanel Grid.Row="1"
+                                Margin="0,20,0,20"
+                                Spacing="16">
+                        <StackPanel x:Name="AiCvOnlineSendConfirmPanel"
+                                    Spacing="12"
+                                    IsVisible="False">
+                            <TextBlock x:Name="AiCvOnlineSendConfirmTextBlock"
+                                       TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="12"
+                                        HorizontalAlignment="Right">
+                                <Button x:Name="AiCvOnlineSendConfirmCancelButton"
+                                        Classes="re-vitae-secondary"
+                                        Content="Cancel"
+                                        Click="OnAiCvOnlineSendConfirmCancelClicked" />
+                                <Button x:Name="AiCvOnlineSendConfirmOkButton"
+                                        Classes="re-vitae-primary"
+                                        Content="OK"
+                                        Click="OnAiCvOnlineSendConfirmOkClicked" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel x:Name="AiCvSuggestionLoadingPanel"
+                                    Spacing="12"
+                                    IsVisible="False">
+                            <ProgressBar IsIndeterminate="True"
+                                         Height="6" />
+                            <TextBlock x:Name="AiCvSuggestionLoadingTextBlock"
+                                       Text="Generating suggestion…"
+                                       Classes="re-vitae-secondary" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="AiCvSuggestionContentPanel"
+                                    Spacing="12"
+                                    IsVisible="False">
+                            <TextBox x:Name="AiCvSuggestionTextBox"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="160"
+                                     IsReadOnly="True" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="AiCvSuggestionErrorPanel"
+                                    Spacing="8"
+                                    IsVisible="False">
+                            <TextBlock x:Name="AiCvSuggestionErrorTextBlock"
+                                       TextWrapping="Wrap"
+                                       Foreground="#C62828" />
+                        </StackPanel>
+
+                        <TextBlock x:Name="AiCvSuggestionBackendTextBlock"
+                                   Classes="re-vitae-secondary"
+                                   FontSize="13"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="AiCvSuggestionActionsPanel"
+                                Grid.Row="2"
+                                Orientation="Horizontal"
+                                Spacing="12"
+                                HorizontalAlignment="Right"
+                                IsVisible="False">
+                        <Button x:Name="AiCvSuggestionRetryButton"
+                                Classes="re-vitae-secondary"
+                                Content="Retry"
+                                IsVisible="False"
+                                Click="OnAiCvSuggestionRetryClicked" />
+                        <Button x:Name="AiCvSuggestionCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnAiCvSuggestionCancelClicked" />
+                        <Button x:Name="AiCvSuggestionEditButton"
+                                Classes="re-vitae-secondary"
+                                Content="Edit in form"
+                                Click="OnAiCvSuggestionEditClicked" />
+                        <Button x:Name="AiCvSuggestionAcceptButton"
+                                Classes="re-vitae-primary"
+                                Content="Accept"
+                                Click="OnAiCvSuggestionAcceptClicked" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
         <Border x:Name="QualityHintSnackbarBorder"
                 Grid.Row="1"
                 VerticalAlignment="Bottom"

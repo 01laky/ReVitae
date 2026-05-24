@@ -118,8 +118,9 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - Import confidence hints on uncertain parsed fields.
 - **Static CV quality hints** — deterministic rules in Core (`CvQualityAnalyzer`),
   section badges with a **large in-window modal**, session dismiss, import-aware
-  review hints, export-area summary (see
-  [`prompts/034-cv-quality-hints.md`](../prompts/034-cv-quality-hints.md)).
+  review hints, export-area summary; optional **Improve with AI** on supported hints
+  (prompt **039**) — see
+  [`prompts/034-cv-quality-hints.md`](../prompts/034-cv-quality-hints.md).
 - **John Doe import regression matrix** — 50 generated stress CVs assert parser
   fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`,
   prompt **035**).
@@ -160,6 +161,13 @@ is present, **background resumable download** (dock, pause/resume/stop, startup
 recovery), and **model lifecycle** actions (remove installed models, clean stale
 partial downloads). See [`docs/ai-setup.md`](ai-setup.md). A dedicated
 first-launch gate remains planned.
+
+**Implemented (prompt 039):** universal **CV completion** layer — whichever active
+backend the user chose powers **Improve with AI** on selected quality hints.
+Suggestions appear in a review modal; the user **Accepts**, **Edits**, or **Dismisses**
+— ReVitae never auto-applies AI text. Online sends require a one-time session
+confirm; local Ollama stays on-device. See
+[`prompts/039-universal-ai-cv-completion.md`](../prompts/039-universal-ai-cv-completion.md).
 
 On first launch (full vision), the application should detect the user's operating system and relevant hardware capabilities.
 

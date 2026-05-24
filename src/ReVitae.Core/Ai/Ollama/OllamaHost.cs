@@ -12,6 +12,8 @@ public static class OllamaHost
 
     public static Uri DeleteUri { get; } = new(BaseUri, "/api/delete");
 
+    public static Uri ChatUri { get; } = new(BaseUri, "/api/chat");
+
     public static string DisplayAddress =>
         $"{BaseUri.Host}:{BaseUri.Port}";
 

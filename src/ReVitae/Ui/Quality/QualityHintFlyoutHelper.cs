@@ -11,6 +11,8 @@ public static class QualityHintFlyoutHelper
 {
     private static QualityHintModalPresenter? _presenter;
 
+    public static QualityHintAiOptions? AiOptions { get; set; }
+
     public static void RegisterPresenter(QualityHintModalPresenter presenter) =>
         _presenter = presenter;
 
@@ -21,14 +23,15 @@ public static class QualityHintFlyoutHelper
         IReadOnlyList<Core.Quality.CvQualityHint> hints,
         Func<Core.Quality.CvQualityHint, bool>? navigateToHint = null,
         Action<Core.Quality.CvQualityHint>? dismissHint = null,
-        Action? flyoutOpened = null)
+        Action? flyoutOpened = null,
+        QualityHintAiOptions? aiOptions = null)
     {
         if (_presenter is null)
         {
             return;
         }
 
-        _presenter.Show(localizer, sectionTitle, hints, navigateToHint, dismissHint);
+        _presenter.Show(localizer, sectionTitle, hints, navigateToHint, dismissHint, aiOptions);
         flyoutOpened?.Invoke();
     }
 

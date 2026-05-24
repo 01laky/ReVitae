@@ -9,6 +9,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **Universal AI CV completion** (prompt **039**): backend-agnostic
+  `AiCvCompletionService`; Ollama `POST /api/chat`; extended online chat clients
+  (system + user messages); task registry and prompt templates; **Improve with AI**
+  on supported quality hints with suggestion modal (Accept / Edit / Cancel); online
+  session privacy confirm; EN + SK localization; **37** new AI/CV tests (**1190**
+  total).
 - **AI provider list and configuration** (prompt **038**): online provider catalog
   (OpenAI, Anthropic, Gemini, Groq, Azure OpenAI, Mistral, DeepSeek, OpenRouter,
   Custom); inline configure / Save / Test forms; single active backend (local **or**

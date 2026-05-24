@@ -683,6 +683,23 @@ public static class TranslationKeys
     public const string AiSetupHeaderActiveOnline = "modal.aiSetup.headerActiveOnline";
     public const string AiSetupHeaderActiveLocal = "modal.aiSetup.headerActiveLocal";
 
+    public const string AiCvImproveWithAi = "aiCv.improveWithAi";
+    public const string AiCvSetUpAi = "aiCv.setUpAi";
+    public const string AiCvSuggestionTitle = "aiCv.suggestionTitle";
+    public const string AiCvSuggestionAccept = "aiCv.suggestionAccept";
+    public const string AiCvSuggestionEdit = "aiCv.suggestionEdit";
+    public const string AiCvSuggestionCancel = "aiCv.suggestionCancel";
+    public const string AiCvSuggestionRetry = "aiCv.suggestionRetry";
+    public const string AiCvSuggestionLoading = "aiCv.suggestionLoading";
+    public const string AiCvBackendLocal = "aiCv.backendLocal";
+    public const string AiCvBackendOnline = "aiCv.backendOnline";
+    public const string AiCvOnlineSendConfirm = "aiCv.onlineSendConfirm";
+    public const string AiCvNoBackendConfigured = "aiCv.noBackendConfigured";
+    public const string AiCvOllamaUnavailable = "aiCv.ollamaUnavailable";
+    public const string AiCvEmptyResponse = "aiCv.emptyResponse";
+    public const string AiCvResponseTooLong = "aiCv.responseTooLong";
+    public const string AiCvTaskFailed = "aiCv.taskFailed";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -1354,5 +1371,21 @@ public static class TranslationKeys
         AiProviderCustomDescription,
         AiSetupHeaderActiveOnline,
         AiSetupHeaderActiveLocal,
+        AiCvImproveWithAi,
+        AiCvSetUpAi,
+        AiCvSuggestionTitle,
+        AiCvSuggestionAccept,
+        AiCvSuggestionEdit,
+        AiCvSuggestionCancel,
+        AiCvSuggestionRetry,
+        AiCvSuggestionLoading,
+        AiCvBackendLocal,
+        AiCvBackendOnline,
+        AiCvOnlineSendConfirm,
+        AiCvNoBackendConfigured,
+        AiCvOllamaUnavailable,
+        AiCvEmptyResponse,
+        AiCvResponseTooLong,
+        AiCvTaskFailed,
     ];
 }

@@ -5,11 +5,26 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Material.Icons;
+using ReVitae.Core.Ai.Cv;
+using ReVitae.Core.Ai.Providers;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Quality;
 using ReVitae.Ui;
 
 namespace ReVitae.Ui.Quality;
+
+public sealed class QualityHintAiOptions
+{
+    public Func<CvQualityHint, bool>? IsSupported { get; init; }
+
+    public Func<AiBackendKind>? GetActiveBackendKind { get; init; }
+
+    public Action<CvQualityHint>? ImproveWithAi { get; init; }
+
+    public Action? SetUpAi { get; init; }
+
+    public Func<bool>? IsCompletionInFlight { get; init; }
+}
 
 public sealed class QualityHintModalPresenter
 {
@@ -32,14 +47,21 @@ public sealed class QualityHintModalPresenter
         string sectionTitle,
         IReadOnlyList<CvQualityHint> hints,
         Func<CvQualityHint, bool>? navigateToHint = null,
-        Action<CvQualityHint>? dismissHint = null)
+        Action<CvQualityHint>? dismissHint = null,
+        QualityHintAiOptions? aiOptions = null)
     {
         _titleTextBlock.Text = localizer.Format(TranslationKeys.QualityHintFlyoutTitle, sectionTitle);
         _contentPanel.Children.Clear();
 
         foreach (var hint in hints)
         {
-            _contentPanel.Children.Add(BuildHintRow(localizer, hint, navigateToHint, dismissHint, Hide));
+            _contentPanel.Children.Add(BuildHintRow(
+                localizer,
+                hint,
+                navigateToHint,
+                dismissHint,
+                aiOptions,
+                Hide));
         }
 
         _overlay.IsVisible = true;
@@ -52,6 +74,7 @@ public sealed class QualityHintModalPresenter
         CvQualityHint hint,
         Func<CvQualityHint, bool>? navigateToHint,
         Action<CvQualityHint>? dismissHint,
+        QualityHintAiOptions? aiOptions,
         Action hideModal)
     {
         var row = new StackPanel { Spacing = 12 };
@@ -97,6 +120,47 @@ public sealed class QualityHintModalPresenter
                 hideModal();
             };
             actions.Children.Add(goButton);
+        }
+
+        if (aiOptions is not null &&
+            aiOptions.IsSupported?.Invoke(hint) == true)
+        {
+            var backendKind = aiOptions.GetActiveBackendKind?.Invoke() ?? AiBackendKind.None;
+            var inFlight = aiOptions.IsCompletionInFlight?.Invoke() == true;
+
+            if (backendKind == AiBackendKind.None)
+            {
+                var setupButton = new Button
+                {
+                    Content = localizer.Get(TranslationKeys.AiCvSetUpAi),
+                    MinHeight = 40,
+                    Padding = new Thickness(16, 8)
+                };
+                setupButton.Classes.Add(UiClasses.SecondaryButton);
+                setupButton.Click += (_, _) =>
+                {
+                    aiOptions.SetUpAi?.Invoke();
+                    hideModal();
+                };
+                actions.Children.Add(setupButton);
+            }
+            else if (aiOptions.ImproveWithAi is not null)
+            {
+                var improveButton = new Button
+                {
+                    Content = localizer.Get(TranslationKeys.AiCvImproveWithAi),
+                    MinHeight = 40,
+                    Padding = new Thickness(16, 8),
+                    IsEnabled = !inFlight
+                };
+                improveButton.Classes.Add(UiClasses.SecondaryButton);
+                improveButton.Click += (_, _) =>
+                {
+                    aiOptions.ImproveWithAi.Invoke(hint);
+                    hideModal();
+                };
+                actions.Children.Add(improveButton);
+            }
         }
 
         if (dismissHint is not null)

@@ -202,6 +202,21 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
         return card.FindControlForFieldKey(fieldKey) is not null;
     }
 
+    public bool TryApplyFieldText(string fieldKey, string text)
+    {
+        if (!ProjectsFieldKeys.TryParseEntryId(fieldKey, out var entryId, out var fieldName))
+        {
+            return false;
+        }
+
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        return card.TryApplyFieldText(fieldName, text);
+    }
+
     public Control? FindControlForFieldKey(string fieldKey)
     {
         if (!ProjectsFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
@@ -665,6 +680,20 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
 
         public Control? FindControlForFieldKey(string fieldKey) =>
             _validationRegistry.FindControlForFieldKey(fieldKey);
+
+        public bool TryApplyFieldText(string fieldName, string text)
+        {
+            if (!string.Equals(fieldName, ProjectsFieldKeys.Description, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            _entry.Description = text;
+            _descriptionTextBox.Text = text;
+            UpdateCharacterCounters();
+            Changed?.Invoke(this, EventArgs.Empty);
+            return true;
+        }
 
         public void UpdateValidation(
             IReadOnlyList<FieldValidationError> errors,

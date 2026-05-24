@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using ReVitae.Core.Ai.Cv;
 using ReVitae.Core.Localization;
 
 namespace ReVitae.Core.Ai.Providers.Chat;
@@ -25,22 +26,35 @@ public sealed class ChatCompletionClientFactory
 
 public sealed class OpenAiCompatibleChatClient(HttpClient httpClient) : IChatCompletionClient
 {
-    public async Task<AiChatCompletionResult> CompleteAsync(
+    public Task<AiChatCompletionResult> CompleteAsync(
         AiOnlineProviderDefinition provider,
         AiProviderConnectionDraft draft,
         string prompt,
+        CancellationToken cancellationToken = default) =>
+        CompleteWithMessagesAsync(
+            provider,
+            draft,
+            new AiCvPromptMessages(string.Empty, prompt),
+            maxTokens: 8,
+            cancellationToken);
+
+    public async Task<AiChatCompletionResult> CompleteWithMessagesAsync(
+        AiOnlineProviderDefinition provider,
+        AiProviderConnectionDraft draft,
+        AiCvPromptMessages messages,
+        int maxTokens = 512,
         CancellationToken cancellationToken = default)
     {
         var baseUrl = AiProviderConfigValidator.NormalizeBaseUrl(provider, draft);
         if (string.IsNullOrWhiteSpace(baseUrl))
         {
-            return Fail(TranslationKeys.AiSetupProviderModelNotFound, "Missing base URL.");
+            return Fail(TranslationKeys.AiSetupProviderModelNotFound);
         }
 
         var modelId = AiProviderConfigValidator.ResolveModelId(provider, draft);
         if (string.IsNullOrWhiteSpace(modelId))
         {
-            return Fail(TranslationKeys.AiSetupProviderModelNotFound, "Missing model.");
+            return Fail(TranslationKeys.AiSetupProviderModelNotFound);
         }
 
         var url = provider.Id == "azure-openai"
@@ -69,13 +83,25 @@ public sealed class OpenAiCompatibleChatClient(HttpClient httpClient) : IChatCom
             JsonSerializer.Serialize(new
             {
                 model = provider.Id == "azure-openai" ? (string?)null : modelId,
-                messages = new[] { new { role = "user", content = prompt } },
-                max_tokens = 8,
+                messages = BuildOpenAiMessages(messages),
+                max_tokens = maxTokens,
             }),
             Encoding.UTF8,
             "application/json");
 
         return await SendAsync(httpClient, request, cancellationToken).ConfigureAwait(false);
+    }
+
+    internal static object[] BuildOpenAiMessages(AiCvPromptMessages messages)
+    {
+        var result = new List<object>();
+        if (!string.IsNullOrWhiteSpace(messages.SystemPrompt))
+        {
+            result.Add(new { role = "system", content = messages.SystemPrompt });
+        }
+
+        result.Add(new { role = "user", content = messages.UserPrompt });
+        return result.ToArray();
     }
 
     private static AuthenticationHeaderValue? CreateAuthorization(
@@ -123,9 +149,9 @@ public sealed class OpenAiCompatibleChatClient(HttpClient httpClient) : IChatCom
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Fail(TranslationKeys.AiSetupProviderTestFailed, ex.Message);
+            return Fail(TranslationKeys.AiSetupProviderTestFailed);
         }
     }
 
@@ -140,19 +166,32 @@ public sealed class OpenAiCompatibleChatClient(HttpClient httpClient) : IChatCom
             _ => TranslationKeys.AiSetupProviderTestFailed,
         };
 
-        return Fail(key, $"HTTP {statusCode}");
+        return Fail(key);
     }
 
-    private static AiChatCompletionResult Fail(string key, string detail) =>
+    private static AiChatCompletionResult Fail(string key) =>
         new(false, null, key);
 }
 
 public sealed class AnthropicMessagesChatClient(HttpClient httpClient) : IChatCompletionClient
 {
-    public async Task<AiChatCompletionResult> CompleteAsync(
+    public Task<AiChatCompletionResult> CompleteAsync(
         AiOnlineProviderDefinition provider,
         AiProviderConnectionDraft draft,
         string prompt,
+        CancellationToken cancellationToken = default) =>
+        CompleteWithMessagesAsync(
+            provider,
+            draft,
+            new AiCvPromptMessages(string.Empty, prompt),
+            maxTokens: 8,
+            cancellationToken);
+
+    public async Task<AiChatCompletionResult> CompleteWithMessagesAsync(
+        AiOnlineProviderDefinition provider,
+        AiProviderConnectionDraft draft,
+        AiCvPromptMessages messages,
+        int maxTokens = 512,
         CancellationToken cancellationToken = default)
     {
         var baseUrl = AiProviderConfigValidator.NormalizeBaseUrl(provider, draft) ?? "https://api.anthropic.com";
@@ -165,13 +204,21 @@ public sealed class AnthropicMessagesChatClient(HttpClient httpClient) : IChatCo
         using var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/v1/messages");
         request.Headers.Add("x-api-key", draft.ApiKey);
         request.Headers.Add("anthropic-version", "2023-06-01");
+
+        var payload = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["model"] = modelId,
+            ["max_tokens"] = maxTokens,
+            ["messages"] = new[] { new { role = "user", content = messages.UserPrompt } },
+        };
+
+        if (!string.IsNullOrWhiteSpace(messages.SystemPrompt))
+        {
+            payload["system"] = messages.SystemPrompt;
+        }
+
         request.Content = new StringContent(
-            JsonSerializer.Serialize(new
-            {
-                model = modelId,
-                max_tokens = 8,
-                messages = new[] { new { role = "user", content = prompt } },
-            }),
+            JsonSerializer.Serialize(payload),
             Encoding.UTF8,
             "application/json");
 
@@ -193,7 +240,7 @@ public sealed class AnthropicMessagesChatClient(HttpClient httpClient) : IChatCo
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new AiChatCompletionResult(false, null, TranslationKeys.AiSetupProviderTestFailed);
         }
@@ -202,10 +249,23 @@ public sealed class AnthropicMessagesChatClient(HttpClient httpClient) : IChatCo
 
 public sealed class GeminiGenerateContentChatClient(HttpClient httpClient) : IChatCompletionClient
 {
-    public async Task<AiChatCompletionResult> CompleteAsync(
+    public Task<AiChatCompletionResult> CompleteAsync(
         AiOnlineProviderDefinition provider,
         AiProviderConnectionDraft draft,
         string prompt,
+        CancellationToken cancellationToken = default) =>
+        CompleteWithMessagesAsync(
+            provider,
+            draft,
+            new AiCvPromptMessages(string.Empty, prompt),
+            maxTokens: 8,
+            cancellationToken);
+
+    public async Task<AiChatCompletionResult> CompleteWithMessagesAsync(
+        AiOnlineProviderDefinition provider,
+        AiProviderConnectionDraft draft,
+        AiCvPromptMessages messages,
+        int maxTokens = 512,
         CancellationToken cancellationToken = default)
     {
         var baseUrl = AiProviderConfigValidator.NormalizeBaseUrl(provider, draft);
@@ -217,6 +277,7 @@ public sealed class GeminiGenerateContentChatClient(HttpClient httpClient) : ICh
             return new AiChatCompletionResult(false, null, TranslationKeys.AiSetupProviderInvalidKey);
         }
 
+        var prompt = CombineGeminiPrompt(messages);
         var url =
             $"{baseUrl}/models/{modelId}:generateContent?key={Uri.EscapeDataString(draft.ApiKey)}";
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
@@ -230,6 +291,7 @@ public sealed class GeminiGenerateContentChatClient(HttpClient httpClient) : ICh
                         parts = new[] { new { text = prompt } },
                     },
                 },
+                generationConfig = new { maxOutputTokens = maxTokens },
             }),
             Encoding.UTF8,
             "application/json");
@@ -261,5 +323,15 @@ public sealed class GeminiGenerateContentChatClient(HttpClient httpClient) : ICh
         {
             return new AiChatCompletionResult(false, null, TranslationKeys.AiSetupProviderTestFailed);
         }
+    }
+
+    internal static string CombineGeminiPrompt(AiCvPromptMessages messages)
+    {
+        if (string.IsNullOrWhiteSpace(messages.SystemPrompt))
+        {
+            return messages.UserPrompt;
+        }
+
+        return $"{messages.SystemPrompt}{Environment.NewLine}{Environment.NewLine}{messages.UserPrompt}";
     }
 }

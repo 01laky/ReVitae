@@ -125,8 +125,9 @@ two sections: **Online providers** (expanded by default — OpenAI, Anthropic, G
 Groq, Azure, Mistral, DeepSeek, OpenRouter, Custom) and **Local models** (collapsed
 by default — system detection, **11 curated Ollama instruct models**, managed install,
 background download, activate/deactivate). Exactly **one** backend may be active at a
-time; API keys are encrypted in `ai-secrets.enc`. No CV rewriting yet — details in
-[`docs/ai-setup.md`](docs/ai-setup.md).
+time; API keys are encrypted in `ai-secrets.enc`. **Improve with AI** on supported
+quality hints uses a universal completion layer (local Ollama chat or online provider)
+— user reviews suggestions before Accept / Edit; see [`docs/ai-setup.md`](docs/ai-setup.md).
 
 ### CV import (multi-format)
 
@@ -211,7 +212,7 @@ validation UI, template preview, **optional profile photo** (prompt **023**),
 **multi-format export** (15 formats via `CvDocumentExporter`), and
 **multi-format CV import** (prompt **021**) through `CvDocumentImporter` are in
 place. Intro / replace flows cover PDF plus the additional structured and
-text-native formats listed above. **AI setup** (prompts **036**–**038**) adds local Ollama model detection, managed
+text-native formats listed above. **AI setup** (prompts **036**–**039**) adds local Ollama model detection, managed
 engine install, **resumable background download** with dock and startup recovery,
 model lifecycle management (remove / clean stale), monotonic progress display, and
 **online provider configuration** with a single active backend (local or cloud);

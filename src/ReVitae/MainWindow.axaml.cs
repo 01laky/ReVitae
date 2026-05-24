@@ -62,6 +62,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         InitializeAiDownload();
         InitializeAiProviders();
+        InitializeAiCvCompletion();
         InitializeQualityHintsUi();
         InitializePersonalValidation();
         InitializeLanguageSelector();
@@ -899,6 +900,10 @@ public partial class MainWindow : Window
         {
             SetQualityHintModalVisible(false);
         }
+        else if (AiSuggestionModalOverlay.IsVisible)
+        {
+            OnCloseAiSuggestionModalClicked(null, e);
+        }
         else
         {
             return;
@@ -1249,6 +1254,7 @@ public partial class MainWindow : Window
         ToolTip.SetTip(QualityHintModalTopCloseButton, closeLabel);
         AutomationProperties.SetName(QualityHintModalTopCloseButton, closeLabel);
         ApplyAiSetupLocalization();
+        ApplyAiSuggestionModalLocalization();
         ApplyAiDownloadLocalization();
         RefreshTemplateCardLabels();
     }

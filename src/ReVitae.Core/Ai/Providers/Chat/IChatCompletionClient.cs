@@ -1,3 +1,5 @@
+using ReVitae.Core.Ai.Cv;
+
 namespace ReVitae.Core.Ai.Providers.Chat;
 
 public interface IChatCompletionClient
@@ -6,6 +8,13 @@ public interface IChatCompletionClient
         AiOnlineProviderDefinition provider,
         AiProviderConnectionDraft draft,
         string prompt,
+        CancellationToken cancellationToken = default);
+
+    Task<AiChatCompletionResult> CompleteWithMessagesAsync(
+        AiOnlineProviderDefinition provider,
+        AiProviderConnectionDraft draft,
+        AiCvPromptMessages messages,
+        int maxTokens = 512,
         CancellationToken cancellationToken = default);
 }
 

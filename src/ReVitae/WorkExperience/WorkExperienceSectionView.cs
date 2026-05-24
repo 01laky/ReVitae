@@ -164,6 +164,21 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
         return card.ExpandAndRevealField(fieldKey);
     }
 
+    public bool TryApplyFieldText(string fieldKey, string text)
+    {
+        if (!WorkExperienceFieldKeys.TryParseEntryId(fieldKey, out var entryId, out var fieldName))
+        {
+            return false;
+        }
+
+        if (!_cardsById.TryGetValue(entryId, out var card))
+        {
+            return false;
+        }
+
+        return card.TryApplyFieldText(fieldName, text);
+    }
+
     public Control? FindControlForFieldKey(string fieldKey)
     {
         if (!WorkExperienceFieldKeys.TryParseEntryId(fieldKey, out var entryId, out _))
@@ -598,6 +613,20 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
             }
 
             control.Focus();
+            return true;
+        }
+
+        public bool TryApplyFieldText(string fieldName, string text)
+        {
+            if (!string.Equals(fieldName, WorkExperienceFieldKeys.Description, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            _entry.Description = text;
+            _descriptionTextBox.Text = text;
+            UpdateCharacterCounters();
+            Changed?.Invoke(this, EventArgs.Empty);
             return true;
         }
 

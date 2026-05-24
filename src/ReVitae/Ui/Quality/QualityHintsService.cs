@@ -53,7 +53,8 @@ public static class QualityHintsService
                 sectionHints,
                 navigateToHint,
                 dismissHint,
-                flyoutOpened);
+                flyoutOpened,
+                QualityHintFlyoutHelper.AiOptions);
         }
 
         void OnPointerPressed(object? sender, PointerPressedEventArgs e)

@@ -417,4 +417,6 @@ After implementation:
 
 **Quality hints = Core rules + section badges + flyout.** Use Material snackbar
 only for short global messages. Never mix with validation errors. Never block
-export. Click badge → read suggestions → optional jump to field.
+export. Click badge → read suggestions → optional jump to field. Prompt **039**
+adds an optional **Improve with AI** button on supported hints — deterministic
+rules remain the source of truth; AI only suggests text the user must accept.

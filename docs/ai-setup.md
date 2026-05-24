@@ -324,11 +324,47 @@ API keys live only in `ai-secrets.enc`, not in settings JSON.
 ## Related docs
 
 - Product concept (Phase 2): [`concept.md`](concept.md)
-- Implementation prompts: [`../prompts/036-ai-setup-modal-system-detection.md`](../prompts/036-ai-setup-modal-system-detection.md), [`../prompts/037-resumable-ai-model-download.md`](../prompts/037-resumable-ai-model-download.md), [`../prompts/038-ai-provider-list-and-configuration.md`](../prompts/038-ai-provider-list-and-configuration.md)
+- Implementation prompts: [`../prompts/036-ai-setup-modal-system-detection.md`](../prompts/036-ai-setup-modal-system-detection.md), [`../prompts/037-resumable-ai-model-download.md`](../prompts/037-resumable-ai-model-download.md), [`../prompts/038-ai-provider-list-and-configuration.md`](../prompts/038-ai-provider-list-and-configuration.md), [`../prompts/039-universal-ai-cv-completion.md`](../prompts/039-universal-ai-cv-completion.md)
 
 ## Not in scope yet
 
-- Using configured providers for CV rewrite or import (**039+**)
+- AI-assisted import (**040**)
 - Automatic first-launch wizard
 - Parallel downloads of multiple models
 - Download bandwidth throttling
+
+## Using AI on your CV (039)
+
+Once you have an **active backend** (local Ollama model or configured online
+provider from **038**), ReVitae can suggest improvements for selected **quality
+hints** — without auto-applying text or blocking export.
+
+### Improve with AI
+
+1. Open a section quality-hint badge (or export review link).
+2. On supported hints (work/project descriptions, professional summary), click
+   **Improve with AI**.
+3. Review the suggestion in the **AI suggestion** modal — backend label shows
+   **Local · {model}** or **Online · {provider}**.
+4. **Accept** writes the text into the field; **Edit in form** navigates with the
+   suggestion prefilled; **Cancel** closes without changes.
+
+If no backend is active, hints show **Set up AI** instead, which opens the AI
+setup modal.
+
+### Privacy
+
+- **Local Ollama** — field text stays on your device; no extra confirm dialog.
+- **Online providers** — before the **first** CV send in an app session, ReVitae
+  asks you to confirm that field text will be sent to the active provider.
+  Subsequent tasks in the same session skip the dialog (not persisted across
+  restarts).
+
+### Assistant, not author
+
+AI suggestions **augment** deterministic quality hints — they do not replace
+validation rules or remove hints automatically. Export remains blocked only by
+**validation errors**, not by open suggestion modals or unresolved hints.
+
+See also [`concept.md`](concept.md) (Phase 2) and
+[`../prompts/039-universal-ai-cv-completion.md`](../prompts/039-universal-ai-cv-completion.md).
