@@ -454,7 +454,7 @@
               Classes="re-vitae-modal-overlay"
               IsVisible="False">
             <Border x:Name="AiSetupModalPanel"
-                    Classes="re-vitae-modal-panel"
+                    Classes="re-vitae-modal-panel re-vitae-ai-setup-modal"
                     MaxWidth="960"
                     MaxHeight="720"
                     MinWidth="360"
@@ -588,11 +588,13 @@
                         </StackPanel>
 
                         <ScrollViewer x:Name="AiSetupContentScrollViewer"
-                                      IsVisible="False">
-                            <StackPanel Spacing="16">
+                                      IsVisible="False"
+                                      Padding="0,0,4,0">
+                            <StackPanel Spacing="16"
+                                        Classes="re-vitae-section-body">
                                 <Border x:Name="AiSetupActiveBackendStrip"
                                         Classes="re-vitae-app-card"
-                                        Padding="12"
+                                        Padding="16"
                                         IsVisible="False">
                                     <Grid ColumnDefinitions="*,Auto"
                                           ColumnSpacing="12">
@@ -614,7 +616,7 @@
                                                    FontSize="16" />
                                     </Expander.Header>
                                     <StackPanel Spacing="12"
-                                                Margin="0,8,0,0">
+                                                Margin="4,8,4,0">
                                         <TextBlock x:Name="AiSetupOnlinePrivacyNoteTextBlock"
                                                    Classes="re-vitae-secondary"
                                                    TextWrapping="Wrap"
@@ -633,13 +635,13 @@
                                                    FontSize="16" />
                                     </Expander.Header>
                                     <StackPanel Spacing="16"
-                                                Margin="0,8,0,0">
+                                                Margin="4,8,4,0">
                                 <TextBlock x:Name="AiSetupSystemDetailsTitleTextBlock"
                                            Classes="re-vitae-app-title"
                                            FontSize="16"
                                            Text="Your system" />
                                 <Border Classes="re-vitae-app-card"
-                                        Padding="16">
+                                        Padding="20">
                                     <StackPanel x:Name="AiSetupSystemDetailsPanel"
                                                 Spacing="6" />
                                 </Border>
@@ -654,7 +656,7 @@
                                            LineHeight="18" />
                                 <Border x:Name="AiSetupRecommendedCard"
                                         Classes="re-vitae-app-card"
-                                        Padding="16"
+                                        Padding="20"
                                         IsVisible="False">
                                     <StackPanel Spacing="6">
                                         <TextBlock x:Name="AiSetupRecommendedBadgeTextBlock"

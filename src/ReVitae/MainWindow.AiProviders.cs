@@ -73,7 +73,7 @@ public partial class MainWindow
     private AiProviderUiRow BuildProviderRow(AiOnlineProviderDefinition provider)
     {
         var container = new StackPanel { Spacing = 0 };
-        var card = new Border { Classes = { "re-vitae-app-card" }, Padding = new Thickness(14) };
+        var card = new Border { Classes = { "re-vitae-app-card" }, Padding = new Thickness(20) };
         var cardContent = new StackPanel { Spacing = 6 };
 
         var headerRow = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") };

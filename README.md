@@ -160,6 +160,13 @@ imports each file, and asserts extraction counts, spot checks, and **zero
 post-import form validation errors** — the same rules the UI uses before export.
 See [`prompts/035-john-doe-import-regression-matrix.md`](prompts/035-john-doe-import-regression-matrix.md).
 
+For manual import demos, regenerate a **compact** English John Doe CV (senior
+software architect, one realistic entry per section) at the repo root:
+
+`dotnet run --project scripts/GenerateJohnDoeMinimalArchitectCv`
+
+Produces `John Doe (minimal architect).pdf` and `.txt`.
+
 **Not supported:** scanned image-only PDFs without OCR, password-protected files,
 and perfect layout fidelity from rich desktop publishing constructs.
 

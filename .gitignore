@@ -16,3 +16,5 @@ Thumbs.db
 
 # Local generated stress fixtures (regenerate: dotnet run --project scripts/GenerateJohnDoeStressPdf)
 /John Doe.pdf
+/John Doe (minimal architect).pdf
+/John Doe (minimal architect).txt

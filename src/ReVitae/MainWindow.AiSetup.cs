@@ -313,7 +313,7 @@ public partial class MainWindow
         var card = new Border
         {
             Classes = { "re-vitae-app-card" },
-            Padding = new Thickness(14),
+            Padding = new Thickness(20),
             Cursor = recommendation.IsDownloadAllowed && !_aiDownloadCoordinator.HasActiveJob
                 ? new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
                 : null,
