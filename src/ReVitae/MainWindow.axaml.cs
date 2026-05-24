@@ -390,6 +390,7 @@ public partial class MainWindow : Window
 
         UploadCvButton.IsEnabled = false;
         OpenCreateNewCvButton.IsEnabled = false;
+        OpenAiSetupButton.IsEnabled = false;
 
         void OnImportProgress(string translationKey)
         {
@@ -468,6 +469,7 @@ public partial class MainWindow : Window
 
             UploadCvButton.IsEnabled = true;
             OpenCreateNewCvButton.IsEnabled = true;
+            OpenAiSetupButton.IsEnabled = true;
         }
     }
 
@@ -866,6 +868,10 @@ public partial class MainWindow : Window
         {
             SetExportModalVisible(false);
         }
+        else if (AiSetupModalOverlay.IsVisible)
+        {
+            SetAiSetupModalVisible(false);
+        }
         else if (TemplatesModalOverlay.IsVisible)
         {
             SetTemplatesModalVisible(false);
@@ -1146,6 +1152,8 @@ public partial class MainWindow : Window
         ToolTip.SetTip(OpenCreateNewCvButton, _localizer.Get(TranslationKeys.OpenCreateNewCv));
         AutomationProperties.SetName(OpenCreateNewCvButton, _localizer.Get(TranslationKeys.OpenCreateNewCv));
         ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
+        ToolTip.SetTip(OpenAiSetupButton, _localizer.Get(TranslationKeys.OpenAiSetup));
+        AutomationProperties.SetName(OpenAiSetupButton, _localizer.Get(TranslationKeys.OpenAiSetup));
         ToolTip.SetTip(OpenTemplatesButton, _localizer.Get(TranslationKeys.OpenTemplates));
         ToolTip.SetTip(OpenAboutButton, _localizer.Get(TranslationKeys.OpenAbout));
         AutomationProperties.SetName(OpenAboutButton, _localizer.Get(TranslationKeys.OpenAbout));
@@ -1233,6 +1241,7 @@ public partial class MainWindow : Window
         QualityHintModalBottomCloseButton.Content = closeLabel;
         ToolTip.SetTip(QualityHintModalTopCloseButton, closeLabel);
         AutomationProperties.SetName(QualityHintModalTopCloseButton, closeLabel);
+        ApplyAiSetupLocalization();
         RefreshTemplateCardLabels();
     }
 
@@ -1278,6 +1287,16 @@ public partial class MainWindow : Window
         if (!ReferenceEquals(ExportModalOverlay, activeModal))
         {
             ExportModalOverlay.IsVisible = false;
+        }
+
+        if (!ReferenceEquals(AiSetupModalOverlay, activeModal))
+        {
+            if (AiSetupModalOverlay.IsVisible)
+            {
+                CancelAiSetupOperations();
+            }
+
+            AiSetupModalOverlay.IsVisible = false;
         }
     }
 
@@ -1345,6 +1364,8 @@ public partial class MainWindow : Window
         PreviewExpandModalPanel.Height = Math.Max(PreviewExpandModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
         ExportModalPanel.Width = Math.Max(ExportModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
         ExportModalPanel.Height = Math.Max(ExportModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
+        AiSetupModalPanel.Width = Math.Max(AiSetupModalPanel.MinWidth, RootGrid.Bounds.Width * 0.8);
+        AiSetupModalPanel.Height = Math.Max(AiSetupModalPanel.MinHeight, RootGrid.Bounds.Height * 0.8);
     }
 
     private void UpdateValidationState(FieldValidationResult? validationResult = null)

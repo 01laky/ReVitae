@@ -8,6 +8,7 @@ public static class TranslationKeys
     public const string OpenUploadCv = "action.openUploadCv";
     public const string OpenCreateNewCv = "action.openCreateNewCv";
     public const string OpenTemplates = "action.openTemplates";
+    public const string OpenAiSetup = "action.openAiSetup";
     public const string Confirm = "action.confirm";
     public const string Cancel = "action.cancel";
     public const string OpenExpandPreview = "action.openExpandPreview";
@@ -538,6 +539,31 @@ public static class TranslationKeys
     public const string QualityHintImportReviewSection = "quality.import.reviewSection";
     public const string QualityHintImportReviewField = "quality.import.reviewField";
 
+    public const string AiSetupTitle = "modal.aiSetup.title";
+    public const string AiSetupDetecting = "modal.aiSetup.detecting";
+    public const string AiSetupDetectionFailed = "modal.aiSetup.detectionFailed";
+    public const string AiSetupRetry = "modal.aiSetup.retry";
+    public const string AiSetupSystemSummary = "modal.aiSetup.systemSummary";
+    public const string AiSetupRecommended = "modal.aiSetup.recommended";
+    public const string AiSetupRequiresMoreMemory = "modal.aiSetup.requiresMoreMemory";
+    public const string AiSetupReasonRecommended = "modal.aiSetup.reasonRecommended";
+    public const string AiSetupDownload = "modal.aiSetup.download";
+    public const string AiSetupDownloadConfirm = "modal.aiSetup.downloadConfirm";
+    public const string AiSetupOllamaNotRunning = "modal.aiSetup.ollamaNotRunning";
+    public const string AiSetupPullProgress = "modal.aiSetup.pullProgress";
+    public const string AiSetupPullComplete = "modal.aiSetup.pullComplete";
+    public const string AiSetupPullFailed = "modal.aiSetup.pullFailed";
+    public const string AiSetupAlreadyDownloaded = "modal.aiSetup.alreadyDownloaded";
+    public const string AiSetupUnknownRam = "modal.aiSetup.unknownRam";
+    public const string AiSetupPrivacyNote = "modal.aiSetup.privacyNote";
+    public const string AiSetupInsufficientDiskSpace = "modal.aiSetup.insufficientDiskSpace";
+    public const string AiSetupDiskSpaceUnknown = "modal.aiSetup.diskSpaceUnknown";
+    public const string AiSetupAllModels = "modal.aiSetup.allModels";
+    public const string AiSetupModelMeta = "modal.aiSetup.modelMeta";
+    public const string AiModelSmallInstructName = "aiModel.smallInstruct.name";
+    public const string AiModelMediumInstructName = "aiModel.mediumInstruct.name";
+    public const string AiModelLargeInstructName = "aiModel.largeInstruct.name";
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -546,6 +572,7 @@ public static class TranslationKeys
         OpenUploadCv,
         OpenCreateNewCv,
         OpenTemplates,
+        OpenAiSetup,
         Confirm,
         Cancel,
         OpenExpandPreview,
@@ -1064,6 +1091,30 @@ public static class TranslationKeys
         QualityHintProjectsSectionEmpty,
         QualityHintProjectsMissingDescription,
         QualityHintImportReviewSection,
-        QualityHintImportReviewField
+        QualityHintImportReviewField,
+        AiSetupTitle,
+        AiSetupDetecting,
+        AiSetupDetectionFailed,
+        AiSetupRetry,
+        AiSetupSystemSummary,
+        AiSetupRecommended,
+        AiSetupRequiresMoreMemory,
+        AiSetupReasonRecommended,
+        AiSetupDownload,
+        AiSetupDownloadConfirm,
+        AiSetupOllamaNotRunning,
+        AiSetupPullProgress,
+        AiSetupPullComplete,
+        AiSetupPullFailed,
+        AiSetupAlreadyDownloaded,
+        AiSetupUnknownRam,
+        AiSetupPrivacyNote,
+        AiSetupInsufficientDiskSpace,
+        AiSetupDiskSpaceUnknown,
+        AiSetupAllModels,
+        AiSetupModelMeta,
+        AiModelSmallInstructName,
+        AiModelMediumInstructName,
+        AiModelLargeInstructName
     ];
 }

@@ -64,6 +64,16 @@
                                                 Height="24" />
                 </Button>
 
+                <Button x:Name="OpenAiSetupButton"
+                        Classes="re-vitae-icon-button"
+                        Click="OnOpenAiSetupClicked"
+                        ToolTip.Tip="Open AI setup"
+                        AutomationProperties.Name="Open AI setup">
+                    <materialIcons:MaterialIcon Kind="Robot"
+                                                Width="24"
+                                                Height="24" />
+                </Button>
+
                 <Button x:Name="OpenSetupButton"
                         Classes="re-vitae-icon-button"
                         Click="OnOpenSetupClicked"
@@ -409,6 +419,156 @@
                             IsVisible="False"
                             Click="OnImportCvClicked" />
                 </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="AiSetupModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="AiSetupModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="960"
+                    MaxHeight="720"
+                    MinWidth="360"
+                    MinHeight="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <TextBlock x:Name="AiSetupTitleTextBlock"
+                                   Classes="re-vitae-app-title"
+                                   FontSize="24"
+                                   Text="AI setup"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="AiSetupTopCloseButton"
+                                Grid.Column="1"
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnCloseAiSetupClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="20"
+                                                        Height="20" />
+                        </Button>
+                    </Grid>
+
+                    <Grid Grid.Row="1"
+                          Margin="0,14,0,0">
+                        <StackPanel x:Name="AiSetupDetectionProgressPanel"
+                                    Spacing="12"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <ProgressBar IsIndeterminate="True"
+                                         MinWidth="240"
+                                         Height="6" />
+                            <TextBlock x:Name="AiSetupDetectingTextBlock"
+                                       Classes="re-vitae-secondary"
+                                       HorizontalAlignment="Center"
+                                       Text="Detecting your system…" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="AiSetupDetectionFailedPanel"
+                                    Spacing="12"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    IsVisible="False">
+                            <TextBlock x:Name="AiSetupDetectionFailedTextBlock"
+                                       Classes="re-vitae-error"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Text="Could not read system information." />
+                            <Button x:Name="AiSetupDetectionRetryButton"
+                                    Classes="re-vitae-secondary"
+                                    Content="Retry"
+                                    HorizontalAlignment="Center"
+                                    Click="OnAiSetupDetectionRetryClicked" />
+                        </StackPanel>
+
+                        <ScrollViewer x:Name="AiSetupContentScrollViewer"
+                                      IsVisible="False">
+                            <StackPanel Spacing="16">
+                                <TextBlock x:Name="AiSetupSystemSummaryTextBlock"
+                                           Classes="re-vitae-secondary"
+                                           TextWrapping="Wrap" />
+                                <TextBlock x:Name="AiSetupWarningTextBlock"
+                                           Classes="re-vitae-error"
+                                           TextWrapping="Wrap"
+                                           IsVisible="False" />
+                                <TextBlock x:Name="AiSetupPrivacyNoteTextBlock"
+                                           Classes="re-vitae-secondary"
+                                           TextWrapping="Wrap"
+                                           FontSize="13"
+                                           LineHeight="18" />
+                                <Border x:Name="AiSetupRecommendedCard"
+                                        Classes="re-vitae-app-card"
+                                        Padding="16"
+                                        IsVisible="False">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock x:Name="AiSetupRecommendedBadgeTextBlock"
+                                                   Classes="re-vitae-primary"
+                                                   FontWeight="SemiBold"
+                                                   Text="Recommended for your device" />
+                                        <TextBlock x:Name="AiSetupRecommendedNameTextBlock"
+                                                   Classes="re-vitae-app-title"
+                                                   FontSize="18" />
+                                        <TextBlock x:Name="AiSetupRecommendedMetaTextBlock"
+                                                   Classes="re-vitae-secondary" />
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock x:Name="AiSetupAllModelsLabelTextBlock"
+                                           Classes="re-vitae-app-title"
+                                           FontSize="16"
+                                           Text="All models" />
+                                <StackPanel x:Name="AiSetupModelsPanel"
+                                            Spacing="10" />
+                                <TextBlock x:Name="AiSetupStatusTextBlock"
+                                           Classes="re-vitae-secondary"
+                                           TextWrapping="Wrap"
+                                           IsVisible="False" />
+                                <ProgressBar x:Name="AiSetupPullProgressBar"
+                                             IsVisible="False"
+                                             MinWidth="240"
+                                             Height="6" />
+                                <StackPanel x:Name="AiSetupDownloadConfirmPanel"
+                                            Spacing="10"
+                                            IsVisible="False">
+                                    <TextBlock x:Name="AiSetupDownloadConfirmTextBlock"
+                                               TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="10"
+                                                HorizontalAlignment="Right">
+                                        <Button x:Name="AiSetupDownloadConfirmCancelButton"
+                                                Classes="re-vitae-secondary"
+                                                Content="Cancel"
+                                                Click="OnAiSetupDownloadConfirmCancelClicked" />
+                                        <Button x:Name="AiSetupDownloadConfirmOkButton"
+                                                Classes="re-vitae-primary"
+                                                Content="OK"
+                                                Click="OnAiSetupDownloadConfirmOkClicked" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <StackPanel Grid.Row="2"
+                                Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Right"
+                                Margin="0,14,0,0">
+                        <Button x:Name="AiSetupDownloadButton"
+                                Classes="re-vitae-primary"
+                                Content="Download model"
+                                IsEnabled="False"
+                                Click="OnAiSetupDownloadClicked" />
+                        <Button x:Name="AiSetupBottomCloseButton"
+                                Content="Close"
+                                Click="OnCloseAiSetupClicked" />
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
 

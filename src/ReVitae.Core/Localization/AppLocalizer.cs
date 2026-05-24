@@ -30,6 +30,7 @@ public sealed class AppLocalizer
         [TranslationKeys.OpenUploadCv] = "Upload another CV",
         [TranslationKeys.OpenCreateNewCv] = "Create new CV",
         [TranslationKeys.OpenTemplates] = "Open templates",
+        [TranslationKeys.OpenAiSetup] = "Open AI setup",
         [TranslationKeys.Confirm] = "OK",
         [TranslationKeys.Cancel] = "Cancel",
         [TranslationKeys.OpenExpandPreview] = "Expand preview",
@@ -553,13 +554,69 @@ public sealed class AppLocalizer
         [TranslationKeys.QualityHintProjectsSectionEmpty] = "No projects listed — add notable projects if relevant.",
         [TranslationKeys.QualityHintProjectsMissingDescription] = "A project has no description or highlights — add what you built or achieved.",
         [TranslationKeys.QualityHintImportReviewSection] = "This section has fields that may need review after import.",
-        [TranslationKeys.QualityHintImportReviewField] = "This field was uncertain during import — double-check the content."
+        [TranslationKeys.QualityHintImportReviewField] = "This field was uncertain during import — double-check the content.",
+        [TranslationKeys.AiSetupTitle] = "AI setup",
+        [TranslationKeys.AiSetupDetecting] = "Detecting your system…",
+        [TranslationKeys.AiSetupDetectionFailed] = "Could not read system information.",
+        [TranslationKeys.AiSetupRetry] = "Retry",
+        [TranslationKeys.AiSetupSystemSummary] = "{0} · {1} · {2} RAM",
+        [TranslationKeys.AiSetupRecommended] = "Recommended for your device",
+        [TranslationKeys.AiSetupRequiresMoreMemory] = "Requires more memory than detected",
+        [TranslationKeys.AiSetupReasonRecommended] = "Best fit for your device",
+        [TranslationKeys.AiSetupDownload] = "Download model",
+        [TranslationKeys.AiSetupDownloadConfirm] = "Download {0} (~{1})? This may use significant disk space.",
+        [TranslationKeys.AiSetupOllamaNotRunning] = "Ollama is not running. Start Ollama and try again.",
+        [TranslationKeys.AiSetupPullProgress] = "Downloading… {0}",
+        [TranslationKeys.AiSetupPullComplete] = "Model downloaded and ready.",
+        [TranslationKeys.AiSetupPullFailed] = "Download failed.",
+        [TranslationKeys.AiSetupAlreadyDownloaded] = "Already on this computer",
+        [TranslationKeys.AiSetupUnknownRam] = "Could not read total memory; recommendation may be conservative.",
+        [TranslationKeys.AiSetupPrivacyNote] = "System detection runs only on this device. ReVitae does not send your hardware profile or CV data to ReVitae servers.",
+        [TranslationKeys.AiSetupInsufficientDiskSpace] = "Not enough free disk space. About {0} is required; {1} available.",
+        [TranslationKeys.AiSetupDiskSpaceUnknown] = "unknown",
+        [TranslationKeys.AiSetupAllModels] = "All models",
+        [TranslationKeys.AiSetupModelMeta] = "Download ~{0} · Min. RAM {1}",
+        [TranslationKeys.AiModelSmallInstructName] = "Llama 3.2 3B Instruct",
+        [TranslationKeys.AiModelMediumInstructName] = "Llama 3.1 8B Instruct",
+        [TranslationKeys.AiModelLargeInstructName] = "Llama 3.1 70B Instruct"
     };
+
+    private static readonly IReadOnlyDictionary<string, string> SlovakAiSetupOverlay =
+        new Dictionary<string, string>
+        {
+            [TranslationKeys.OpenAiSetup] = "Otvoriť nastavenia AI",
+            [TranslationKeys.AiSetupTitle] = "Nastavenia AI",
+            [TranslationKeys.AiSetupDetecting] = "Detekcia vášho systému…",
+            [TranslationKeys.AiSetupDetectionFailed] = "Nepodarilo sa načítať informácie o systéme.",
+            [TranslationKeys.AiSetupRetry] = "Skúsiť znova",
+            [TranslationKeys.AiSetupSystemSummary] = "{0} · {1} · {2} RAM",
+            [TranslationKeys.AiSetupRecommended] = "Odporúčané pre vaše zariadenie",
+            [TranslationKeys.AiSetupRequiresMoreMemory] = "Vyžaduje viac pamäte, než bolo zistené",
+            [TranslationKeys.AiSetupReasonRecommended] = "Najvhodnejšie pre vaše zariadenie",
+            [TranslationKeys.AiSetupDownload] = "Stiahnuť model",
+            [TranslationKeys.AiSetupDownloadConfirm] = "Stiahnuť {0} (~{1})? Môže to zabrať významné miesto na disku.",
+            [TranslationKeys.AiSetupOllamaNotRunning] = "Ollama nebeží. Spustite Ollama a skúste to znova.",
+            [TranslationKeys.AiSetupPullProgress] = "Sťahovanie… {0}",
+            [TranslationKeys.AiSetupPullComplete] = "Model bol stiahnutý a je pripravený.",
+            [TranslationKeys.AiSetupPullFailed] = "Sťahovanie zlyhalo.",
+            [TranslationKeys.AiSetupAlreadyDownloaded] = "Už je na tomto počítači",
+            [TranslationKeys.AiSetupUnknownRam] = "Nepodarilo sa načítať celkovú pamäť; odporúčanie môže byť konzervatívne.",
+            [TranslationKeys.AiSetupPrivacyNote] = "Detekcia systému prebieha len na tomto zariadení. ReVitae neodosiela profil hardvéru ani údaje CV na servery ReVitae.",
+            [TranslationKeys.AiSetupInsufficientDiskSpace] = "Nedostatok voľného miesta na disku. Potrebných je približne {0}; k dispozícii {1}.",
+            [TranslationKeys.AiSetupDiskSpaceUnknown] = "neznáme",
+            [TranslationKeys.AiSetupAllModels] = "Všetky modely",
+            [TranslationKeys.AiSetupModelMeta] = "Sťahovanie ~{0} · Min. RAM {1}",
+            [TranslationKeys.AiModelSmallInstructName] = "Llama 3.2 3B Instruct",
+            [TranslationKeys.AiModelMediumInstructName] = "Llama 3.1 8B Instruct",
+            [TranslationKeys.AiModelLargeInstructName] = "Llama 3.1 70B Instruct",
+        };
 
     private static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> TranslationOverlays =
         new Dictionary<string, IReadOnlyDictionary<string, string>>
         {
-            ["sk"] = Overlay("Vytvorte jednoduchý náhľad CV a exportujte plain PDF.", "Nastavenia", "Šablóny", "Jazyk", "Zavrieť", "Meno", "Priezvisko", "Profesijný titul", "Telefón", "Lokalita", "Krátke zhrnutie", "Náhľad", "Vybrané", "Pracovné skúsenosti", "Pridajte najprv poslednú pozíciu. Poradie môžete zmeniť neskôr.", "Rozbaliť náhľad", "Rozšírený náhľad"),
+            ["sk"] = MergeOverlays(
+                Overlay("Vytvorte jednoduchý náhľad CV a exportujte plain PDF.", "Nastavenia", "Šablóny", "Jazyk", "Zavrieť", "Meno", "Priezvisko", "Profesijný titul", "Telefón", "Lokalita", "Krátke zhrnutie", "Náhľad", "Vybrané", "Pracovné skúsenosti", "Pridajte najprv poslednú pozíciu. Poradie môžete zmeniť neskôr.", "Rozbaliť náhľad", "Rozšírený náhľad"),
+                SlovakAiSetupOverlay),
             ["cs"] = Overlay("Vytvořte jednoduchý náhled CV a exportujte plain PDF.", "Nastavení", "Šablony", "Jazyk", "Zavřít", "Jméno", "Příjmení", "Profesní titul", "Telefon", "Lokalita", "Krátké shrnutí", "Náhled", "Vybráno", "Pracovní zkušenosti", "Nejprve přidejte poslední roli. Pořadí můžete změnit později.", "Rozbalit náhled", "Rozšířený náhled"),
             ["es"] = Overlay("Crea una vista previa simple del CV y exporta un PDF básico.", "Configuración", "Plantillas", "Idioma", "Cerrar", "Nombre", "Apellido", "Título profesional", "Teléfono", "Ubicación", "Resumen breve", "Vista previa", "Seleccionado", "Experiencia laboral", "Agrega tu rol más reciente primero. Puedes reordenar después.", "Expandir vista previa", "Vista previa ampliada"),
             ["fr"] = Overlay("Créez un aperçu simple du CV et exportez un PDF léger.", "Configuration", "Modèles", "Langue", "Fermer", "Prénom", "Nom", "Titre professionnel", "Téléphone", "Lieu", "Résumé court", "Aperçu", "Sélectionné", "Expérience professionnelle", "Ajoutez d'abord votre poste le plus récent. Vous pourrez réorganiser ensuite.", "Agrandir l'aperçu", "Aperçu agrandi"),
@@ -645,6 +702,19 @@ public sealed class AppLocalizer
         }
 
         return translations;
+    }
+
+    private static IReadOnlyDictionary<string, string> MergeOverlays(
+        IReadOnlyDictionary<string, string> baseOverlay,
+        IReadOnlyDictionary<string, string> extraOverlay)
+    {
+        var merged = new Dictionary<string, string>(baseOverlay);
+        foreach (var (key, value) in extraOverlay)
+        {
+            merged[key] = value;
+        }
+
+        return merged;
     }
 
     private static IReadOnlyDictionary<string, string> Overlay(
