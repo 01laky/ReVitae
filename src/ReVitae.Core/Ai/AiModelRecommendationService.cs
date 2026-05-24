@@ -4,11 +4,12 @@ namespace ReVitae.Core.Ai;
 
 /// <summary>
 /// Deterministic local-model recommendation based on detected RAM tiers.
-/// Headroom factor prevents recommending models that fit on paper but leave no runtime margin.
+/// Allows downloading exactly one tier above the strict fit, with a warning flag.
 /// </summary>
 public static class AiModelRecommendationService
 {
-    private const double HeadroomFactor = 1.25;
+    private const double ExtraLargeHeadroomFactor = 1.25;
+    private const long MinRamForAnyDownload = 4L * 1024 * 1024 * 1024;
 
     public static AiSystemDetectionResult Recommend(
         SystemProfile profile,
@@ -25,9 +26,13 @@ public static class AiModelRecommendationService
         }
 
         var profileWithWarning = profile with { DetectionWarningKey = warningKey };
-        var recommendedEntry = PickRecommendedModel(catalog, ramBytes);
+        var strictMaxTier = GetStrictMaxTier(ramBytes);
+        var recommendedEntry = PickRecommendedModel(catalog, ramBytes, strictMaxTier);
         var models = catalog
-            .Select(entry => ToRecommendation(entry, recommendedEntry, ramBytes))
+            .Select(entry => ToRecommendation(entry, recommendedEntry, ramBytes, strictMaxTier))
+            .OrderBy(recommendation => recommendation.Model.Tier)
+            .ThenByDescending(recommendation => recommendation.Model.RecommendationPriority)
+            .ThenBy(recommendation => recommendation.Model.DisplayNameKey, StringComparer.Ordinal)
             .ToArray();
 
         return new AiSystemDetectionResult(
@@ -37,72 +42,101 @@ public static class AiModelRecommendationService
             recommendedEntry);
     }
 
-    private static AiModelCatalogEntry? PickRecommendedModel(
-        IReadOnlyList<AiModelCatalogEntry> catalog,
-        long? ramBytes)
+    internal static AiModelTier GetStrictMaxTier(long? ramBytes)
     {
         if (ramBytes is null)
         {
-            return catalog.FirstOrDefault(entry => entry.Tier == AiModelTier.Small);
+            return AiModelTier.Small;
         }
 
         if (ramBytes < 8L * 1024 * 1024 * 1024)
         {
-            return catalog.FirstOrDefault(entry => entry.Tier == AiModelTier.Small);
+            return ramBytes >= MinRamForAnyDownload ? AiModelTier.Compact : AiModelTier.Compact;
         }
 
         if (ramBytes < 16L * 1024 * 1024 * 1024)
         {
-            return catalog.FirstOrDefault(entry => entry.Tier == AiModelTier.Small);
+            return AiModelTier.Small;
+        }
+
+        if (ramBytes < 48L * 1024 * 1024 * 1024)
+        {
+            return AiModelTier.Medium;
         }
 
         if (ramBytes < 64L * 1024 * 1024 * 1024)
         {
-            return catalog.FirstOrDefault(entry => entry.Tier == AiModelTier.Medium);
+            return AiModelTier.Large;
         }
 
-        var large = catalog.FirstOrDefault(entry => entry.Tier == AiModelTier.Large);
-        if (large is not null && ramBytes >= (long)(large.MinimumMemoryBytes * HeadroomFactor))
-        {
-            return large;
-        }
+        return AiModelTier.ExtraLarge;
+    }
 
-        return catalog.FirstOrDefault(entry => entry.Tier == AiModelTier.Medium);
+    private static AiModelCatalogEntry? PickRecommendedModel(
+        IReadOnlyList<AiModelCatalogEntry> catalog,
+        long? ramBytes,
+        AiModelTier strictMaxTier)
+    {
+        return catalog
+            .Where(entry => entry.Tier == strictMaxTier && IsStrictFit(entry, ramBytes))
+            .OrderByDescending(entry => entry.RecommendationPriority)
+            .FirstOrDefault()
+            ?? catalog
+                .Where(entry => IsStrictFit(entry, ramBytes))
+                .OrderByDescending(entry => entry.Tier)
+                .ThenByDescending(entry => entry.RecommendationPriority)
+                .FirstOrDefault()
+            ?? catalog
+                .Where(entry => entry.Tier == strictMaxTier)
+                .OrderByDescending(entry => entry.RecommendationPriority)
+                .FirstOrDefault();
     }
 
     private static AiModelRecommendation ToRecommendation(
         AiModelCatalogEntry entry,
         AiModelCatalogEntry? recommendedEntry,
-        long? ramBytes)
+        long? ramBytes,
+        AiModelTier strictMaxTier)
     {
         var isRecommended = recommendedEntry?.Id == entry.Id;
-        var isDownloadAllowed = IsDownloadAllowed(entry, ramBytes);
+        var strictFit = IsStrictFit(entry, ramBytes);
+        var isOneTierUp = entry.Tier == strictMaxTier + 1 && CanAttemptOneTierUp(ramBytes);
+        var isDownloadAllowed = strictFit || isOneTierUp;
+        var requiresWarning = isOneTierUp && !strictFit;
+
         string? reasonKey = isRecommended
             ? TranslationKeys.AiSetupReasonRecommended
-            : isDownloadAllowed
-                ? null
-                : TranslationKeys.AiSetupRequiresMoreMemory;
+            : requiresWarning
+                ? TranslationKeys.AiSetupOversizedWarning
+                : isDownloadAllowed
+                    ? null
+                    : TranslationKeys.AiSetupRequiresMoreMemory;
 
-        return new AiModelRecommendation(entry, isRecommended, isDownloadAllowed, reasonKey);
+        return new AiModelRecommendation(entry, isRecommended, isDownloadAllowed, requiresWarning, reasonKey);
     }
 
-    internal static bool IsDownloadAllowed(AiModelCatalogEntry entry, long? ramBytes)
+    internal static bool IsStrictFit(AiModelCatalogEntry entry, long? ramBytes)
     {
         if (ramBytes is null)
         {
-            return entry.Tier == AiModelTier.Small;
+            return entry.Tier <= AiModelTier.Small;
         }
 
-        if (ramBytes < 8L * 1024 * 1024 * 1024)
+        if (ramBytes < MinRamForAnyDownload)
         {
             return false;
         }
 
-        if (entry.Tier == AiModelTier.Large)
+        if (entry.Tier == AiModelTier.ExtraLarge)
         {
-            return ramBytes >= (long)(entry.MinimumMemoryBytes * HeadroomFactor);
+            return ramBytes >= (long)(entry.MinimumMemoryBytes * ExtraLargeHeadroomFactor);
         }
 
         return ramBytes >= entry.MinimumMemoryBytes;
+    }
+
+    internal static bool CanAttemptOneTierUp(long? ramBytes)
+    {
+        return ramBytes is null || ramBytes >= MinRamForAnyDownload;
     }
 }

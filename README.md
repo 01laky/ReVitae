@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1016%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1028%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -74,6 +74,17 @@ the photo to replace it; sidebar templates show **initials** when no photo is se
 Photos appear in template preview and in PDF/HTML/DOCX export. ReVitae JSON/YAML
 **v2** round-trips embedded photo bytes; document imports (PDF, DOCX, HTML, …)
 do not extract photos.
+
+### AI setup (local models, Phase 2 foundation)
+
+The header **robot icon** (between Upload and Setup) opens an **AI setup** modal.
+Each open runs local system detection (OS, CPU, RAM, disk, Ollama status), shows
+a **recommended** Ollama model, and lists **11 curated instruct models** to
+download when Ollama is running. Models one RAM tier above your strict fit can
+still be downloaded **with a warning**; larger tiers stay disabled. Downloads
+require confirmation, check free disk space, and persist the choice to
+`%LocalAppData%/ReVitae/ai-settings.json`. No cloud AI or CV rewriting yet —
+see [`docs/ai-setup.md`](docs/ai-setup.md).
 
 ### CV import (multi-format)
 
@@ -158,8 +169,9 @@ validation UI, template preview, **optional profile photo** (prompt **023**),
 **multi-format export** (15 formats via `CvDocumentExporter`), and
 **multi-format CV import** (prompt **021**) through `CvDocumentImporter` are in
 place. Intro / replace flows cover PDF plus the additional structured and
-text-native formats listed above. Next major themes remain **local persistence**
-and smarter CV guidance / optional AI-assisted workflows.
+text-native formats listed above. **AI setup** (prompt **036**) adds local
+Ollama model detection and download; CV AI features remain planned. Next major
+themes remain **local persistence** and AI-assisted import / recommendations.
 
 ### Versioning
 
@@ -182,7 +194,8 @@ Planned areas:
 
 - Save and load local CV projects (native `.revitae.json` interchange is documented in [`docs/revitae-project-json.md`](docs/revitae-project-json.md); export already supports `.revitae.json`)
 - ReVitae-exported PDF re-import (template-aware parsing)
-- Optional AI-assisted import and recommendations
+- Cloud / online AI providers in the setup modal
+- AI-assisted import, field rewrite, and quality-hint assist
 - Installer/package builds for supported platforms
 
 ## Tech Stack
@@ -252,11 +265,11 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–035)
+  Implementation prompts and product increments (001–036)
 
 docs/
   Product concept, export/import matrices (`export-formats.md`,
-  `import-formats.md`, `revitae-project-json.md`), planning notes
+  `import-formats.md`, `revitae-project-json.md`, `ai-setup.md`), planning notes
 ```
 
 ## Design Principles

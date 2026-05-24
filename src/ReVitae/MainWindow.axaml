@@ -490,9 +490,15 @@
                         <ScrollViewer x:Name="AiSetupContentScrollViewer"
                                       IsVisible="False">
                             <StackPanel Spacing="16">
-                                <TextBlock x:Name="AiSetupSystemSummaryTextBlock"
-                                           Classes="re-vitae-secondary"
-                                           TextWrapping="Wrap" />
+                                <TextBlock x:Name="AiSetupSystemDetailsTitleTextBlock"
+                                           Classes="re-vitae-app-title"
+                                           FontSize="16"
+                                           Text="Your system" />
+                                <Border Classes="re-vitae-app-card"
+                                        Padding="16">
+                                    <StackPanel x:Name="AiSetupSystemDetailsPanel"
+                                                Spacing="6" />
+                                </Border>
                                 <TextBlock x:Name="AiSetupWarningTextBlock"
                                            Classes="re-vitae-error"
                                            TextWrapping="Wrap"

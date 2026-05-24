@@ -146,7 +146,12 @@ This phase focuses on importing existing CVs, extracting structured information,
 
 ### First Launch AI Setup
 
-On first launch, the application should detect the user's operating system and relevant hardware capabilities.
+**Partial (prompt 036):** the header **AI icon** opens an on-demand setup modal
+with local hardware detection, a recommended Ollama model, and a downloadable
+catalog. A dedicated first-launch gate and online-provider setup are still
+planned.
+
+On first launch (full vision), the application should detect the user's operating system and relevant hardware capabilities.
 
 Based on this detection, it should offer a list of suitable free local AI models for the user's system. The user should also be able to choose an online AI provider instead.
 

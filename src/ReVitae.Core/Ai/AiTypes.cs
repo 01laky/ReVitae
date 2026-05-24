@@ -10,9 +10,11 @@ public enum AiPlatform
 
 public enum AiModelTier
 {
-    Small = 0,
-    Medium = 1,
-    Large = 2,
+    Compact = 0,
+    Small = 1,
+    Medium = 2,
+    Large = 3,
+    ExtraLarge = 4,
 }
 
 public enum AiRuntimeKind
@@ -39,12 +41,14 @@ public sealed record AiModelCatalogEntry(
     long MinimumMemoryBytes,
     AiModelTier Tier,
     string OllamaModelTag,
-    IReadOnlyList<AiPlatform> SupportedPlatforms);
+    IReadOnlyList<AiPlatform> SupportedPlatforms,
+    int RecommendationPriority = 0);
 
 public sealed record AiModelRecommendation(
     AiModelCatalogEntry Model,
     bool IsRecommended,
     bool IsDownloadAllowed,
+    bool RequiresOversizedWarning,
     string? ReasonKey);
 
 public sealed record AiSystemDetectionResult(

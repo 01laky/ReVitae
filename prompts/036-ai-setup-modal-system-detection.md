@@ -130,8 +130,8 @@ during pull: `Pulling` → `PullComplete` | `PullFailed`.
 Below the system summary (and above the model catalog), show a compact **privacy /
 local-only banner** — secondary text style (`re-vitae-secondary`), not dismissible:
 
-- Copy (EN): *System detection runs only on this device. ReVitae does not send your
-  hardware profile or CV data to ReVitae servers.*
+- Copy (EN): _System detection runs only on this device. ReVitae does not send your
+  hardware profile or CV data to ReVitae servers._
 - Visible in the **Ready** state (hidden during loader and pull progress),
 - No checkbox or “I agree” — informational only; aligns with Non-Goals (no telemetry).
 
@@ -240,13 +240,13 @@ the loader phase, then calls `Recommend`. Use `CancellationToken` linked to moda
 
 **Detection rules (v1, deterministic — no ML):**
 
-| Signal | Source |
-| ------ | ------ |
-| OS | `RuntimeInformation.IsOSPlatform` → `AiPlatform` |
-| Architecture | `RuntimeInformation.ProcessArchitecture` → string (`Arm64`, `X64`, …) |
-| RAM | OS-specific best effort (`GlobalMemoryStatusEx` on Windows, `sysctl` on macOS, `/proc/meminfo` on Linux); if unknown, `null` + warning key |
-| CPU count | `Environment.ProcessorCount` |
-| Ollama running | `IOllamaRuntimeProbe`: `GET http://127.0.0.1:11434/api/tags`, timeout **≤ 1 s** |
+| Signal         | Source                                                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| OS             | `RuntimeInformation.IsOSPlatform` → `AiPlatform`                                                                                           |
+| Architecture   | `RuntimeInformation.ProcessArchitecture` → string (`Arm64`, `X64`, …)                                                                      |
+| RAM            | OS-specific best effort (`GlobalMemoryStatusEx` on Windows, `sysctl` on macOS, `/proc/meminfo` on Linux); if unknown, `null` + warning key |
+| CPU count      | `Environment.ProcessorCount`                                                                                                               |
+| Ollama running | `IOllamaRuntimeProbe`: `GET http://127.0.0.1:11434/api/tags`, timeout **≤ 1 s**                                                            |
 
 Platform-specific RAM readers may live under `ReVitae.Core/Ai/Platform/` (partial classes
 or small OS files). Do **not** reference Avalonia from Core.
@@ -260,24 +260,24 @@ data root). `HasSpaceForDownload` returns `false` when free bytes are unknown or
 
 Use catalog `MinimumMemoryBytes` as the hard gate for `IsDownloadAllowed`.
 
-| Detected RAM | Behavior |
-| ------------ | -------- |
-| `null` (unknown) | Recommend **Small** tier; set `DetectionWarningKey`; mark models with `IsDownloadAllowed = true` only for Small (conservative) |
-| `< 8 GB` | Recommend Small if allowed; show banner that even Small needs ~8 GB — user may still attempt at own risk only if you add an explicit override later; **v1: disable download** for all models when RAM &lt; 8 GB |
-| `8–15 GB` | Recommend **Small** only (Medium/Large require ≥ 16 GB / 64 GB) |
-| `16–63 GB` | Recommend **Medium**; Large visible but `IsDownloadAllowed = false` unless RAM ≥ 64 GB × headroom factor |
-| `≥ 64 GB` | Recommend **Medium** by default; **Large** recommended only when RAM ≥ Large `MinimumMemoryBytes` × **1.25** headroom |
+| Detected RAM     | Behavior                                                                                                                                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `null` (unknown) | Recommend **Small** tier; set `DetectionWarningKey`; mark models with `IsDownloadAllowed = true` only for Small (conservative)                                                                                  |
+| `< 8 GB`         | Recommend Small if allowed; show banner that even Small needs ~8 GB — user may still attempt at own risk only if you add an explicit override later; **v1: disable download** for all models when RAM &lt; 8 GB |
+| `8–15 GB`        | Recommend **Small** only (Medium/Large require ≥ 16 GB / 64 GB)                                                                                                                                                 |
+| `16–63 GB`       | Recommend **Medium**; Large visible but `IsDownloadAllowed = false` unless RAM ≥ 64 GB × headroom factor                                                                                                        |
+| `≥ 64 GB`        | Recommend **Medium** by default; **Large** recommended only when RAM ≥ Large `MinimumMemoryBytes` × **1.25** headroom                                                                                           |
 
 Headroom factor prevents recommending a model that fits on paper but leaves no room for
 OS + ReVitae + Ollama runtime.
 
 Keep the catalog **small and curated** (3 entries for v1):
 
-| Id | Ollama tag | Approx download | Min RAM |
-| -- | ---------- | --------------- | ------- |
-| `small-instruct` | `llama3.2:3b-instruct` | ~2 GB | 8 GB |
-| `medium-instruct` | `llama3.1:8b-instruct` | ~4.7 GB | 16 GB |
-| `large-instruct` | `llama3.1:70b-instruct` | ~40 GB | 64 GB |
+| Id                | Ollama tag              | Approx download | Min RAM |
+| ----------------- | ----------------------- | --------------- | ------- |
+| `small-instruct`  | `llama3.2:3b-instruct`  | ~2 GB           | 8 GB    |
+| `medium-instruct` | `llama3.1:8b-instruct`  | ~4.7 GB         | 16 GB   |
+| `large-instruct`  | `llama3.1:70b-instruct` | ~40 GB          | 64 GB   |
 
 Exact tags and sizes are **data in Core** (`AiModelCatalog.Default`) so tests do not
 depend on the network. Tags must match [Ollama library](https://ollama.com/library)
@@ -336,12 +336,12 @@ as other modals).
 
 Suggested regions:
 
-| Region | Content |
-| ------ | ------- |
-| Header | Title + close |
-| Loader panel | `AiDetectionProgressPanel` — visible during detection |
+| Region        | Content                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| Header        | Title + close                                                                                          |
+| Loader panel  | `AiDetectionProgressPanel` — visible during detection                                                  |
 | Content panel | `AiDetectionSummaryTextBlock`, **privacy banner**, recommended card, `ItemsControl` / list for catalog |
-| Footer | Download primary (enabled when model selected + Ollama reachable + `IsDownloadAllowed`), Close |
+| Footer        | Download primary (enabled when model selected + Ollama reachable + `IsDownloadAllowed`), Close         |
 
 Use existing classes: `re-vitae-app-title`, `re-vitae-secondary`, `re-vitae-primary`,
 `re-vitae-app-card` for model cards. Recommended card gets a subtle accent border or
@@ -362,27 +362,27 @@ Detection and pull run on **background threads** (`Task.Run` or `async` with
 Add keys under `TranslationKeys` / `AppLocalizer` (EN + SK minimum). Follow existing
 dot-notation (`action.*`, `modal.*`):
 
-| Key constant | Example EN |
-| ------------ | ---------- |
-| `OpenAiSetup` → `action.openAiSetup` | Open AI setup |
-| `AiSetupTitle` → `modal.aiSetup.title` | AI setup |
-| `AiSetupDetecting` → `modal.aiSetup.detecting` | Detecting your system… |
-| `AiSetupDetectionFailed` → `modal.aiSetup.detectionFailed` | Could not read system information. |
-| `AiSetupRetry` → `modal.aiSetup.retry` | Retry |
-| `AiSetupSystemSummary` → `modal.aiSetup.systemSummary` | {0} · {1} · {2} RAM |
-| `AiSetupRecommended` → `modal.aiSetup.recommended` | Recommended for your device |
-| `AiSetupRequiresMoreMemory` → `modal.aiSetup.requiresMoreMemory` | Requires more memory than detected |
-| `AiSetupDownload` → `modal.aiSetup.download` | Download model |
-| `AiSetupDownloadConfirm` → `modal.aiSetup.downloadConfirm` | Download {0} (~{1})? This may use significant disk space. |
-| `AiSetupOllamaNotRunning` → `modal.aiSetup.ollamaNotRunning` | Ollama is not running. Start Ollama and try again. |
-| `AiSetupPullProgress` → `modal.aiSetup.pullProgress` | Downloading… {0} |
-| `AiSetupPullComplete` → `modal.aiSetup.pullComplete` | Model downloaded and ready. |
-| `AiSetupPullFailed` → `modal.aiSetup.pullFailed` | Download failed. |
-| `AiSetupAlreadyDownloaded` → `modal.aiSetup.alreadyDownloaded` | Already on this computer |
-| `AiSetupUnknownRam` → `modal.aiSetup.unknownRam` | Could not read total memory; recommendation may be conservative. |
-| `AiSetupPrivacyNote` → `modal.aiSetup.privacyNote` | System detection runs only on this device. ReVitae does not send your hardware profile or CV data to ReVitae servers. |
-| `AiSetupInsufficientDiskSpace` → `modal.aiSetup.insufficientDiskSpace` | Not enough free disk space. About {0} is required; {1} available. |
-| `AiSetupDiskSpaceUnknown` → `modal.aiSetup.diskSpaceUnknown` | unknown |
+| Key constant                                                           | Example EN                                                                                                            |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `OpenAiSetup` → `action.openAiSetup`                                   | Open AI setup                                                                                                         |
+| `AiSetupTitle` → `modal.aiSetup.title`                                 | AI setup                                                                                                              |
+| `AiSetupDetecting` → `modal.aiSetup.detecting`                         | Detecting your system…                                                                                                |
+| `AiSetupDetectionFailed` → `modal.aiSetup.detectionFailed`             | Could not read system information.                                                                                    |
+| `AiSetupRetry` → `modal.aiSetup.retry`                                 | Retry                                                                                                                 |
+| `AiSetupSystemSummary` → `modal.aiSetup.systemSummary`                 | {0} · {1} · {2} RAM                                                                                                   |
+| `AiSetupRecommended` → `modal.aiSetup.recommended`                     | Recommended for your device                                                                                           |
+| `AiSetupRequiresMoreMemory` → `modal.aiSetup.requiresMoreMemory`       | Requires more memory than detected                                                                                    |
+| `AiSetupDownload` → `modal.aiSetup.download`                           | Download model                                                                                                        |
+| `AiSetupDownloadConfirm` → `modal.aiSetup.downloadConfirm`             | Download {0} (~{1})? This may use significant disk space.                                                             |
+| `AiSetupOllamaNotRunning` → `modal.aiSetup.ollamaNotRunning`           | Ollama is not running. Start Ollama and try again.                                                                    |
+| `AiSetupPullProgress` → `modal.aiSetup.pullProgress`                   | Downloading… {0}                                                                                                      |
+| `AiSetupPullComplete` → `modal.aiSetup.pullComplete`                   | Model downloaded and ready.                                                                                           |
+| `AiSetupPullFailed` → `modal.aiSetup.pullFailed`                       | Download failed.                                                                                                      |
+| `AiSetupAlreadyDownloaded` → `modal.aiSetup.alreadyDownloaded`         | Already on this computer                                                                                              |
+| `AiSetupUnknownRam` → `modal.aiSetup.unknownRam`                       | Could not read total memory; recommendation may be conservative.                                                      |
+| `AiSetupPrivacyNote` → `modal.aiSetup.privacyNote`                     | System detection runs only on this device. ReVitae does not send your hardware profile or CV data to ReVitae servers. |
+| `AiSetupInsufficientDiskSpace` → `modal.aiSetup.insufficientDiskSpace` | Not enough free disk space. About {0} is required; {1} available.                                                     |
+| `AiSetupDiskSpaceUnknown` → `modal.aiSetup.diskSpaceUnknown`           | unknown                                                                                                               |
 
 Register all new keys in `TranslationKeys.All` (or equivalent registry used by tests).
 
@@ -425,19 +425,19 @@ detection; HTTP clients (`IOllamaRuntimeProbe`, `OllamaPullClient`) may live in
 
 Add under `tests/ReVitae.Tests/Ai/`:
 
-| Test | Assert |
-| ---- | ------ |
-| `Recommend_With8GbRam_SelectsSmallModel` | Small tier recommended; Medium/Large not allowed |
-| `Recommend_With16GbRam_SelectsMedium` | Medium recommended; Large not allowed |
-| `Recommend_With80GbRam_CanSelectLarge` | Large allowed with headroom |
-| `Recommend_WithUnknownRam_IsConservative` | warning + Small only allowed |
-| `Recommend_FlagsOversizedModels` | Large entry `IsDownloadAllowed = false` on 16 GB profile |
-| `Catalog_EntriesHaveUniqueIds` | static catalog integrity |
-| `OllamaPullClient_ParsesStreamLines` | fake `HttpMessageHandler` |
-| `AiSettingsStorage_RoundTrips` | JSON read/write |
-| `DiskSpaceChecker_HasSpaceForDownload` | passes when free ≥ bytes × 1.1 |
-| `DiskSpaceChecker_BlocksWhenInsufficient` | fails below threshold |
-| UI smoke (optional) | modal opens, loader visible, fake detector completes |
+| Test                                      | Assert                                                   |
+| ----------------------------------------- | -------------------------------------------------------- |
+| `Recommend_With8GbRam_SelectsSmallModel`  | Small tier recommended; Medium/Large not allowed         |
+| `Recommend_With16GbRam_SelectsMedium`     | Medium recommended; Large not allowed                    |
+| `Recommend_With80GbRam_CanSelectLarge`    | Large allowed with headroom                              |
+| `Recommend_WithUnknownRam_IsConservative` | warning + Small only allowed                             |
+| `Recommend_FlagsOversizedModels`          | Large entry `IsDownloadAllowed = false` on 16 GB profile |
+| `Catalog_EntriesHaveUniqueIds`            | static catalog integrity                                 |
+| `OllamaPullClient_ParsesStreamLines`      | fake `HttpMessageHandler`                                |
+| `AiSettingsStorage_RoundTrips`            | JSON read/write                                          |
+| `DiskSpaceChecker_HasSpaceForDownload`    | passes when free ≥ bytes × 1.1                           |
+| `DiskSpaceChecker_BlocksWhenInsufficient` | fails below threshold                                    |
+| UI smoke (optional)                       | modal opens, loader visible, fake detector completes     |
 
 Use **`FakeSystemProfileDetector`** and **`FakeOllamaRuntimeProbe`** in tests; never
 require real RAM or Ollama in CI.
@@ -446,11 +446,11 @@ Target: full suite remains green; add ~10–20 focused tests.
 
 ## Documentation Updates
 
-| File | Update |
-| ---- | ------ |
-| [`README.md`](../README.md) | Mention AI setup modal (local models, Ollama prerequisite) under Roadmap / Phase 2 |
-| [`docs/concept.md`](../docs/concept.md) | Note header AI icon delivers on-demand detection (first-launch gate optional later) |
-| [`CHANGELOG.md`](../CHANGELOG.md) | Unreleased entry for AI setup modal |
+| File                                              | Update                                                                                                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`README.md`](../README.md)                       | Mention AI setup modal (local models, Ollama prerequisite) under Roadmap / Phase 2                                                          |
+| [`docs/concept.md`](../docs/concept.md)           | Note header AI icon delivers on-demand detection (first-launch gate optional later)                                                         |
+| [`CHANGELOG.md`](../CHANGELOG.md)                 | Unreleased entry for AI setup modal                                                                                                         |
 | **New** [`docs/ai-setup.md`](../docs/ai-setup.md) | User-facing: open AI icon, detection, recommended model, Ollama requirement, local-only privacy note, disk space prerequisite, no cloud yet |
 
 Update README prompts map line to `001–036`.
@@ -482,7 +482,7 @@ Update README prompts map line to `001–036`.
 9. **Privacy banner** visible in Ready state; states detection is local-only and no
    data is sent to ReVitae servers (EN + SK).
 10. Detection + recommendation logic lives in **Core** with unit tests; HTTP probes
-   mockable.
+    mockable.
 11. `./scripts/format-cs.sh`, `npm run lint`, and `./scripts/test.sh` pass.
 
 ## Suggested Implementation Order

@@ -85,6 +85,7 @@ public partial class MainWindow
         AiSetupDetectionProgressPanel.IsVisible = true;
         AiSetupDetectionFailedPanel.IsVisible = false;
         AiSetupContentScrollViewer.IsVisible = false;
+        AiSetupSystemDetailsPanel.Children.Clear();
         AiSetupRecommendedCard.IsVisible = false;
         AiSetupWarningTextBlock.IsVisible = false;
         AiSetupStatusTextBlock.IsVisible = false;
@@ -175,15 +176,7 @@ public partial class MainWindow
         AiSetupDetectionFailedPanel.IsVisible = false;
         AiSetupContentScrollViewer.IsVisible = true;
 
-        var ramLabel = detectionResult.Profile.TotalPhysicalMemoryBytes is long ramBytes
-            ? AiFormatBytes.Format(ramBytes)
-            : _localizer.Get(TranslationKeys.AiSetupDiskSpaceUnknown);
-
-        AiSetupSystemSummaryTextBlock.Text = _localizer.Format(
-            TranslationKeys.AiSetupSystemSummary,
-            AiPlatformDisplay.GetPlatformLabel(detectionResult.Profile.Platform),
-            detectionResult.Profile.Architecture,
-            ramLabel);
+        RenderAiSetupSystemDetails(detectionResult);
 
         if (!string.IsNullOrWhiteSpace(detectionResult.Profile.DetectionWarningKey))
         {
@@ -200,6 +193,26 @@ public partial class MainWindow
         RenderAiSetupRecommendedCard(detectionResult);
         RenderAiSetupModelCards(detectionResult);
         UpdateAiSetupDownloadButtonState();
+    }
+
+    private void RenderAiSetupSystemDetails(AiSystemDetectionResult detectionResult)
+    {
+        AiSetupSystemDetailsPanel.Children.Clear();
+        var lines = AiSystemInfoFormatter.FormatDetailLines(
+            detectionResult.Profile,
+            detectionResult.Ollama,
+            _diskSpaceChecker.GetAvailableBytesForLocalData(),
+            _localizer);
+
+        foreach (var line in lines)
+        {
+            AiSetupSystemDetailsPanel.Children.Add(new TextBlock
+            {
+                Text = line,
+                Classes = { "re-vitae-secondary" },
+                TextWrapping = TextWrapping.Wrap,
+            });
+        }
     }
 
     private void RenderAiSetupRecommendedCard(AiSystemDetectionResult detectionResult)
@@ -244,7 +257,9 @@ public partial class MainWindow
         {
             Classes = { "re-vitae-app-card" },
             Padding = new Thickness(14),
-            Cursor = recommendation.IsDownloadAllowed ? new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand) : null,
+            Cursor = recommendation.IsDownloadAllowed
+                ? new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
+                : null,
         };
 
         card.PointerReleased += (_, _) =>
@@ -302,7 +317,18 @@ public partial class MainWindow
             Classes = { "re-vitae-secondary" },
         });
 
-        if (!string.IsNullOrWhiteSpace(recommendation.ReasonKey))
+        if (recommendation.RequiresOversizedWarning)
+        {
+            content.Children.Add(new TextBlock
+            {
+                Text = _localizer.Get(TranslationKeys.AiSetupOversizedWarning),
+                Classes = { "re-vitae-error" },
+                FontSize = 12,
+                TextWrapping = TextWrapping.Wrap,
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(recommendation.ReasonKey) && !recommendation.RequiresOversizedWarning)
         {
             content.Children.Add(new TextBlock
             {
@@ -314,7 +340,7 @@ public partial class MainWindow
 
         card.Child = content;
         card.Tag = recommendation;
-        card.Opacity = recommendation.IsDownloadAllowed ? 1.0 : 0.55;
+        card.Opacity = recommendation.IsDownloadAllowed ? 1.0 : 0.5;
         return card;
     }
 
@@ -400,8 +426,11 @@ public partial class MainWindow
         }
 
         _aiPendingDownloadRecommendation = selected;
+        var confirmKey = selected.RequiresOversizedWarning
+            ? TranslationKeys.AiSetupDownloadConfirmOversized
+            : TranslationKeys.AiSetupDownloadConfirm;
         AiSetupDownloadConfirmTextBlock.Text = _localizer.Format(
-            TranslationKeys.AiSetupDownloadConfirm,
+            confirmKey,
             _localizer.Get(selected.Model.DisplayNameKey),
             AiFormatBytes.Format(selected.Model.ApproxDownloadBytes));
         AiSetupDownloadConfirmPanel.IsVisible = true;
@@ -507,6 +536,7 @@ public partial class MainWindow
         AiSetupDetectingTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupDetecting);
         AiSetupDetectionFailedTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupDetectionFailed);
         AiSetupDetectionRetryButton.Content = _localizer.Get(TranslationKeys.AiSetupRetry);
+        AiSetupSystemDetailsTitleTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupSystemDetailsTitle);
         AiSetupRecommendedBadgeTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupRecommended);
         AiSetupAllModelsLabelTextBlock.Text = _localizer.Get(TranslationKeys.AiSetupAllModels);
         AiSetupDownloadButton.Content = _localizer.Get(TranslationKeys.AiSetupDownload);

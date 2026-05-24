@@ -544,11 +544,21 @@ public static class TranslationKeys
     public const string AiSetupDetectionFailed = "modal.aiSetup.detectionFailed";
     public const string AiSetupRetry = "modal.aiSetup.retry";
     public const string AiSetupSystemSummary = "modal.aiSetup.systemSummary";
+    public const string AiSetupSystemPlatform = "modal.aiSetup.systemPlatform";
+    public const string AiSetupSystemArchitecture = "modal.aiSetup.systemArchitecture";
+    public const string AiSetupSystemCpu = "modal.aiSetup.systemCpu";
+    public const string AiSetupSystemRam = "modal.aiSetup.systemRam";
+    public const string AiSetupSystemDisk = "modal.aiSetup.systemDisk";
+    public const string AiSetupSystemOllamaRunning = "modal.aiSetup.systemOllamaRunning";
+    public const string AiSetupSystemOllamaStopped = "modal.aiSetup.systemOllamaStopped";
+    public const string AiSetupSystemDetailsTitle = "modal.aiSetup.systemDetailsTitle";
     public const string AiSetupRecommended = "modal.aiSetup.recommended";
     public const string AiSetupRequiresMoreMemory = "modal.aiSetup.requiresMoreMemory";
+    public const string AiSetupOversizedWarning = "modal.aiSetup.oversizedWarning";
     public const string AiSetupReasonRecommended = "modal.aiSetup.reasonRecommended";
     public const string AiSetupDownload = "modal.aiSetup.download";
     public const string AiSetupDownloadConfirm = "modal.aiSetup.downloadConfirm";
+    public const string AiSetupDownloadConfirmOversized = "modal.aiSetup.downloadConfirmOversized";
     public const string AiSetupOllamaNotRunning = "modal.aiSetup.ollamaNotRunning";
     public const string AiSetupPullProgress = "modal.aiSetup.pullProgress";
     public const string AiSetupPullComplete = "modal.aiSetup.pullComplete";
@@ -560,9 +570,17 @@ public static class TranslationKeys
     public const string AiSetupDiskSpaceUnknown = "modal.aiSetup.diskSpaceUnknown";
     public const string AiSetupAllModels = "modal.aiSetup.allModels";
     public const string AiSetupModelMeta = "modal.aiSetup.modelMeta";
-    public const string AiModelSmallInstructName = "aiModel.smallInstruct.name";
-    public const string AiModelMediumInstructName = "aiModel.mediumInstruct.name";
-    public const string AiModelLargeInstructName = "aiModel.largeInstruct.name";
+    public const string AiModelGemma2_2bName = "aiModel.gemma2_2b.name";
+    public const string AiModelPhi3MiniName = "aiModel.phi3Mini.name";
+    public const string AiModelLlama32_3bName = "aiModel.llama32_3b.name";
+    public const string AiModelQwen25_3bName = "aiModel.qwen25_3b.name";
+    public const string AiModelMistral7bName = "aiModel.mistral7b.name";
+    public const string AiModelLlama31_8bName = "aiModel.llama31_8b.name";
+    public const string AiModelGemma2_9bName = "aiModel.gemma2_9b.name";
+    public const string AiModelQwen25_7bName = "aiModel.qwen25_7b.name";
+    public const string AiModelMixtral8x7bName = "aiModel.mixtral8x7b.name";
+    public const string AiModelLlama31_70bName = "aiModel.llama31_70b.name";
+    public const string AiModelLlama33_70bName = "aiModel.llama33_70b.name";
 
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
@@ -1097,11 +1115,21 @@ public static class TranslationKeys
         AiSetupDetectionFailed,
         AiSetupRetry,
         AiSetupSystemSummary,
+        AiSetupSystemPlatform,
+        AiSetupSystemArchitecture,
+        AiSetupSystemCpu,
+        AiSetupSystemRam,
+        AiSetupSystemDisk,
+        AiSetupSystemOllamaRunning,
+        AiSetupSystemOllamaStopped,
+        AiSetupSystemDetailsTitle,
         AiSetupRecommended,
         AiSetupRequiresMoreMemory,
+        AiSetupOversizedWarning,
         AiSetupReasonRecommended,
         AiSetupDownload,
         AiSetupDownloadConfirm,
+        AiSetupDownloadConfirmOversized,
         AiSetupOllamaNotRunning,
         AiSetupPullProgress,
         AiSetupPullComplete,
@@ -1113,8 +1141,16 @@ public static class TranslationKeys
         AiSetupDiskSpaceUnknown,
         AiSetupAllModels,
         AiSetupModelMeta,
-        AiModelSmallInstructName,
-        AiModelMediumInstructName,
-        AiModelLargeInstructName
+        AiModelGemma2_2bName,
+        AiModelPhi3MiniName,
+        AiModelLlama32_3bName,
+        AiModelQwen25_3bName,
+        AiModelMistral7bName,
+        AiModelLlama31_8bName,
+        AiModelGemma2_9bName,
+        AiModelQwen25_7bName,
+        AiModelMixtral8x7bName,
+        AiModelLlama31_70bName,
+        AiModelLlama33_70bName
     ];
 }

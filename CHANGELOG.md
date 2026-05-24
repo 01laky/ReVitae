@@ -9,6 +9,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **AI setup modal** (prompt **036**): header robot icon opens in-window setup
+  with loader on every open; local OS/CPU/RAM/disk/Ollama detection; privacy
+  banner; **11** curated Ollama instruct models; RAM-tier recommendations;
+  optional **one-tier-up** download with warning; disk-space gate before pull;
+  Ollama `POST /api/pull` progress; `ai-settings.json` persistence under
+  `%LocalAppData%/ReVitae/`.
+- Documentation: [`docs/ai-setup.md`](docs/ai-setup.md).
 - **John Doe import regression matrix** (prompt **035**): **50** runtime-generated
   stress CV variants (PDF templates, TXT/MD/HTML/DOCX profiles) imported via
   `CvDocumentImporter`; shared `JohnDoeStressCvDataset` in Core; matrix asserts
