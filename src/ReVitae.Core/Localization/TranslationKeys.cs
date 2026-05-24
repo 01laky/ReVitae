@@ -616,6 +616,72 @@ public static class TranslationKeys
     public const string AiModelMixtral8x7bName = "aiModel.mixtral8x7b.name";
     public const string AiModelLlama31_70bName = "aiModel.llama31_70b.name";
     public const string AiModelLlama33_70bName = "aiModel.llama33_70b.name";
+    public const string AiSetupLocalModelsSection = "modal.aiSetup.localModelsSection";
+    public const string AiSetupOnlineProvidersSection = "modal.aiSetup.onlineProvidersSection";
+    public const string AiSetupProviderConfigure = "modal.aiSetup.providerConfigure";
+    public const string AiSetupProviderActivate = "modal.aiSetup.providerActivate";
+    public const string AiSetupProviderDeactivate = "modal.aiSetup.providerDeactivate";
+    public const string AiSetupProviderEdit = "modal.aiSetup.providerEdit";
+    public const string AiSetupProviderNotConfigured = "modal.aiSetup.providerNotConfigured";
+    public const string AiSetupProviderConfigured = "modal.aiSetup.providerConfigured";
+    public const string AiSetupProviderActive = "modal.aiSetup.providerActive";
+    public const string AiSetupProviderSave = "modal.aiSetup.providerSave";
+    public const string AiSetupProviderTest = "modal.aiSetup.providerTest";
+    public const string AiSetupProviderTestSuccess = "modal.aiSetup.providerTestSuccess";
+    public const string AiSetupProviderTestFailed = "modal.aiSetup.providerTestFailed";
+    public const string AiSetupProviderSwitchConfirm = "modal.aiSetup.providerSwitchConfirm";
+    public const string AiSetupOnlinePrivacyNote = "modal.aiSetup.onlinePrivacyNote";
+    public const string AiSetupActiveAiNone = "modal.aiSetup.activeAiNone";
+    public const string AiSetupActiveAiLocal = "modal.aiSetup.activeAiLocal";
+    public const string AiSetupActiveAiOnline = "modal.aiSetup.activeAiOnline";
+    public const string AiSetupActiveAiChange = "modal.aiSetup.activeAiChange";
+    public const string AiSetupActiveAiEdit = "modal.aiSetup.activeAiEdit";
+    public const string AiSetupProviderFreeTier = "modal.aiSetup.providerFreeTier";
+    public const string AiSetupProviderLastTestOk = "modal.aiSetup.providerLastTestOk";
+    public const string AiSetupProviderLastTestFailed = "modal.aiSetup.providerLastTestFailed";
+    public const string AiSetupProviderActivateUntested = "modal.aiSetup.providerActivateUntested";
+    public const string AiSetupProviderActivateAnyway = "modal.aiSetup.providerActivateAnyway";
+    public const string AiSetupProviderReset = "modal.aiSetup.providerReset";
+    public const string AiSetupProviderResetConfirm = "modal.aiSetup.providerResetConfirm";
+    public const string AiSetupProviderRateLimited = "modal.aiSetup.providerRateLimited";
+    public const string AiSetupProviderInvalidKey = "modal.aiSetup.providerInvalidKey";
+    public const string AiSetupProviderModelNotFound = "modal.aiSetup.providerModelNotFound";
+    public const string AiSetupProviderUnavailable = "modal.aiSetup.providerUnavailable";
+    public const string AiSetupCustomBaseUrlHint = "modal.aiSetup.customBaseUrlHint";
+    public const string AiSetupProviderAdvanced = "modal.aiSetup.providerAdvanced";
+    public const string AiSetupProviderSaved = "modal.aiSetup.providerSaved";
+    public const string AiSetupModelActivate = "modal.aiSetup.modelActivate";
+    public const string AiSetupModelDeactivate = "modal.aiSetup.modelDeactivate";
+    public const string AiSetupModelActive = "modal.aiSetup.modelActive";
+    public const string AiSetupProviderFieldApiKey = "aiProvider.field.apiKey";
+    public const string AiSetupProviderFieldBaseUrl = "aiProvider.field.baseUrl";
+    public const string AiSetupProviderFieldModelId = "aiProvider.field.modelId";
+    public const string AiSetupProviderFieldDeploymentName = "aiProvider.field.deploymentName";
+    public const string AiSetupProviderFieldApiVersion = "aiProvider.field.apiVersion";
+    public const string AiSetupProviderFieldOrganizationId = "aiProvider.field.organizationId";
+    public const string AiSetupProviderFieldCustomModel = "aiProvider.field.customModel";
+    public const string AiSetupProviderUseCaseQuickEdits = "aiProvider.useCase.quickEdits";
+    public const string AiSetupProviderUseCaseImportAssist = "aiProvider.useCase.importAssist";
+    public const string AiProviderOpenAiName = "aiProvider.openai.name";
+    public const string AiProviderOpenAiDescription = "aiProvider.openai.description";
+    public const string AiProviderAnthropicName = "aiProvider.anthropic.name";
+    public const string AiProviderAnthropicDescription = "aiProvider.anthropic.description";
+    public const string AiProviderGeminiName = "aiProvider.gemini.name";
+    public const string AiProviderGeminiDescription = "aiProvider.gemini.description";
+    public const string AiProviderGroqName = "aiProvider.groq.name";
+    public const string AiProviderGroqDescription = "aiProvider.groq.description";
+    public const string AiProviderAzureName = "aiProvider.azure.name";
+    public const string AiProviderAzureDescription = "aiProvider.azure.description";
+    public const string AiProviderMistralName = "aiProvider.mistral.name";
+    public const string AiProviderMistralDescription = "aiProvider.mistral.description";
+    public const string AiProviderDeepSeekName = "aiProvider.deepseek.name";
+    public const string AiProviderDeepSeekDescription = "aiProvider.deepseek.description";
+    public const string AiProviderOpenRouterName = "aiProvider.openrouter.name";
+    public const string AiProviderOpenRouterDescription = "aiProvider.openrouter.description";
+    public const string AiProviderCustomName = "aiProvider.custom.name";
+    public const string AiProviderCustomDescription = "aiProvider.custom.description";
+    public const string AiSetupHeaderActiveOnline = "modal.aiSetup.headerActiveOnline";
+    public const string AiSetupHeaderActiveLocal = "modal.aiSetup.headerActiveLocal";
 
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
@@ -1221,6 +1287,72 @@ public static class TranslationKeys
         AiModelQwen25_7bName,
         AiModelMixtral8x7bName,
         AiModelLlama31_70bName,
-        AiModelLlama33_70bName
+        AiModelLlama33_70bName,
+        AiSetupLocalModelsSection,
+        AiSetupOnlineProvidersSection,
+        AiSetupProviderConfigure,
+        AiSetupProviderActivate,
+        AiSetupProviderDeactivate,
+        AiSetupProviderEdit,
+        AiSetupProviderNotConfigured,
+        AiSetupProviderConfigured,
+        AiSetupProviderActive,
+        AiSetupProviderSave,
+        AiSetupProviderTest,
+        AiSetupProviderTestSuccess,
+        AiSetupProviderTestFailed,
+        AiSetupProviderSwitchConfirm,
+        AiSetupOnlinePrivacyNote,
+        AiSetupActiveAiNone,
+        AiSetupActiveAiLocal,
+        AiSetupActiveAiOnline,
+        AiSetupActiveAiChange,
+        AiSetupActiveAiEdit,
+        AiSetupProviderFreeTier,
+        AiSetupProviderLastTestOk,
+        AiSetupProviderLastTestFailed,
+        AiSetupProviderActivateUntested,
+        AiSetupProviderActivateAnyway,
+        AiSetupProviderReset,
+        AiSetupProviderResetConfirm,
+        AiSetupProviderRateLimited,
+        AiSetupProviderInvalidKey,
+        AiSetupProviderModelNotFound,
+        AiSetupProviderUnavailable,
+        AiSetupCustomBaseUrlHint,
+        AiSetupProviderAdvanced,
+        AiSetupProviderSaved,
+        AiSetupModelActivate,
+        AiSetupModelDeactivate,
+        AiSetupModelActive,
+        AiSetupProviderFieldApiKey,
+        AiSetupProviderFieldBaseUrl,
+        AiSetupProviderFieldModelId,
+        AiSetupProviderFieldDeploymentName,
+        AiSetupProviderFieldApiVersion,
+        AiSetupProviderFieldOrganizationId,
+        AiSetupProviderFieldCustomModel,
+        AiSetupProviderUseCaseQuickEdits,
+        AiSetupProviderUseCaseImportAssist,
+        AiProviderOpenAiName,
+        AiProviderOpenAiDescription,
+        AiProviderAnthropicName,
+        AiProviderAnthropicDescription,
+        AiProviderGeminiName,
+        AiProviderGeminiDescription,
+        AiProviderGroqName,
+        AiProviderGroqDescription,
+        AiProviderAzureName,
+        AiProviderAzureDescription,
+        AiProviderMistralName,
+        AiProviderMistralDescription,
+        AiProviderDeepSeekName,
+        AiProviderDeepSeekDescription,
+        AiProviderOpenRouterName,
+        AiProviderOpenRouterDescription,
+        AiProviderCustomName,
+        AiProviderCustomDescription,
+        AiSetupHeaderActiveOnline,
+        AiSetupHeaderActiveLocal,
     ];
 }

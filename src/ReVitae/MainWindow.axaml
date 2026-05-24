@@ -82,6 +82,22 @@
                                  VerticalAlignment="Top"
                                  Margin="0,-2,-2,0"
                                  IsVisible="False" />
+                        <Ellipse x:Name="AiOnlineActiveHeaderBadge"
+                                 Width="8"
+                                 Height="8"
+                                 Fill="#2563EB"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Top"
+                                 Margin="-2,-2,0,0"
+                                 IsVisible="False" />
+                        <Ellipse x:Name="AiLocalActiveHeaderBadge"
+                                 Width="8"
+                                 Height="8"
+                                 Fill="#16A34A"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Bottom"
+                                 Margin="-2,0,0,-2"
+                                 IsVisible="False" />
                     </Panel>
                 </Button>
 
@@ -574,6 +590,50 @@
                         <ScrollViewer x:Name="AiSetupContentScrollViewer"
                                       IsVisible="False">
                             <StackPanel Spacing="16">
+                                <Border x:Name="AiSetupActiveBackendStrip"
+                                        Classes="re-vitae-app-card"
+                                        Padding="12"
+                                        IsVisible="False">
+                                    <Grid ColumnDefinitions="*,Auto"
+                                          ColumnSpacing="12">
+                                        <TextBlock x:Name="AiSetupActiveBackendTextBlock"
+                                                   TextWrapping="Wrap"
+                                                   VerticalAlignment="Center" />
+                                        <Button x:Name="AiSetupActiveBackendActionButton"
+                                                Grid.Column="1"
+                                                Classes="re-vitae-secondary"
+                                                Click="OnAiSetupActiveBackendActionClicked" />
+                                    </Grid>
+                                </Border>
+
+                                <Expander x:Name="AiSetupOnlineProvidersExpander"
+                                          IsExpanded="True">
+                                    <Expander.Header>
+                                        <TextBlock x:Name="AiSetupOnlineProvidersSectionHeader"
+                                                   Classes="re-vitae-app-title"
+                                                   FontSize="16" />
+                                    </Expander.Header>
+                                    <StackPanel Spacing="12"
+                                                Margin="0,8,0,0">
+                                        <TextBlock x:Name="AiSetupOnlinePrivacyNoteTextBlock"
+                                                   Classes="re-vitae-secondary"
+                                                   TextWrapping="Wrap"
+                                                   FontSize="13"
+                                                   LineHeight="18" />
+                                        <StackPanel x:Name="AiSetupOnlineProvidersPanel"
+                                                    Spacing="10" />
+                                    </StackPanel>
+                                </Expander>
+
+                                <Expander x:Name="AiSetupLocalModelsExpander"
+                                          IsExpanded="False">
+                                    <Expander.Header>
+                                        <TextBlock x:Name="AiSetupLocalModelsSectionHeader"
+                                                   Classes="re-vitae-app-title"
+                                                   FontSize="16" />
+                                    </Expander.Header>
+                                    <StackPanel Spacing="16"
+                                                Margin="0,8,0,0">
                                 <TextBlock x:Name="AiSetupSystemDetailsTitleTextBlock"
                                            Classes="re-vitae-app-title"
                                            FontSize="16"
@@ -656,6 +716,46 @@
                                                 Classes="re-vitae-primary"
                                                 Content="OK"
                                                 Click="OnAiSetupModelActionConfirmOkClicked" />
+                                    </StackPanel>
+                                </StackPanel>
+                                    </StackPanel>
+                                </Expander>
+
+                                <StackPanel x:Name="AiSetupProviderSwitchConfirmPanel"
+                                            Spacing="10"
+                                            IsVisible="False">
+                                    <TextBlock x:Name="AiSetupProviderSwitchConfirmTextBlock"
+                                               TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="10"
+                                                HorizontalAlignment="Right">
+                                        <Button x:Name="AiSetupProviderSwitchConfirmCancelButton"
+                                                Classes="re-vitae-secondary"
+                                                Content="Cancel"
+                                                Click="OnAiSetupProviderSwitchConfirmCancelClicked" />
+                                        <Button x:Name="AiSetupProviderSwitchConfirmOkButton"
+                                                Classes="re-vitae-primary"
+                                                Content="OK"
+                                                Click="OnAiSetupProviderSwitchConfirmOkClicked" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel x:Name="AiSetupProviderUntestedConfirmPanel"
+                                            Spacing="10"
+                                            IsVisible="False">
+                                    <TextBlock x:Name="AiSetupProviderUntestedConfirmTextBlock"
+                                               TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="10"
+                                                HorizontalAlignment="Right">
+                                        <Button x:Name="AiSetupProviderUntestedConfirmCancelButton"
+                                                Classes="re-vitae-secondary"
+                                                Content="Cancel"
+                                                Click="OnAiSetupProviderUntestedConfirmCancelClicked" />
+                                        <Button x:Name="AiSetupProviderUntestedConfirmOkButton"
+                                                Classes="re-vitae-primary"
+                                                Content="Activate anyway"
+                                                Click="OnAiSetupProviderUntestedConfirmOkClicked" />
                                     </StackPanel>
                                 </StackPanel>
                             </StackPanel>

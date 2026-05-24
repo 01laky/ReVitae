@@ -123,10 +123,11 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - **John Doe import regression matrix** — 50 generated stress CVs assert parser
   fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`,
   prompt **035**).
-- **AI setup (prompts 036–037):** resumable background Ollama model download with
+- **AI setup (prompts 036–038):** resumable background Ollama model download with
   dock, pause/resume/stop, startup recovery, managed engine install, model
-  lifecycle (remove / clean stale), and monotonic progress — see
-  [`docs/ai-setup.md`](ai-setup.md).
+  lifecycle (remove / clean stale), monotonic progress, and **online provider
+  list with configure / test / activate** (single active backend, encrypted API
+  keys) — see [`docs/ai-setup.md`](ai-setup.md).
 - Robust education parsing for PDF layout artifacts (institution names split
   across blank lines merge into a single entry).
 
@@ -150,13 +151,15 @@ This phase focuses on importing existing CVs, extracting structured information,
 
 ### First Launch AI Setup
 
-**Implemented (prompts 036–037):** the header **AI icon** opens an on-demand setup
-modal with local hardware detection, a recommended Ollama model, a downloadable
-catalog, **managed Ollama install** when no engine is present, **background
-resumable download** (dock, pause/resume/stop, startup recovery), and **model
-lifecycle** actions (remove installed models, clean stale partial downloads).
-See [`docs/ai-setup.md`](ai-setup.md). A dedicated first-launch gate and
-online-provider setup are still planned.
+**Implemented (prompts 036–038):** the header **AI icon** opens an on-demand setup
+modal with **online provider configuration** (OpenAI, Anthropic, Gemini, Groq,
+Azure OpenAI, Mistral, DeepSeek, OpenRouter, Custom), a single active backend
+(local model or one online provider), local hardware detection, a recommended
+Ollama model, a downloadable catalog, **managed Ollama install** when no engine
+is present, **background resumable download** (dock, pause/resume/stop, startup
+recovery), and **model lifecycle** actions (remove installed models, clean stale
+partial downloads). See [`docs/ai-setup.md`](ai-setup.md). A dedicated
+first-launch gate remains planned.
 
 On first launch (full vision), the application should detect the user's operating system and relevant hardware capabilities.
 

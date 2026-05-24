@@ -1,12 +1,16 @@
-# AI setup (local models)
+# AI setup (local and online providers)
 
-ReVitae includes an **AI setup** modal for choosing and downloading a **local
-Ollama model** on your computer. This is the first Phase 2 building block — the
-app does **not** yet use AI to rewrite CV content or run import extraction.
+ReVitae includes an **AI setup** modal for choosing a **local Ollama model** or
+configuring an **online AI provider**. This is Phase 2 foundation — the app does
+**not** yet use AI to rewrite CV content or run import extraction (prompt **039+**).
 
-Downloads run as a **background job**: you can close the modal, keep editing your
-CV, pause for later, or restart the app — ReVitae picks up where Ollama left off
-using cached layers.
+At most **one** AI backend may be **active** at a time: a local Ollama model **or**
+one online provider (OpenAI, Anthropic, Gemini, Groq, Azure OpenAI, Mistral,
+DeepSeek, OpenRouter, or a self-hosted **Custom** OpenAI-compatible endpoint).
+
+Downloads of local models run as a **background job**: you can close the modal,
+keep editing your CV, pause for later, or restart the app — ReVitae picks up
+where Ollama left off using cached layers.
 
 ## Open the modal
 
@@ -17,7 +21,68 @@ using cached layers.
    results). While a download job is active, the modal opens straight to the
    **download banner**; use **Refresh system info** to re-run detection.
 
-## What you see
+## Modal layout
+
+The modal is split into two collapsible sections:
+
+| Section              | Default state | Contents                                                               |
+| -------------------- | ------------- | ---------------------------------------------------------------------- |
+| **Online providers** | Expanded      | Privacy notice, provider list, inline configure forms                  |
+| **Local models**     | Collapsed     | System detection, recommended model, catalog, download/remove/activate |
+
+When no download banner is visible, an **Active AI** strip at the top summarizes
+the current backend (local model name, online provider + model, or “none selected”).
+
+```mermaid
+flowchart TB
+    strip["Active AI strip\nlocal • online • none"]
+    online["▼ Online providers\nConfigure • Activate • Deactivate"]
+    local["▶ Local models\nDownload • Remove • Activate"]
+    strip --> online
+    strip --> local
+    online -->|"switch"| confirm["Switch confirm\nprivacy hint"]
+    local -->|"switch"| confirm
+```
+
+## Online providers
+
+Each provider row shows a name, short description, optional **Free tier available**
+badge, configuration status, and last test result when known.
+
+| Row action     | When shown                                   |
+| -------------- | -------------------------------------------- |
+| **Configure**  | Provider not yet fully configured            |
+| **Activate**   | Configured but not the active backend        |
+| **Deactivate** | This provider is the active backend          |
+| **Edit**       | Configured or active — opens the inline form |
+
+**Configure** reveals an inline form (API key, model, optional advanced fields).
+**Save** persists non-secret settings; **Test** sends a neutral connectivity probe
+(no CV data). **Reset** removes saved settings and stored API key after confirmation.
+
+Activating a provider that has never passed **Test** shows a soft warning. Switching
+from one active backend to another (local ↔ online, or between providers) asks for
+confirmation and mentions that CV text sent to AI features may be processed on the
+provider’s servers when an online backend is active.
+
+Supported presets: **OpenAI**, **Anthropic**, **Google Gemini**, **Groq**,
+**Azure OpenAI**, **Mistral**, **DeepSeek**, **OpenRouter**, and **Custom**
+(LM Studio, local Ollama `/v1`, or any OpenAI-compatible URL).
+
+### API key storage
+
+API keys are **never** written to `ai-settings.json`. They are stored in an
+encrypted file:
+
+```text
+%LocalAppData%/ReVitae/ai-secrets.enc
+%LocalAppData%/ReVitae/ai-secrets.key
+```
+
+Settings schema **v2** in `ai-settings.json` tracks active backend, local model
+metadata, and per-provider connection config (model id, base URL, last test result).
+
+## What you see (local models)
 
 ### Your system
 
@@ -71,6 +136,10 @@ Each catalog row can offer:
 | **Clean up failed download** | Stale or failed partial job  | Deletes partial Ollama blobs, clears `ai-download-job.json`, resets progress         |
 
 Both actions ask for confirmation before proceeding.
+
+Installed local models also offer **Activate** / **Deactivate** when you want the
+local Ollama model to be the active backend (subject to the same single-backend
+rule as online providers).
 
 ## Download lifecycle
 
@@ -137,6 +206,10 @@ the modal is the control surface then).
 While a download is **active** and the modal is closed, the robot icon shows a
 small **blue badge** so you know work is in progress.
 
+When a **local** model is the active backend (and no download badge), a **green**
+badge appears on the robot icon. When an **online** provider is active, a **blue**
+badge appears (download badge takes priority over both).
+
 ### Progress percent
 
 Ollama reports progress **per layer**; totals can reset between layers. ReVitae:
@@ -186,15 +259,27 @@ Both live under `%LocalAppData%/ReVitae/` (macOS:
 **`ai-download-job.json`** — active job (state, progress, model tag). Removed
 after success or stop; kept after failure until Retry or Stop.
 
-**`ai-settings.json`** — last successfully downloaded model:
+**`ai-settings.json`** — schema v2: active backend, local model metadata, online
+provider configs (no API keys):
 
 ```json
 {
-  "selectedModelId": "llama31-8b",
-  "ollamaModelTag": "llama3.1:8b-instruct",
-  "downloadedAtUtc": "2026-05-21T12:00:00Z"
+  "schemaVersion": 2,
+  "activeBackend": "Local",
+  "activeLocalModelId": "llama31-8b",
+  "activeOnlineProviderId": null,
+  "local": {
+    "selectedModelId": "llama31-8b",
+    "ollamaModelTag": "llama3.1:8b-instruct",
+    "downloadedAtUtc": "2026-05-21T12:00:00Z"
+  },
+  "onlineProviders": {}
 }
 ```
+
+Legacy v1 files (selected model only) migrate automatically to local-active v2.
+
+**`ai-secrets.enc`** — encrypted API keys per online provider id (see above).
 
 **Managed Ollama** (when auto-installed):
 
@@ -204,7 +289,7 @@ after success or stop; kept after failure until Retry or Stop.
   serve.log
 ```
 
-No API keys or secrets are stored.
+API keys live only in `ai-secrets.enc`, not in settings JSON.
 
 ## Troubleshooting
 
@@ -232,16 +317,18 @@ No API keys or secrets are stored.
 10. **Remove model** on an installed row → Ollama tag deleted; card shows **Not downloaded**.
 11. **Clean up failed download** on stale row → job cleared; Download enabled again.
 12. Fresh machine without Ollama → download triggers managed install, then model pull.
+13. Configure OpenAI → Test → Activate → Active strip and header badge update.
+14. Switch from local active to online → confirm dialog → only one backend active.
+15. Reset provider config → API key removed from secrets file; row returns to Configure.
 
 ## Related docs
 
 - Product concept (Phase 2): [`concept.md`](concept.md)
-- Implementation prompts: [`../prompts/036-ai-setup-modal-system-detection.md`](../prompts/036-ai-setup-modal-system-detection.md), [`../prompts/037-resumable-ai-model-download.md`](../prompts/037-resumable-ai-model-download.md)
+- Implementation prompts: [`../prompts/036-ai-setup-modal-system-detection.md`](../prompts/036-ai-setup-modal-system-detection.md), [`../prompts/037-resumable-ai-model-download.md`](../prompts/037-resumable-ai-model-download.md), [`../prompts/038-ai-provider-list-and-configuration.md`](../prompts/038-ai-provider-list-and-configuration.md)
 
 ## Not in scope yet
 
-- Cloud / OpenAI-compatible providers
-- AI-assisted import or field rewrite
+- Using configured providers for CV rewrite or import (**039+**)
 - Automatic first-launch wizard
 - Parallel downloads of multiple models
 - Download bandwidth throttling

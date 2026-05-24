@@ -35,7 +35,12 @@ public sealed class OllamaPullClientTests
             CancellationToken.None);
 
         Assert.Equal(OllamaPullOutcome.Succeeded, result.Outcome);
-        Assert.Equal(3, statuses.Count);
+        Assert.Contains(statuses, value =>
+            string.Equals(value.Status, "downloading", StringComparison.Ordinal) &&
+            value.Completed == 50 &&
+            value.Total == 100);
+        Assert.Contains(statuses, value =>
+            string.Equals(value.Status, "success", StringComparison.Ordinal));
     }
 
     private sealed class FakeOllamaPullHandler(string body) : HttpMessageHandler

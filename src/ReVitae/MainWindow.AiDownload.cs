@@ -271,7 +271,10 @@ public partial class MainWindow
         if (AiSetupModalOverlay.IsVisible)
         {
             UpdateAiSetupDownloadButtonState();
+            UpdateAiActiveBackendStrip();
         }
+
+        UpdateAiHeaderBackendBadges();
     }
 
     private void ApplyAiDownloadBannerUi(AiDownloadJobSnapshot snapshot)

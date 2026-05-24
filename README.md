@@ -117,15 +117,16 @@ Photos appear in template preview and in PDF/HTML/DOCX export. ReVitae JSON/YAML
 **v2** round-trips embedded photo bytes; document imports (PDF, DOCX, HTML, …)
 do not extract photos.
 
-### AI setup (local models, Phase 2 foundation)
+### AI setup (local and online providers, Phase 2 foundation)
 
 See **[Local AI — download that survives interruptions](#local-ai--download-that-survives-interruptions)**
-above for the headline behavior. The header **robot icon** opens **AI setup**:
-system detection, **11 curated Ollama instruct models**, RAM-tier recommendations,
-managed Ollama install, background download with pause/resume/stop, per-model
-status badges, remove/clean actions, bottom-left progress dock, startup recovery,
-and persistence to `%LocalAppData%/ReVitae/`. No cloud AI or CV rewriting yet —
-details in [`docs/ai-setup.md`](docs/ai-setup.md).
+above for local download behavior. The header **robot icon** opens **AI setup** with
+two sections: **Online providers** (expanded by default — OpenAI, Anthropic, Gemini,
+Groq, Azure, Mistral, DeepSeek, OpenRouter, Custom) and **Local models** (collapsed
+by default — system detection, **11 curated Ollama instruct models**, managed install,
+background download, activate/deactivate). Exactly **one** backend may be active at a
+time; API keys are encrypted in `ai-secrets.enc`. No CV rewriting yet — details in
+[`docs/ai-setup.md`](docs/ai-setup.md).
 
 ### CV import (multi-format)
 
@@ -210,9 +211,10 @@ validation UI, template preview, **optional profile photo** (prompt **023**),
 **multi-format export** (15 formats via `CvDocumentExporter`), and
 **multi-format CV import** (prompt **021**) through `CvDocumentImporter` are in
 place. Intro / replace flows cover PDF plus the additional structured and
-text-native formats listed above. **AI setup** (prompts **036**–**037**) adds local Ollama model detection, managed
+text-native formats listed above. **AI setup** (prompts **036**–**038**) adds local Ollama model detection, managed
 engine install, **resumable background download** with dock and startup recovery,
-model lifecycle management (remove / clean stale), and monotonic progress display;
+model lifecycle management (remove / clean stale), monotonic progress display, and
+**online provider configuration** with a single active backend (local or cloud);
 CV AI features remain planned. Next major themes remain **local persistence** and
 AI-assisted import / recommendations.
 
@@ -237,7 +239,6 @@ Planned areas:
 
 - Save and load local CV projects (native `.revitae.json` interchange is documented in [`docs/revitae-project-json.md`](docs/revitae-project-json.md); export already supports `.revitae.json`)
 - ReVitae-exported PDF re-import (template-aware parsing)
-- Cloud / online AI providers in the setup modal
 - AI-assisted import, field rewrite, and quality-hint assist
 - Installer/package builds for supported platforms
 
@@ -308,7 +309,7 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–037)
+  Implementation prompts and product increments (001–038)
 
 docs/
   Product concept, export/import matrices (`export-formats.md`,

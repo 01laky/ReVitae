@@ -9,6 +9,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **AI provider list and configuration** (prompt **038**): online provider catalog
+  (OpenAI, Anthropic, Gemini, Groq, Azure OpenAI, Mistral, DeepSeek, OpenRouter,
+  Custom); inline configure / Save / Test forms; single active backend (local **or**
+  online); switch and untested-activation confirmations; encrypted `ai-secrets.enc`;
+  settings schema v2 with legacy migration; active-backend strip; header badges for
+  local (green) and online (blue) active backends; **60+** provider / settings /
+  connection tests.
 - **Resumable AI model download** (prompt **037**): background Ollama pull via
   `AiModelDownloadCoordinator`; bottom-left progress dock; modal download banner
   with Pause / Resume / Stop; startup auto-resume with exponential backoff;

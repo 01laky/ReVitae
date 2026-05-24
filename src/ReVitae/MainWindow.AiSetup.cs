@@ -65,6 +65,7 @@ public partial class MainWindow
         if (isVisible)
         {
             HideOtherContentModals(AiSetupModalOverlay);
+            UpdateAiActiveBackendStrip();
 
             if (_aiDownloadCoordinator.HasActiveJob)
             {
@@ -127,6 +128,8 @@ public partial class MainWindow
         AiSetupDownloadConfirmPanel.IsVisible = false;
         AiSetupDownloadStopConfirmPanel.IsVisible = false;
         AiSetupModelActionConfirmPanel.IsVisible = false;
+        AiSetupProviderSwitchConfirmPanel.IsVisible = false;
+        AiSetupProviderUntestedConfirmPanel.IsVisible = false;
         AiSetupDownloadJobBanner.IsVisible = false;
         AiSetupDownloadButton.IsEnabled = false;
     }
@@ -402,6 +405,28 @@ public partial class MainWindow
 
         if (isInstalled)
         {
+            var isActive = IsLocalModelActive(recommendation.Model.Id);
+            var activateButton = new Button
+            {
+                Content = _localizer.Get(
+                    isActive
+                        ? TranslationKeys.AiSetupModelDeactivate
+                        : TranslationKeys.AiSetupModelActivate),
+                Classes = { isActive ? "re-vitae-secondary" : "re-vitae-primary" },
+            };
+            activateButton.Click += (_, _) =>
+            {
+                if (IsLocalModelActive(recommendation.Model.Id))
+                {
+                    DeactivateLocalModelIfActive(recommendation.Model.Id);
+                }
+                else
+                {
+                    TryActivateLocalModel(recommendation.Model.Id, installed: true);
+                }
+            };
+            actionsRow.Children.Add(activateButton);
+
             var removeButton = new Button
             {
                 Content = _localizer.Get(TranslationKeys.AiSetupModelRemove),
@@ -446,8 +471,15 @@ public partial class MainWindow
     }
 
     private (string Text, string CssClass) GetModelInstallationStatusPresentation(
-        AiModelInstallationStatus installationStatus) =>
-        installationStatus.Presence switch
+        AiModelInstallationStatus installationStatus)
+    {
+        if (installationStatus.Presence == AiModelInstallPresence.Installed &&
+            IsLocalModelActive(installationStatus.Model.Id))
+        {
+            return (_localizer.Get(TranslationKeys.AiSetupModelActive), "re-vitae-primary");
+        }
+
+        return installationStatus.Presence switch
         {
             AiModelInstallPresence.Installed =>
                 (_localizer.Get(TranslationKeys.AiSetupModelStatusDownloaded), "re-vitae-primary"),
@@ -457,6 +489,7 @@ public partial class MainWindow
                 (_localizer.Get(TranslationKeys.AiSetupModelStaleDownload), "re-vitae-error"),
             _ => (_localizer.Get(TranslationKeys.AiSetupModelStatusNotDownloaded), "re-vitae-secondary"),
         };
+    }
 
     private void RefreshAiSetupModelCardsIfVisible()
     {
@@ -775,6 +808,8 @@ public partial class MainWindow
         AiSetupDownloadConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
         AiSetupModelActionConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
         AiSetupModelActionConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
+
+        ApplyAiProviderLocalization();
 
         var closeLabel = _localizer.Get(TranslationKeys.Close);
         AiSetupBottomCloseButton.Content = closeLabel;

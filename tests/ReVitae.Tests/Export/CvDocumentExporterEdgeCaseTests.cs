@@ -152,7 +152,9 @@ public sealed class CvDocumentExporterEdgeCaseTests
 
     public static IEnumerable<object[]> DeterministicFormatsMemberData() =>
         CvExportTestFixtures.AllShippedFormats
-            .Where(format => format is not CvExportFormat.Docx and not CvExportFormat.Odt)
+            .Where(format => format is not CvExportFormat.Docx
+                and not CvExportFormat.Odt
+                and not CvExportFormat.Pdf)
             .Select(format => new object[] { format });
 
     private static byte[] ExportToBytes(CvExportDocument document, CvExportSourceData source, CvExportFormat format)

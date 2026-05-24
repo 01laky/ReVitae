@@ -61,6 +61,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         InitializeAiDownload();
+        InitializeAiProviders();
         InitializeQualityHintsUi();
         InitializePersonalValidation();
         InitializeLanguageSelector();

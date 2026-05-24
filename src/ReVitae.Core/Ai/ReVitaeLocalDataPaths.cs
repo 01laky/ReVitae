@@ -18,4 +18,14 @@ public static class ReVitaeLocalDataPaths
     {
         return Path.Combine(GetReVitaeRootDirectory(), "ai-download-job.json");
     }
+
+    public static string GetAiSecretsFilePath()
+    {
+        return Path.Combine(GetReVitaeRootDirectory(), "ai-secrets.enc");
+    }
+
+    public static string GetAiSecretsKeyFilePath()
+    {
+        return Path.Combine(GetReVitaeRootDirectory(), "ai-secrets.key");
+    }
 }

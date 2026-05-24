@@ -162,11 +162,18 @@ public sealed class AiModelLifecycleService
         }
 
         var settings = _settingsStorage.TryLoad();
-        if (settings is not null &&
-            (string.Equals(settings.SelectedModelId, model.Id, StringComparison.Ordinal) ||
-             string.Equals(settings.OllamaModelTag, model.OllamaModelTag, StringComparison.OrdinalIgnoreCase)))
+        var document = _settingsStorage.LoadDocument();
+        if (document.Local is not null &&
+            (string.Equals(document.Local.SelectedModelId, model.Id, StringComparison.Ordinal) ||
+             string.Equals(document.Local.OllamaModelTag, model.OllamaModelTag, StringComparison.OrdinalIgnoreCase)))
         {
-            _settingsStorage.Clear();
+            _settingsStorage.ClearLocalIfMatches(model.Id);
+        }
+        else if (settings is not null &&
+                 (string.Equals(settings.SelectedModelId, model.Id, StringComparison.Ordinal) ||
+                  string.Equals(settings.OllamaModelTag, model.OllamaModelTag, StringComparison.OrdinalIgnoreCase)))
+        {
+            _settingsStorage.ClearLocalIfMatches(model.Id);
         }
     }
 
