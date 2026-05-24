@@ -328,6 +328,33 @@ public sealed class EducationImportEdgeCaseTests
         Assert.True(result.SectionHasData[CvImportSectionId.Education]);
     }
 
+    [Fact]
+    public void Extract_ParsesInstitutionFirstReVitaeEducationBlocks()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Education
+            Massachusetts Institute of Technology
+            MSc Computer Science
+            Cambridge, MA · Full-time · 09 / 2010 – 06 / 2014
+
+            Stanford University
+            BSc Software Engineering
+            Palo Alto, CA · Full-time · 09 / 2006 – 06 / 2010
+            """;
+
+        var result = Extract(text);
+
+        Assert.Equal(2, result.EducationEntries.Count);
+        Assert.Equal("Massachusetts Institute of Technology", result.EducationEntries[0].Institution);
+        Assert.Equal("MSc Computer Science", result.EducationEntries[0].Degree);
+        Assert.Equal("Cambridge, MA", result.EducationEntries[0].Location);
+        Assert.Equal("Stanford University", result.EducationEntries[1].Institution);
+        Assert.Equal("BSc Software Engineering", result.EducationEntries[1].Degree);
+    }
+
     private static CvImportResult Extract(string text)
     {
         return CvImportFieldExtractor.Extract(CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text)));

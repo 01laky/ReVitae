@@ -9,28 +9,28 @@ Detection happens in `CvImportFormatDetector` (extension first; `.json` / `.xml`
 also sniff structure). Routing is implemented by dedicated `ICvFormatImporter`
 implementations registered from `CvDocumentImporter`.
 
-| User-facing types   | Detection                                             | Pipeline                                                              |
-| ------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
-| PDF                 | `.pdf`                                                | PdfPig → quality gate → OCR fallback → text pipeline                  |
-| Raster images       | `.jpg`, `.png`, `.webp`, …                            | OCR → text pipeline                                                   |
-| Plain text          | `.txt`                                                | Encoding probe → text pipeline                                        |
-| Markdown            | `.md`, `.markdown`                                    | Markdig plaintext → text pipeline                                     |
-| HTML                | `.html`, `.htm`                                       | HtmlAgilityPack → text pipeline (+ hyperlink hints)                   |
-| LaTeX               | `.tex`                                                | LaTeX-oriented extractor → text pipeline                              |
-| DOCX                | `.docx`                                               | Open XML paragraphs (+ hyperlink harvest) → text pipeline             |
-| Legacy Word         | `.doc`                                                | NPOI → text pipeline                                                  |
-| ODT                 | `.odt`                                                | ODT ZIP → secure XML → text pipeline                                  |
-| RTF                 | `.rtf`                                                | RtfPipe → text pipeline                                               |
-| AbiWord             | `.abw`                                                | Secure XML parse → text pipeline                                      |
-| Apple Pages         | `.pages`                                              | ZIP/text sniff → text pipeline                                        |
-| WPS                 | `.wps`                                                | Structured sniff → text pipeline                                      |
-| JSON Resume         | `.json` (shape sniff: `basics`, `work`, `$schema`, …) | `JsonResumeMapper`                                                    |
-| ReVitae native JSON | `*.revitae.json` **or** JSON root `revitaeVersion`    | `ReVitaeJsonMapper`                                                   |
-| YAML CV             | `.yaml`, `.yml`                                       | Sniff native vs JSON Resume flavor → mapper bridge                    |
-| CSV / TSV tabular   | `.csv`, `.tsv`                                        | `TabularCvMapper` (header + first row → mostly personal fields)       |
-| Europass XML        | `.xml` (namespace / token sniff)                      | `EuropassXmlMapper`                                                   |
-| HR‑XML-like         | `.xml` (resume / candidate tokens)                    | `HrXmlMapper`                                                         |
-| Unknown             | anything else                                         | Error: unsupported format                                             |
+| User-facing types   | Detection                                             | Pipeline                                                        |
+| ------------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
+| PDF                 | `.pdf`                                                | PdfPig → quality gate → OCR fallback → text pipeline            |
+| Raster images       | `.jpg`, `.png`, `.webp`, …                            | OCR → text pipeline                                             |
+| Plain text          | `.txt`                                                | Encoding probe → text pipeline                                  |
+| Markdown            | `.md`, `.markdown`                                    | Markdig plaintext → text pipeline                               |
+| HTML                | `.html`, `.htm`                                       | HtmlAgilityPack → text pipeline (+ hyperlink hints)             |
+| LaTeX               | `.tex`                                                | LaTeX-oriented extractor → text pipeline                        |
+| DOCX                | `.docx`                                               | Open XML paragraphs (+ hyperlink harvest) → text pipeline       |
+| Legacy Word         | `.doc`                                                | NPOI → text pipeline                                            |
+| ODT                 | `.odt`                                                | ODT ZIP → secure XML → text pipeline                            |
+| RTF                 | `.rtf`                                                | RtfPipe → text pipeline                                         |
+| AbiWord             | `.abw`                                                | Secure XML parse → text pipeline                                |
+| Apple Pages         | `.pages`                                              | ZIP/text sniff → text pipeline                                  |
+| WPS                 | `.wps`                                                | Structured sniff → text pipeline                                |
+| JSON Resume         | `.json` (shape sniff: `basics`, `work`, `$schema`, …) | `JsonResumeMapper`                                              |
+| ReVitae native JSON | `*.revitae.json` **or** JSON root `revitaeVersion`    | `ReVitaeJsonMapper`                                             |
+| YAML CV             | `.yaml`, `.yml`                                       | Sniff native vs JSON Resume flavor → mapper bridge              |
+| CSV / TSV tabular   | `.csv`, `.tsv`                                        | `TabularCvMapper` (header + first row → mostly personal fields) |
+| Europass XML        | `.xml` (namespace / token sniff)                      | `EuropassXmlMapper`                                             |
+| HR‑XML-like         | `.xml` (resume / candidate tokens)                    | `HrXmlMapper`                                                   |
+| Unknown             | anything else                                         | Error: unsupported format                                       |
 
 Structured formats (`JsonResumeMapper`, `ReVitaeJsonMapper`, Europass / HR‑XML,
 tabular) populate `CvImportResult` directly when recognition succeeds.
@@ -100,6 +100,19 @@ rather than network or file disclosure.
   shapes are treated as **unsupported format** at detection time (no importer).
 - **Unknown XML:** Generic XML without Europass / HR‑XML heuristics maps to
   **unsupported format**.
+
+## Regression testing
+
+The **John Doe import matrix** (`tests/ReVitae.Tests/Import/JohnDoeImportRegressionMatrixTests`,
+trait `ImportMatrix`) generates **50** fully populated CV files at runtime from
+`JohnDoeStressCvDataset` and asserts:
+
+- successful import per variant,
+- canonical section counts and spot checks,
+- **zero post-import form validation errors** (same validators as the UI).
+
+Filter locally: `dotnet test --filter Category=ImportMatrix`. See
+[`../prompts/035-john-doe-import-regression-matrix.md`](../prompts/035-john-doe-import-regression-matrix.md).
 
 ## Related docs
 

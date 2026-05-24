@@ -27,6 +27,7 @@ public sealed record CvExportSectionLabels(
     string Email,
     string Phone,
     string Location,
+    string ProfessionalTitle,
     string LinkedInUrl,
     string PortfolioUrl,
     string GitHubUrl);

@@ -26,15 +26,15 @@ on rendered bitmaps. Fix PdfPig + parser heuristics first.
 
 ## Known gaps (John Doe.pdf stress fixture)
 
-| Field | Expected | Current (approx.) |
-| ----- | -------- | ----------------- |
-| Work | 20 | 20 ✓ |
-| Languages | 12 | 12 ✓ |
-| Skills groups | 12 / 115 skills | 1 / 84 |
-| Education | 12 | 4 (split institutions) |
-| Certificates | 24 | 4 |
-| Projects | 24 | 10 |
-| Title, Location, LinkedIn, GitHub | set | empty (URL line breaks) |
+| Field                             | Expected        | Current (approx.)       |
+| --------------------------------- | --------------- | ----------------------- |
+| Work                              | 20              | 20 ✓                    |
+| Languages                         | 12              | 12 ✓                    |
+| Skills groups                     | 12 / 115 skills | 1 / 84                  |
+| Education                         | 12              | 4 (split institutions)  |
+| Certificates                      | 24              | 4                       |
+| Projects                          | 24              | 10                      |
+| Title, Location, LinkedIn, GitHub | set             | empty (URL line breaks) |
 
 ## Implementation areas
 

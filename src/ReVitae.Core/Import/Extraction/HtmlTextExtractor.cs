@@ -59,7 +59,7 @@ public sealed class HtmlTextExtractor : ICvTextExtractor
         TrimHiddenNodes(body);
 
         var buffer = new StringBuilder();
-        WriteNode(body, buffer);
+        WriteNode(body, buffer, preserveWhitespace: false);
         var text = buffer.ToString().Trim();
         IReadOnlyList<string>? hrefList = hyperlinkUrls.Count > 0 ? hyperlinkUrls : null;
         if (string.IsNullOrWhiteSpace(text))
@@ -89,9 +89,9 @@ public sealed class HtmlTextExtractor : ICvTextExtractor
         return Regex.IsMatch(css, @"display\s*:\s*none", RegexOptions.IgnoreCase);
     }
 
-    private static void WriteNode(HtmlNode node, StringBuilder sink)
+    private static void WriteNode(HtmlNode node, StringBuilder sink, bool preserveWhitespace)
     {
-        if (node.NodeType == HtmlNodeType.Element && SkipTagNames.Contains(node.Name, StringComparer.OrdinalIgnoreCase))
+        if (node.NodeType == HtmlNodeType.Element && SkipTagNames.Contains(node.Name.ToLowerInvariant()))
         {
             return;
         }
@@ -105,26 +105,47 @@ public sealed class HtmlTextExtractor : ICvTextExtractor
             }
         }
 
+        var name = node.NodeType == HtmlNodeType.Element ? node.Name.ToLowerInvariant() : string.Empty;
+        var blocks = name is "p" or "div" or "br" or "li" or "tr" or "table" or "pre"
+            or "h1" or "h2" or "h3" or "h4" or "h5" or "h6";
+
+        if (blocks)
+        {
+            EnsureLineBreak(sink);
+        }
+
         if (node.NodeType == HtmlNodeType.Text)
         {
-            AppendTextChunk(sink, HtmlEntity.DeEntitize(node.InnerText.Trim()));
+            var text = HtmlEntity.DeEntitize(node.InnerText);
+            if (preserveWhitespace)
+            {
+                sink.Append(text);
+            }
+            else
+            {
+                AppendTextChunk(sink, text.Trim());
+            }
+
             return;
         }
 
-        var name = node.Name.ToLowerInvariant();
-        var blocks = name is "p" or "div" or "br" or "li" or "tr" or "table"
-            or "h1" or "h2" or "h3" or "h4" or "h5" or "h6";
+        var preserveChildren = preserveWhitespace || name == "pre";
 
         foreach (var child in node.ChildNodes)
         {
-            WriteNode(child, sink);
+            WriteNode(child, sink, preserveChildren);
             if (blocks && child.NextSibling is not null)
             {
-                if (sink.Length == 0 || sink[^1] != '\n')
-                {
-                    sink.Append('\n');
-                }
+                EnsureLineBreak(sink);
             }
+        }
+    }
+
+    private static void EnsureLineBreak(StringBuilder sink)
+    {
+        if (sink.Length > 0 && sink[^1] != '\n')
+        {
+            sink.Append('\n');
         }
     }
 

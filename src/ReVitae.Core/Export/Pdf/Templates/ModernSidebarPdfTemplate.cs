@@ -30,8 +30,10 @@ internal static class ModernSidebarPdfTemplate
                             sidebar,
                             document.Labels.Contact,
                             CvExportPreviewContentBuilder.BuildLines(
+                                document.Labels.ProfessionalTitle, document.ProfessionalTitle,
                                 document.Labels.Phone, document.Phone,
                                 document.Labels.Email, document.Email,
+                                document.Labels.Location, document.Location,
                                 document.Labels.LinkedInUrl, document.LinkedInUrl));
                     });
 

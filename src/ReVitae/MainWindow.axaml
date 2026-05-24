@@ -817,16 +817,67 @@
             </Border>
         </Grid>
 
+        <Grid x:Name="QualityHintModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="QualityHintModalPanel"
+                    Classes="re-vitae-modal-panel re-vitae-quality-hint-modal"
+                    MaxWidth="1200"
+                    MaxHeight="960"
+                    MinWidth="720"
+                    MinHeight="480"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                        <TextBlock x:Name="QualityHintModalTitleTextBlock"
+                                   Classes="re-vitae-app-title"
+                                   FontSize="22"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="QualityHintModalTopCloseButton"
+                                Grid.Column="1"
+                                Classes="re-vitae-expand-toggle"
+                                Click="OnCloseQualityHintModalClicked"
+                                ToolTip.Tip="Close"
+                                AutomationProperties.Name="Close">
+                            <materialIcons:MaterialIcon Kind="Close"
+                                                        Width="22"
+                                                        Height="22" />
+                        </Button>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1"
+                                  Margin="0,20,0,20">
+                        <StackPanel x:Name="QualityHintModalContentPanel"
+                                    Spacing="20"
+                                    Classes="re-vitae-section-body" />
+                    </ScrollViewer>
+
+                    <Button x:Name="QualityHintModalBottomCloseButton"
+                            Grid.Row="2"
+                            Content="Close"
+                            HorizontalAlignment="Right"
+                            Click="OnCloseQualityHintModalClicked" />
+                </Grid>
+            </Border>
+        </Grid>
+
         <Border x:Name="QualityHintSnackbarBorder"
                 Grid.Row="1"
                 VerticalAlignment="Bottom"
                 HorizontalAlignment="Center"
                 Margin="0,0,0,16"
-                Padding="16,10"
+                Padding="20,14"
                 IsVisible="False">
             <TextBlock x:Name="QualityHintSnackbarTextBlock"
                        TextWrapping="Wrap"
-                       MaxWidth="520" />
+                       FontSize="15"
+                       LineHeight="22"
+                       MaxWidth="720" />
         </Border>
     </Grid>
 </Window>

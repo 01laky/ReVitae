@@ -393,7 +393,16 @@ public sealed class JohnDoeStressPdfImportEdgeCaseTests
         Assert.Equal("john.doe@example.com", result.Personal.Email);
         Assert.Equal(20, result.WorkExperienceEntries.Count);
         Assert.Equal(12, result.LanguageEntries.Count);
+        Assert.Equal(12, result.EducationEntries.Count);
+        Assert.InRange(result.SkillsGroups.Count, 11, 12);
+        Assert.Equal(24, result.CertificateEntries.Count);
+        Assert.Equal(24, result.ProjectEntries.Count);
         Assert.True(result.SkillsGroups.Sum(group => group.Skills.Count) >= 80);
+        Assert.Equal("https://www.linkedin.com/in/john-doe-architect", result.Personal.LinkedInUrl);
+        Assert.Equal("https://github.com/johndoe", result.Personal.GitHubUrl);
+        Assert.Equal("https://johndoe.dev", result.Personal.PortfolioUrl);
+        Assert.Contains("San Francisco", result.Personal.Location, StringComparison.Ordinal);
+        Assert.Contains("Senior", result.Personal.ProfessionalTitle, StringComparison.Ordinal);
     }
 
     [Fact]

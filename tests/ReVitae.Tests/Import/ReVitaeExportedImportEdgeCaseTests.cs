@@ -659,4 +659,92 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
         Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Skills));
         Assert.Contains("C#, Go", result.SectionBodies[CvImportSectionId.Skills], StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Extract_MergesSplitLinkedInUrlLinesFromContactSection()
+    {
+        const string text = """
+            Jane Doe
+            Contact
+            LinkedIn URL: https://
+            www.linkedin.com/in/jane-
+            doe
+            """;
+
+        var result = ImportTestHelpers.Extract(text);
+
+        Assert.Equal("https://www.linkedin.com/in/jane-doe", result.Personal.LinkedInUrl);
+    }
+
+    [Fact]
+    public void Extract_ParsesReVitaeSkillCategoryHeadersWithDotFormat()
+    {
+        const string text = """
+            Jane Doe
+            Skills
+            Backend & Runtimes
+            C# · Expert · 10 yrs
+            Frontend
+            React · Advanced · 8 yrs
+            """;
+
+        var result = ImportTestHelpers.Extract(text);
+
+        Assert.Equal(2, result.SkillsGroups.Count);
+        Assert.Equal("Backend & Runtimes", result.SkillsGroups[0].Category);
+        Assert.Equal("Frontend", result.SkillsGroups[1].Category);
+    }
+
+    [Fact]
+    public void Extract_SplitsReVitaeCertificateAndProjectEntriesOnSingleNewlines()
+    {
+        const string text = """
+            Jane Doe
+            Certificates
+            Professional Certification #01 - Cloud
+            Issuing Organization: Board 1
+            Issued: 02 / 2021
+            Professional Certification #02 - Security
+            Issuing Organization: Board 2
+            Issued: 03 / 2022
+
+            Projects
+            Project Atlas 01 - Platform
+            Role: Lead
+            Date range: 01 / 2020 – 12 / 2021
+            Project Atlas 02 - Data
+            Role: Architect
+            Date range: 02 / 2019 – 01 / 2020
+            """;
+
+        var result = ImportTestHelpers.Extract(text);
+
+        Assert.Equal(2, result.CertificateEntries.Count);
+        Assert.Equal(2, result.ProjectEntries.Count);
+        Assert.Equal(2021, result.ProjectEntries[0].EndYear);
+    }
+
+    [Fact]
+    public void Extract_MergesSplitEducationMetaLineBeforeParsingEntries()
+    {
+        const string text = """
+            Jane Doe
+            Education
+            MSc Computer Science
+            Massachusetts Institute of Technology · Cambridge, MA, USA · Master's ·
+            09 / 2000 - 06 / 2002
+            Field of study: Distributed Systems
+            BSc Software Engineering
+            Stanford University · Zurich, Switzerland · Bachelor's · 09 / 2001 - 06 /
+            2004
+            """;
+
+        var result = ImportTestHelpers.Extract(text);
+
+        Assert.Equal(2, result.EducationEntries.Count);
+        Assert.Equal("Massachusetts Institute of Technology", result.EducationEntries[0].Institution);
+        Assert.Equal(2002, result.EducationEntries[0].EndYear);
+        Assert.Equal("Stanford University", result.EducationEntries[1].Institution);
+        Assert.Equal(2004, result.EducationEntries[1].EndYear);
+    }
 }

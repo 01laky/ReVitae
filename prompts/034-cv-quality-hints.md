@@ -63,11 +63,11 @@ Form UI (MainWindow + section views)
 
 ### Do not merge with validation
 
-| Concern | Model | Blocks export? | Visual |
-| ------- | ----- | -------------- | ------ |
-| Validation | `FieldValidationError` | yes | red inline + error badge |
-| Import confidence | `ImportedFieldConfidence` | no | yellow import border |
-| **Quality hints** | **`CvQualityHint`** | **no** | **info/suggestion badge + flyout** |
+| Concern           | Model                     | Blocks export? | Visual                             |
+| ----------------- | ------------------------- | -------------- | ---------------------------------- |
+| Validation        | `FieldValidationError`    | yes            | red inline + error badge           |
+| Import confidence | `ImportedFieldConfidence` | no             | yellow import border               |
+| **Quality hints** | **`CvQualityHint`**       | **no**         | **info/suggestion badge + flyout** |
 
 Never add quality messages to `FieldValidationResult`.
 
@@ -143,25 +143,25 @@ Orchestrator runs section rule classes and concatenates results. De-duplicate by
 
 Implement as internal static classes under `ReVitae.Core/Quality/Rules/`:
 
-| Rule ID | Trigger (summary) | `CvImportSectionId` |
-| ------- | ----------------- | ------------------- |
-| `personal.summary-too-short` | summary non-empty and `< 80` non-ws chars | `PersonalInformation` |
-| `personal.summary-too-long` | summary `> 600` non-ws chars | `PersonalInformation` |
-| `personal.summary-missing` | `HasStartedCv`, summary empty, work or education has entries | `PersonalInformation` |
-| `personal.missing-title` | `HasStartedCv` and professional title empty | `PersonalInformation` |
-| `work.section-empty` | `HasStartedCv`, zero active work entries, at least one **other** section has data | `WorkExperience` |
-| `work.entry-missing-description` | active entry, empty description | `WorkExperience` |
-| `work.generic-description` | active entry; see heuristic below | `WorkExperience` |
-| `education.section-empty` | `HasStartedCv`, zero active education entries, at least one other section has data | `Education` |
-| `skills.single-large-group` | one group with `> 15` skills with `HasUserInput()` | `Skills` |
-| `skills.section-empty` | `HasStartedCv`, zero skill groups with any skills | `Skills` |
-| `languages.section-empty` | at least one active work entry, zero active languages | `Languages` |
-| `links.duplicate-personal-url` | link URL matches personal LinkedIn/GitHub/portfolio (normalized) | `Links` |
-| `certificates.section-empty` | `HasStartedCv`, zero active certificates, another section has data | `Certificates` |
-| `projects.section-empty` | `HasStartedCv`, zero active projects, another section has data | `Projects` |
-| `projects.entry-missing-description` | active project, empty description and highlights | `Projects` |
-| `import.review-section` | section has `≥ 2` import fields with `Low` confidence | matching section |
-| `import.review-field` | `Low` import confidence on field and a content rule still fires | matching section |
+| Rule ID                              | Trigger (summary)                                                                  | `CvImportSectionId`   |
+| ------------------------------------ | ---------------------------------------------------------------------------------- | --------------------- |
+| `personal.summary-too-short`         | summary non-empty and `< 80` non-ws chars                                          | `PersonalInformation` |
+| `personal.summary-too-long`          | summary `> 600` non-ws chars                                                       | `PersonalInformation` |
+| `personal.summary-missing`           | `HasStartedCv`, summary empty, work or education has entries                       | `PersonalInformation` |
+| `personal.missing-title`             | `HasStartedCv` and professional title empty                                        | `PersonalInformation` |
+| `work.section-empty`                 | `HasStartedCv`, zero active work entries, at least one **other** section has data  | `WorkExperience`      |
+| `work.entry-missing-description`     | active entry, empty description                                                    | `WorkExperience`      |
+| `work.generic-description`           | active entry; see heuristic below                                                  | `WorkExperience`      |
+| `education.section-empty`            | `HasStartedCv`, zero active education entries, at least one other section has data | `Education`           |
+| `skills.single-large-group`          | one group with `> 15` skills with `HasUserInput()`                                 | `Skills`              |
+| `skills.section-empty`               | `HasStartedCv`, zero skill groups with any skills                                  | `Skills`              |
+| `languages.section-empty`            | at least one active work entry, zero active languages                              | `Languages`           |
+| `links.duplicate-personal-url`       | link URL matches personal LinkedIn/GitHub/portfolio (normalized)                   | `Links`               |
+| `certificates.section-empty`         | `HasStartedCv`, zero active certificates, another section has data                 | `Certificates`        |
+| `projects.section-empty`             | `HasStartedCv`, zero active projects, another section has data                     | `Projects`            |
+| `projects.entry-missing-description` | active project, empty description and highlights                                   | `Projects`            |
+| `import.review-section`              | section has `≥ 2` import fields with `Low` confidence                              | matching section      |
+| `import.review-field`                | `Low` import confidence on field and a content rule still fires                    | matching section      |
 
 **v1 has no rules yet** for Additional Information — still wire badge (count stays 0).
 
@@ -307,23 +307,23 @@ overlay pattern for SK/CS as time permits). Register every new key in the
 **RequiredKeys** list (same discipline as prompts **018** / **021**) so missing
 translations fail tests early:
 
-| Key | English example |
-| --- | ---------------- |
-| `QualityHintFlyoutTitle` | Suggestions — {0} |
-| `QualityHintGoToField` | Go to field |
-| `QualityHintBadgeCount` | {0} |
-| `QualityHintSnackbarAfterImport` | Import complete. Review suggestions on section badges. |
-| `QualityHintSnackbarFirstSession` | This CV has suggestions to improve — click the badges beside sections. |
-| `QualityHintPersonalSummaryTooShort` | Short summary — consider adding 2–3 sentences about your role and strengths. |
-| `QualityHintPersonalSummaryTooLong` | Summary is very long — recruiters often skim; consider shortening. |
-| `QualityHintPersonalMissingTitle` | Professional title is empty — add a headline under your name. |
-| `QualityHintWorkSectionEmpty` | No work experience yet — add at least your most recent role. |
-| `QualityHintWorkMissingDescription` | A work entry has no description — add responsibilities or achievements. |
-| `QualityHintWorkGenericDescription` | Description looks generic — add measurable outcomes (numbers, scope, impact). |
-| `QualityHintEducationSectionEmpty` | No education entries — add your highest qualification if relevant. |
-| `QualityHintSkillsSingleLargeGroup` | Many skills in one group — split into categories (e.g. Frontend, Backend). |
-| `QualityHintSkillsSectionEmpty` | No skills listed — add core technologies or tools you use. |
-| `QualityHintLanguagesSectionEmpty` | No languages listed — add languages you can use professionally. |
+| Key                                    | English example                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------- |
+| `QualityHintFlyoutTitle`               | Suggestions — {0}                                                               |
+| `QualityHintGoToField`                 | Go to field                                                                     |
+| `QualityHintBadgeCount`                | {0}                                                                             |
+| `QualityHintSnackbarAfterImport`       | Import complete. Review suggestions on section badges.                          |
+| `QualityHintSnackbarFirstSession`      | This CV has suggestions to improve — click the badges beside sections.          |
+| `QualityHintPersonalSummaryTooShort`   | Short summary — consider adding 2–3 sentences about your role and strengths.    |
+| `QualityHintPersonalSummaryTooLong`    | Summary is very long — recruiters often skim; consider shortening.              |
+| `QualityHintPersonalMissingTitle`      | Professional title is empty — add a headline under your name.                   |
+| `QualityHintWorkSectionEmpty`          | No work experience yet — add at least your most recent role.                    |
+| `QualityHintWorkMissingDescription`    | A work entry has no description — add responsibilities or achievements.         |
+| `QualityHintWorkGenericDescription`    | Description looks generic — add measurable outcomes (numbers, scope, impact).   |
+| `QualityHintEducationSectionEmpty`     | No education entries — add your highest qualification if relevant.              |
+| `QualityHintSkillsSingleLargeGroup`    | Many skills in one group — split into categories (e.g. Frontend, Backend).      |
+| `QualityHintSkillsSectionEmpty`        | No skills listed — add core technologies or tools you use.                      |
+| `QualityHintLanguagesSectionEmpty`     | No languages listed — add languages you can use professionally.                 |
 | `QualityHintLinksDuplicatePersonalUrl` | A link duplicates a URL already in personal information — consider removing it. |
 
 Section names in flyout title should reuse existing section title keys where
@@ -369,11 +369,11 @@ active entries — suggest adding a summary (distinct from too-short/too-long).
 
 ### 2. Certificates and Projects rules
 
-| Rule ID | Trigger | Section |
-| ------- | ------- | ------- |
-| `certificates.section-empty` | `HasStartedCv`, zero active certificates, another section has data | `Certificates` |
-| `projects.section-empty` | `HasStartedCv`, zero active projects, another section has data | `Projects` |
-| `projects.entry-missing-description` | active project with empty description and highlights | `Projects` |
+| Rule ID                              | Trigger                                                            | Section        |
+| ------------------------------------ | ------------------------------------------------------------------ | -------------- |
+| `certificates.section-empty`         | `HasStartedCv`, zero active certificates, another section has data | `Certificates` |
+| `projects.section-empty`             | `HasStartedCv`, zero active projects, another section has data     | `Projects`     |
+| `projects.entry-missing-description` | active project with empty description and highlights               | `Projects`     |
 
 ### 3. Session-only dismissal (`QualityHintDismissalStore`)
 
@@ -391,10 +391,10 @@ Optional **Review** button jumps to the first section with hints.
 Pass optional `IReadOnlyList<ImportedFieldConfidence>` into analysis (stored after
 import in `MainWindow`):
 
-| Rule ID | Trigger |
-| ------- | ------- |
-| `import.review-section` | section has `≥ 2` fields tagged `CvImportConfidence.Low` |
-| `import.review-field` | field has `Low` confidence **and** a content rule still fires for that field (e.g. empty/generic work description) |
+| Rule ID                 | Trigger                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `import.review-section` | section has `≥ 2` fields tagged `CvImportConfidence.Low`                                                           |
+| `import.review-field`   | field has `Low` confidence **and** a content rule still fires for that field (e.g. empty/generic work description) |
 
 Distinct message keys; do not reuse import yellow border styling.
 

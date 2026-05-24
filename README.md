@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-957%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1016%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -65,7 +65,8 @@ ReVitae includes dedicated form sections for the core CV content:
 
 Each section has focused validation, repeatable entries where needed, live
 preview updates, localized UI text, inline field-level error messages, and
-**static quality hints** (section badge → flyout with suggestions; does not block export).
+**static quality hints** (section badge → large in-window modal with suggestions;
+does not block export).
 
 **Profile photo (optional):** upload JPEG, PNG, or WebP up to **15 MB** from the
 top of Personal information. JPEGs are EXIF-orientation normalized on save. Click
@@ -95,7 +96,15 @@ the full matrix, limits, XXE-safe XML handling, and exclusions.
 Parsed sections expand for review, empty sections stay collapsed, and
 low-confidence fields remain highlighted exactly like PDF drafts. The shared text
 pipeline merges PDF layout artifacts such as institution names split across blank
-lines (for example `High School of Electrical` / `and Training` / `Engineering`).
+lines (for example `High School of Electrical` / `and Training` / `Engineering`),
+parses certificate metadata without false date matches on credential IDs, and
+handles institution-first education blocks and inline certificate headers.
+
+**Regression coverage:** `JohnDoeImportRegressionMatrixTests` generates **50**
+fully populated John Doe CV variants at test time (PDF, TXT, MD, HTML, DOCX),
+imports each file, and asserts extraction counts, spot checks, and **zero
+post-import form validation errors** — the same rules the UI uses before export.
+See [`prompts/035-john-doe-import-regression-matrix.md`](prompts/035-john-doe-import-regression-matrix.md).
 
 **Not supported:** scanned image-only PDFs without OCR, password-protected files,
 and perfect layout fidelity from rich desktop publishing constructs.
@@ -185,7 +194,8 @@ Planned areas:
 - DocumentFormat.OpenXml, NPOI, Markdig, HtmlAgilityPack, YamlDotNet, RtfPipe,
   and related libraries for multi-format CV import surfaces
 - QuestPDF for template-based PDF export; DocumentFormat.OpenXml and custom writers for DOCX/ODT/RTF/HTML/MD/TXT/LaTeX and structured JSON/YAML/XML/CSV/TSV export
-- xUnit for tests (including targeted import edge-case suites under `tests/ReVitae.Tests/Import/`)
+- xUnit for tests (including targeted import edge-case suites and the John Doe
+  import regression matrix under `tests/ReVitae.Tests/Import/`)
 - markdownlint and C# build checks
 
 ## Development
@@ -242,7 +252,7 @@ tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
 prompts/
-  Implementation prompts and product increments (001–031)
+  Implementation prompts and product increments (001–035)
 
 docs/
   Product concept, export/import matrices (`export-formats.md`,

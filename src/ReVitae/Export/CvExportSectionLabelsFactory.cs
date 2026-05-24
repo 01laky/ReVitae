@@ -34,6 +34,7 @@ public static class CvExportSectionLabelsFactory
             Email: localizer.Get(TranslationKeys.Email),
             Phone: localizer.Get(TranslationKeys.Phone),
             Location: localizer.Get(TranslationKeys.Location),
+            ProfessionalTitle: localizer.Get(TranslationKeys.ProfessionalTitle),
             LinkedInUrl: localizer.Get(TranslationKeys.LinkedInUrl),
             PortfolioUrl: localizer.Get(TranslationKeys.PortfolioUrl),
             GitHubUrl: localizer.Get(TranslationKeys.GitHubUrl));

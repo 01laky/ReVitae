@@ -882,6 +882,10 @@ public partial class MainWindow : Window
         {
             SetPreviewExpandModalVisible(false);
         }
+        else if (QualityHintModalOverlay.IsVisible)
+        {
+            SetQualityHintModalVisible(false);
+        }
         else
         {
             return;
@@ -1226,6 +1230,9 @@ public partial class MainWindow : Window
         ToolTip.SetTip(TemplatesTopCloseButton, closeLabel);
         AutomationProperties.SetName(TemplatesTopCloseButton, closeLabel);
         TemplatesBottomCloseButton.Content = closeLabel;
+        QualityHintModalBottomCloseButton.Content = closeLabel;
+        ToolTip.SetTip(QualityHintModalTopCloseButton, closeLabel);
+        AutomationProperties.SetName(QualityHintModalTopCloseButton, closeLabel);
         RefreshTemplateCardLabels();
     }
 

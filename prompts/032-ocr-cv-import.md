@@ -100,12 +100,12 @@ For **Apple `.pages`** (existing `PagesTextExtractor`):
 
 ### What is NOT merged
 
-| Approach | Verdict |
-| -------- | ------- |
-| PdfPig text + OCR text → concatenate blindly (same pages) | **Reject** — duplicates content |
-| PdfPig result + OCR result → merge two `CvImportResult` | **Reject** — field conflicts |
-| PdfPig **or** OCR → one text string → one parser | **Correct** |
-| Per-page: text layer **or** OCR (not both) → join pages | **Correct** for hybrid PDFs (v1.1) |
+| Approach                                                  | Verdict                            |
+| --------------------------------------------------------- | ---------------------------------- |
+| PdfPig text + OCR text → concatenate blindly (same pages) | **Reject** — duplicates content    |
+| PdfPig result + OCR result → merge two `CvImportResult`   | **Reject** — field conflicts       |
+| PdfPig **or** OCR → one text string → one parser          | **Correct**                        |
+| Per-page: text layer **or** OCR (not both) → join pages   | **Correct** for hybrid PDFs (v1.1) |
 
 ### Hyperlinks and contact fields
 
@@ -118,25 +118,25 @@ OCR generally **does not** recover clickable hyperlinks. After OCR:
 
 ## Relationship to Other Import Paths
 
-| Source | Text acquisition | Parser |
-| ------ | ---------------- | ------ |
-| `.revitae.json`, JSON Resume, Europass | structured mapper | direct — **no OCR, no text pipeline** |
-| `.docx`, `.html`, `.md`, text PDF | format `ICvTextExtractor` | `CvTextImportPipeline` |
-| scanned PDF / raster images | **OCR extractor** | `CvTextImportPipeline` |
+| Source                                 | Text acquisition          | Parser                                |
+| -------------------------------------- | ------------------------- | ------------------------------------- |
+| `.revitae.json`, JSON Resume, Europass | structured mapper         | direct — **no OCR, no text pipeline** |
+| `.docx`, `.html`, `.md`, text PDF      | format `ICvTextExtractor` | `CvTextImportPipeline`                |
+| scanned PDF / raster images            | **OCR extractor**         | `CvTextImportPipeline`                |
 
 **Round-trip fidelity:** users who need perfect re-import should use
 `*.revitae.json`. OCR import is for **external** scanned/photo CVs.
 
 ## Supported Formats (New in This Prompt)
 
-| Format | Extensions | Pipeline |
-| ------ | ---------- | -------- |
-| Scanned / image-only PDF | `.pdf` | PdfPig → quality gate → OCR fallback |
-| JPEG | `.jpg`, `.jpeg` | OCR → text pipeline |
-| PNG | `.png` | OCR → text pipeline |
-| WebP | `.webp` | OCR → text pipeline (via ImageSharp decode) |
-| TIFF | `.tif`, `.tiff` | OCR → text pipeline |
-| BMP | `.bmp` | OCR → text pipeline |
+| Format                   | Extensions      | Pipeline                                    |
+| ------------------------ | --------------- | ------------------------------------------- |
+| Scanned / image-only PDF | `.pdf`          | PdfPig → quality gate → OCR fallback        |
+| JPEG                     | `.jpg`, `.jpeg` | OCR → text pipeline                         |
+| PNG                      | `.png`          | OCR → text pipeline                         |
+| WebP                     | `.webp`         | OCR → text pipeline (via ImageSharp decode) |
+| TIFF                     | `.tif`, `.tiff` | OCR → text pipeline                         |
+| BMP                      | `.bmp`          | OCR → text pipeline                         |
 
 ### Still out of scope
 
@@ -321,12 +321,12 @@ Render constraints:
 
 `CvTextQualityGate.IsUsable(string? text, int? pageCount)` in Core:
 
-| Check | Fail gate |
-| ----- | --------- |
-| null / whitespace only | yes |
-| total non-whitespace chars `< 40` | yes |
-| multi-page PDF AND average `< 8` non-whitespace chars per page | yes |
-| text contains obvious PdfPig placeholder garbage only (optional v2) | yes |
+| Check                                                               | Fail gate |
+| ------------------------------------------------------------------- | --------- |
+| null / whitespace only                                              | yes       |
+| total non-whitespace chars `< 40`                                   | yes       |
+| multi-page PDF AND average `< 8` non-whitespace chars per page      | yes       |
+| text contains obvious PdfPig placeholder garbage only (optional v2) | yes       |
 
 **Regression:** ReVitae sidebar PDF fixtures and `John Doe.pdf` must **pass**
 gate on PdfPig text — add explicit tests. Do not OCR when gate passes.
@@ -336,12 +336,12 @@ When gate fails and OCR returns empty → `ImportErrorEmptyDocument` (or new
 
 ### 7. Error key mapping
 
-| Situation | Key |
-| --------- | --- |
-| OCR engine not installed | `ImportErrorOcrUnavailable` |
-| OCR ran but no text | `ImportErrorOcrFailed` or reuse `ImportErrorEmptyDocument` |
-| Encrypted PDF | existing `ImportErrorPasswordProtected` |
-| Unsupported extension | existing `ImportErrorUnsupportedFormat` |
+| Situation                | Key                                                        |
+| ------------------------ | ---------------------------------------------------------- |
+| OCR engine not installed | `ImportErrorOcrUnavailable`                                |
+| OCR ran but no text      | `ImportErrorOcrFailed` or reuse `ImportErrorEmptyDocument` |
+| Encrypted PDF            | existing `ImportErrorPasswordProtected`                    |
+| Unsupported extension    | existing `ImportErrorUnsupportedFormat`                    |
 
 Normalize in `CvDocumentImporter.NormalizeKey` if PDF-specific keys leak from OCR
 path.
@@ -350,13 +350,13 @@ path.
 
 Add to `TranslationKeys.cs` and all supported UI locales:
 
-| Key | English example |
-| --- | ---------------- |
-| `ImportRunningOcr` | Recognizing text from image… |
-| `ImportWarningOcrUsed` | This file was read using OCR. Please review all fields carefully. |
-| `ImportErrorOcrUnavailable` | OCR is not available on this system. |
-| `ImportErrorOcrFailed` | Could not recognize text in this image or scan. |
-| `ImportRasterImageFileType` | Images (JPEG, PNG, …) |
+| Key                         | English example                                                   |
+| --------------------------- | ----------------------------------------------------------------- |
+| `ImportRunningOcr`          | Recognizing text from image…                                      |
+| `ImportWarningOcrUsed`      | This file was read using OCR. Please review all fields carefully. |
+| `ImportErrorOcrUnavailable` | OCR is not available on this system.                              |
+| `ImportErrorOcrFailed`      | Could not recognize text in this image or scan.                   |
+| `ImportRasterImageFileType` | Images (JPEG, PNG, …)                                             |
 
 Update `docs/import-formats.md`:
 
@@ -393,11 +393,11 @@ Update `docs/import-formats.md`:
 
 Evaluate and document in README:
 
-| Candidate | Role | Notes |
-| --------- | ---- | ----- |
-| Tesseract + .NET binding | OCR engine | Native binary + `tessdata` |
-| PDF→image library | scanned PDF | Required for PDF OCR fallback |
-| ImageSharp | decode raster / page bitmaps | already in repo |
+| Candidate                | Role                         | Notes                         |
+| ------------------------ | ---------------------------- | ----------------------------- |
+| Tesseract + .NET binding | OCR engine                   | Native binary + `tessdata`    |
+| PDF→image library        | scanned PDF                  | Required for PDF OCR fallback |
+| ImageSharp               | decode raster / page bitmaps | already in repo               |
 
 **Do not** require cloud OCR. Optional `IOcrEngine` cloud impl may come later.
 

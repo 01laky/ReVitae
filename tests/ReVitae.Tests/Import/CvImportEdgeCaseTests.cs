@@ -382,6 +382,30 @@ public sealed class CvImportFieldExtractorEdgeCaseTests
     }
 
     [Fact]
+    public void Extract_ParsesInlineCertificateHeaderWithIssuerAndDates()
+    {
+        const string text = """
+            Jane Doe
+            jane@example.com
+
+            Certificates
+            Professional Certification #01 — Enterprise Platform Engineering · Global Tech Certification Board 1 · Feb 2021 · Valid until Feb 2024
+            Credential ID: JD-CERT-0001-2021
+            """;
+
+        var result = Extract(text);
+
+        var certificate = Assert.Single(result.CertificateEntries);
+        Assert.Contains("Professional Certification #01", certificate.Name, StringComparison.Ordinal);
+        Assert.Contains("Enterprise Platform Engineering", certificate.Name, StringComparison.Ordinal);
+        Assert.Equal("Global Tech Certification Board 1", certificate.Issuer);
+        Assert.Equal(2, certificate.IssueMonth);
+        Assert.Equal(2021, certificate.IssueYear);
+        Assert.Equal(2, certificate.ExpirationMonth);
+        Assert.Equal(2024, certificate.ExpirationYear);
+    }
+
+    [Fact]
     public void Extract_ParsesProjectWithLeadingDateRange()
     {
         const string text = """

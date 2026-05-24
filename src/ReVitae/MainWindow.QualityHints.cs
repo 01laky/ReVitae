@@ -16,6 +16,7 @@ public partial class MainWindow
     private SectionHeaderBadges? _personalHeaderBadges;
     private IReadOnlyList<ImportedFieldConfidence> _lastImportConfidences = [];
     private QualityHintSnackbarPresenter? _qualitySnackbarPresenter;
+    private QualityHintModalPresenter? _qualityHintModalPresenter;
     private bool _qualityFlyoutOpenedThisSession;
     private bool _qualityFirstSessionSnackbarShown;
     private bool _showQualitySnackbarAfterImport;
@@ -29,7 +30,21 @@ public partial class MainWindow
         _qualitySnackbarPresenter = new QualityHintSnackbarPresenter(
             QualityHintSnackbarBorder,
             QualityHintSnackbarTextBlock);
+
+        _qualityHintModalPresenter = new QualityHintModalPresenter(
+            QualityHintModalOverlay,
+            QualityHintModalTitleTextBlock,
+            QualityHintModalContentPanel);
+        QualityHintFlyoutHelper.RegisterPresenter(_qualityHintModalPresenter);
     }
+
+    private void SetQualityHintModalVisible(bool isVisible)
+    {
+        QualityHintModalOverlay.IsVisible = isVisible;
+    }
+
+    private void OnCloseQualityHintModalClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e) =>
+        SetQualityHintModalVisible(false);
 
     private void ResetQualityHintState()
     {

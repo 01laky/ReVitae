@@ -116,7 +116,13 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - Inline field validation with export scroll-to-first-error,
 - Internationalization across supported UI languages,
 - Import confidence hints on uncertain parsed fields.
-- **Static CV quality hints** — deterministic rules in Core (`CvQualityAnalyzer`), section badges with flyout, session dismiss, import-aware review hints, export-area summary (see [`prompts/034-cv-quality-hints.md`](../prompts/034-cv-quality-hints.md)).
+- **Static CV quality hints** — deterministic rules in Core (`CvQualityAnalyzer`),
+  section badges with a **large in-window modal**, session dismiss, import-aware
+  review hints, export-area summary (see
+  [`prompts/034-cv-quality-hints.md`](../prompts/034-cv-quality-hints.md)).
+- **John Doe import regression matrix** — 50 generated stress CVs assert parser
+  fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`,
+  prompt **035**).
 - Robust education parsing for PDF layout artifacts (institution names split
   across blank lines merge into a single entry).
 
