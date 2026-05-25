@@ -14,4 +14,9 @@ if [ "${RUNNER_OS:-local}" != "Windows" ]; then
 fi
 
 dotnet build tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-restore
-dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build
+if [ -n "${CI:-}" ]; then
+  # John Doe import matrix (51 variants) runs in the dedicated import-matrix job on Ubuntu.
+  dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build --filter "Category!=ImportMatrix"
+else
+  dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build
+fi
