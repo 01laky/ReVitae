@@ -172,6 +172,18 @@ public sealed class LocalizationTests
     }
 
     [Fact]
+    public void GetTranslations_Sk_OverlaysOcrImportKeys()
+    {
+        var localizer = new AppLocalizer("sk");
+
+        Assert.Contains("OCR", localizer.Get(TranslationKeys.IntroHelper), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("Importovať ako sken (OCR)", localizer.Get(TranslationKeys.ImportForceOcr));
+        Assert.Equal("Rozpoznávanie textu z obrázka…", localizer.Get(TranslationKeys.ImportRunningOcr));
+        Assert.Equal("OCR nie je na tomto systéme k dispozícii.", localizer.Get(TranslationKeys.ImportErrorOcrUnavailable));
+        Assert.Equal("Obrázky (JPEG, PNG, …)", localizer.Get(TranslationKeys.ImportRasterImageFileType));
+    }
+
+    [Fact]
     public void FromSystemCulture_ReturnsLocalizerWithDetectedLanguageCode()
     {
         var localizer = AppLocalizer.FromSystemCulture();

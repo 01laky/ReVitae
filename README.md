@@ -4,7 +4,8 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1428%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1469%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
 swappable, and your files on your machine. Import an existing CV — PDF, Word, scan,
@@ -303,6 +304,9 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 ```bash
 ./scripts/test.sh
 ```
+
+CI runs the same lint and test pipeline on every push to `main` (see
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ### Lint
 

@@ -107,6 +107,118 @@ public sealed class CompositePdfTextExtractorTests
         Assert.Equal(1, ocr.CallCount);
     }
 
+    [Fact]
+    public void Extract_FallsBackToOcrWhenPdfTextPassesButQualityGateFails()
+    {
+        const string thinText = "Jane Doe\njane@example.com";
+
+        var pig = new StubTextExtractor(new CvTextExtractionResult(
+            true,
+            thinText,
+            null,
+            PageCount: 1,
+            Strategy: CvTextAcquisitionStrategy.PdfTextLayer));
+        var ocr = new StubTextExtractor(new CvTextExtractionResult(
+            true,
+            "Recognized OCR text with enough content for quality gate to pass easily.",
+            null,
+            PageCount: 1,
+            Strategy: CvTextAcquisitionStrategy.Ocr));
+
+        var composite = new CompositePdfTextExtractor(pig, ocr);
+        var result = composite.Extract("thin-text.pdf");
+
+        Assert.Equal(CvTextAcquisitionStrategy.Ocr, result.Strategy);
+        Assert.Equal(1, ocr.CallCount);
+    }
+
+    [Fact]
+    public void Extract_WhenPdfExtractionFails_ReturnsPdfErrorAfterOcrFails()
+    {
+        var pig = new StubTextExtractor(new CvTextExtractionResult(
+            false,
+            string.Empty,
+            TranslationKeys.ImportErrorUnreadablePdf));
+        var ocr = new StubTextExtractor(new CvTextExtractionResult(
+            false,
+            string.Empty,
+            TranslationKeys.ImportErrorOcrFailed));
+
+        var composite = new CompositePdfTextExtractor(pig, ocr);
+        var result = composite.Extract("broken.pdf");
+
+        Assert.False(result.Success);
+        Assert.Equal(TranslationKeys.ImportErrorUnreadablePdf, result.ErrorMessageKey);
+    }
+
+    [Fact]
+    public void Extract_WhenQualityGateFailsAndOcrFails_ReturnsOcrError()
+    {
+        const string thinText = "Jane Doe\njane@example.com";
+
+        var pig = new StubTextExtractor(new CvTextExtractionResult(
+            true,
+            thinText,
+            null,
+            PageCount: 1,
+            Strategy: CvTextAcquisitionStrategy.PdfTextLayer));
+        var ocr = new StubTextExtractor(new CvTextExtractionResult(
+            false,
+            string.Empty,
+            TranslationKeys.ImportErrorOcrFailed));
+
+        var composite = new CompositePdfTextExtractor(pig, ocr);
+        var result = composite.Extract("thin.pdf");
+
+        Assert.False(result.Success);
+        Assert.Equal(TranslationKeys.ImportErrorOcrFailed, result.ErrorMessageKey);
+    }
+
+    [Fact]
+    public void Extract_WhenOcrUnavailableAndPdfTextWhitespaceOnly_ReturnsOcrUnavailable()
+    {
+        var pig = new StubTextExtractor(new CvTextExtractionResult(
+            true,
+            "   \t\n  ",
+            null,
+            PageCount: 1,
+            Strategy: CvTextAcquisitionStrategy.PdfTextLayer));
+        var ocr = new StubTextExtractor(new CvTextExtractionResult(
+            false,
+            string.Empty,
+            TranslationKeys.ImportErrorOcrUnavailable));
+
+        var composite = new CompositePdfTextExtractor(pig, ocr);
+        var result = composite.Extract("blank.pdf");
+
+        Assert.False(result.Success);
+        Assert.Equal(TranslationKeys.ImportErrorOcrUnavailable, result.ErrorMessageKey);
+    }
+
+    [Fact]
+    public void Extract_ForceOcrWhenOcrFails_ReturnsOcrErrorWithoutCallingPdfPig()
+    {
+        using var session = CvImportSessionOptions.Begin(new CvImportSessionOptions(ForceOcr: true));
+
+        var pig = new StubTextExtractor(new CvTextExtractionResult(
+            true,
+            "PdfPig text that should never be read when ForceOcr fails.",
+            null,
+            PageCount: 1));
+        var ocr = new StubTextExtractor(new CvTextExtractionResult(
+            false,
+            string.Empty,
+            TranslationKeys.ImportErrorOcrFailed));
+
+        var composite = new CompositePdfTextExtractor(pig, ocr);
+        var result = composite.Extract("force-fail.pdf");
+
+        Assert.False(result.Success);
+        Assert.Equal(TranslationKeys.ImportErrorOcrFailed, result.ErrorMessageKey);
+        Assert.Equal(0, pig.CallCount);
+        Assert.Equal(1, ocr.CallCount);
+    }
+
     private sealed class StubTextExtractor(CvTextExtractionResult result) : ICvTextExtractor
     {
         public int CallCount { get; private set; }

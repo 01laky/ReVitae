@@ -7,6 +7,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- **Edge-case test hardening:** 41 new tests across OCR composite routing,
+  `OcrPdfTextExtractor`, quality-gate boundaries, tessdata discovery, import
+  session/progress, `CvTextImportCoordinator`/`CvTextImportFlows`, YAML importer
+  facade, Slovak OCR localization, and OCR extraction metadata (**1469** total).
+- **GitHub Actions CI:** lint + full test suite on Ubuntu, macOS, and Windows;
+  separate John Doe import matrix job on Ubuntu.
+
 ## [0.2.1] - 2026-05-25
 
 ### Added

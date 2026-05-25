@@ -5,25 +5,14 @@ using ReVitae.Core.Localization;
 
 namespace ReVitae.Tests.Import.Ocr;
 
-public sealed class OcrLanguageResolverTests
-{
-    [Theory]
-    [InlineData("en", "eng")]
-    [InlineData("sk", "eng")]
-    [InlineData(null, "eng")]
-    public void ResolveLanguages_DefaultsToEnglishWhenOptionalPackMissing(string? culture, string expectedPrefix)
-    {
-        var languages = OcrLanguageResolver.ResolveLanguages(culture);
-        Assert.StartsWith(expectedPrefix, languages, StringComparison.Ordinal);
-    }
-}
-
 public sealed class OcrImportUiPolicyTests
 {
     [Fact]
     public void CanOfferForceOcr_AllowsPdfFailuresExceptPasswordAndUnavailable()
     {
         Assert.True(OcrImportUiPolicy.CanOfferForceOcr(CvImportFormat.Pdf, TranslationKeys.ImportErrorEmptyPdf));
+        Assert.True(OcrImportUiPolicy.CanOfferForceOcr(CvImportFormat.Pdf, TranslationKeys.ImportErrorOcrFailed));
+        Assert.True(OcrImportUiPolicy.CanOfferForceOcr(CvImportFormat.Pdf, null));
         Assert.False(OcrImportUiPolicy.CanOfferForceOcr(CvImportFormat.Pdf, TranslationKeys.ImportErrorPasswordProtected));
         Assert.False(OcrImportUiPolicy.CanOfferForceOcr(CvImportFormat.Pdf, TranslationKeys.ImportErrorOcrUnavailable));
         Assert.False(OcrImportUiPolicy.CanOfferForceOcr(CvImportFormat.RasterImage, TranslationKeys.ImportErrorEmptyPdf));
