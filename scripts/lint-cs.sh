@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-dotnet restore ReVitae.sln
+dotnet restore tests/ReVitae.Tests/ReVitae.Tests.csproj
 
 # dotnet format --verify-no-changes treats CRLF checkouts on Windows as dirty even
 # with core.autocrlf disabled; Ubuntu and macOS still enforce formatting here.
@@ -16,7 +16,13 @@ fi
 dotnet build tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-restore
 if [ -n "${CI:-}" ]; then
   # John Doe import matrix (51 variants) runs in the dedicated import-matrix job on Ubuntu.
-  dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build --filter "Category!=ImportMatrix"
+  TEST_FILTER="Category!=ImportMatrix"
+  if [ "${RUNNER_OS:-local}" = "Windows" ]; then
+    # Real Tesseract OCR varies by platform; integration tests run locally and on Ubuntu CI.
+    TEST_FILTER="${TEST_FILTER}&Category!=OcrIntegration"
+  fi
+
+  dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build --filter "$TEST_FILTER"
 else
   dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build
 fi

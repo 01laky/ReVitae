@@ -52,8 +52,11 @@ jobs:
       - name: Verify version consistency
         run: ./scripts/verify-version.sh
 
-      - name: Lint (markdown + C# format/build/test)
-        run: npm run lint
+      - name: Lint markdown
+        run: npm run lint:md
+
+      - name: Lint C# and test
+        run: npm run lint:cs
 
   import-matrix:
     name: John Doe import matrix
