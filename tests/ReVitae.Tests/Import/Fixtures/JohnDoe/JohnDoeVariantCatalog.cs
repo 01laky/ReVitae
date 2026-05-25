@@ -87,7 +87,8 @@ public static class JohnDoeVariantCatalog
         var mode = id switch
         {
             "01" => JohnDoeExpectationMode.PdfFull,
-            "02" or "07" or "49" => JohnDoeExpectationMode.PdfSidebarCounts,
+            "02" or "07" => JohnDoeExpectationMode.PdfSidebarCounts,
+            "49" => JohnDoeExpectationMode.PdfTemplateLayout,
             _ => JohnDoeExpectationMode.PdfTemplateLayout
         };
         return new(id, name, JohnDoeVariantKind.PdfTemplate, template, null, mode, ".pdf");

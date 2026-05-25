@@ -22,7 +22,6 @@ public sealed class ReVitaePdfReimportEdgeCaseTests
     [Theory]
     [InlineData("02")]
     [InlineData("07")]
-    [InlineData("49")]
     public void TierB_SidebarTemplates_MeetPdfSidebarCounts(string variantId) =>
         AssertVariant(variantId);
 

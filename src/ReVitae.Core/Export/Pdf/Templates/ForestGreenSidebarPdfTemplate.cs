@@ -26,15 +26,16 @@ internal static class ForestGreenSidebarPdfTemplate
                         });
                         sidebar.Item().Padding(12).Column(body =>
                         {
-                            body.Item().Text(CvExportPreviewContentBuilder.BuildSummary(document));
-                            CvPdfLayoutHelpers.ComposeSection(body, document.Labels.Contact,
+                            CvPdfLayoutHelpers.ComposeSection(
+                                body,
+                                document.Labels.Contact,
                                 CvExportPreviewContentBuilder.BuildContactLines(document));
                         });
                         sidebar.Item().Background(Green).Height(24).CornerRadius(12);
                     });
                     row.RelativeItem(66).PaddingLeft(12).Column(main =>
                     {
-                        CvPdfExtendedHelpers.ComposeMainSections(main, document, document.Labels.PreviewSkills);
+                        CvPdfExtendedHelpers.ComposeMainSections(main, document, document.Labels.Summary);
                     });
                 });
             });
