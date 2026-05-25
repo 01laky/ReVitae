@@ -172,7 +172,7 @@ loader reads `projectSettings`.
       "education": false
     },
     "savedAtUtc": "2026-05-25T12:00:00Z",
-    "applicationVersion": "0.1.0"
+    "applicationVersion": "0.2.0"
   }
 }
 ```

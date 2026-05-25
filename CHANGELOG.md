@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-25
+
 ### Added
 
 - **ReVitae PDF round-trip import**: QuestPDF export metadata
@@ -37,7 +39,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   ImageSharp); **81+** new image export tests (**1273** total).
 - **Universal AI CV completion**: backend-agnostic
   `AiCvCompletionService`; Ollama `POST /api/chat`; extended online chat clients
-  (system + user messages); task registry and prompt templates; **Improve with AI**
+  (system + user messages); task registry and AI message templates; **Improve with AI**
   on supported quality hints with suggestion modal (Accept / Edit / Cancel); online
   session privacy confirm; EN + SK localization; **37** new AI/CV tests (**1190**
   total).
@@ -113,6 +115,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Documentation: [`docs/import-formats.md`](docs/import-formats.md) format matrix
   and [`docs/revitae-project-json.md`](docs/revitae-project-json.md) native
   interchange schema.
+- **Documentation screenshots**: nine English-named UI captures in `docs/img/`
+  embedded in README and product docs (editor, AI setup, export, templates,
+  quality hints).
 
 ### Changed
 
@@ -177,5 +182,6 @@ First formally versioned ReVitae release baseline.
 - Improved two-column PDF import parsing for contact details, education dates,
   sidebar skill bleed filtering, and work-experience technology detection.
 
-[Unreleased]: https://github.com/01laky/ReVitae/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/01laky/ReVitae/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/01laky/ReVitae/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/ReVitae/releases/tag/v0.1.0

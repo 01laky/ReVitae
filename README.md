@@ -1,10 +1,10 @@
 # ReVitae
 
-[![App](https://img.shields.io/badge/app-0.1.0-blue)](https://github.com/01laky/ReVitae/releases)
+[![App](https://img.shields.io/badge/app-0.2.0-blue)](https://github.com/01laky/ReVitae/releases)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1305%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1417%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -261,9 +261,9 @@ include installers and broader template coverage beyond the regression matrix.
 
 ReVitae uses three different version concepts:
 
-- **App version** (`0.1.0`): the ReVitae product release shown in the **About**
+- **App version** (`0.2.0`): the ReVitae product release shown in the **About**
   modal (toolbar icon), README app badge, `Version.props`, and Git tags such as
-  `v0.1.0`.
+  `v0.2.0`.
 - **Tech-stack badges**: framework/platform versions such as `.NET 10` and
   `Avalonia 12`.
 - **Dependency package versions**: NuGet package versions declared in `.csproj`
