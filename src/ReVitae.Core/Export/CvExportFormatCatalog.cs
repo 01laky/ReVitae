@@ -20,7 +20,8 @@ public static class CvExportFormatCatalog
         Desc(CvExportFormat.EuropassXml, CvExportFormatCategory.Structured, "europass-xml", TranslationKeys.ExportFormatEuropassXml),
         Desc(CvExportFormat.HrXml, CvExportFormatCategory.Structured, "hr-xml", TranslationKeys.ExportFormatHrXml),
         Desc(CvExportFormat.Csv, CvExportFormatCategory.Structured, "csv", TranslationKeys.ExportFormatCsv),
-        Desc(CvExportFormat.Tsv, CvExportFormatCategory.Structured, "tsv", TranslationKeys.ExportFormatTsv)
+        Desc(CvExportFormat.Tsv, CvExportFormatCategory.Structured, "tsv", TranslationKeys.ExportFormatTsv),
+        Desc(CvExportFormat.Images, CvExportFormatCategory.Images, "images", TranslationKeys.ExportFormatImages, TranslationKeys.ExportFormatImagesHint)
     ];
 
     public static IReadOnlyList<CvExportFormatDescriptor> GetAvailableFormats() => All;

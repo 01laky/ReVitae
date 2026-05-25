@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1090%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1273%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -20,7 +20,7 @@ flowchart TD
     sections["Fill structured CV sections"]
     replace["Import another file with replace confirmation"]
     templates["Switch preview templates anytime"]
-    exportModal["Choose export format (15 formats)"]
+    exportModal["Choose export format (16 formats)"]
     exportSave["Save dialog with correct extension"]
     exportDone(["Download locally • Open file / Show in folder"])
 
@@ -174,10 +174,11 @@ and perfect layout fidelity from rich desktop publishing constructs.
 
 You can switch between multiple built-in preview templates without changing your
 CV content. **Export** opens a format picker modal, then a native save dialog for
-the chosen type. **PDF** remains the primary template-aligned output; **DOCX**,
-**HTML**, **Markdown**, structured JSON/YAML/XML, and other formats are also
-available. See [`docs/export-formats.md`](docs/export-formats.md) for the full
-matrix.
+the chosen type. **PDF** remains the primary template-aligned output; **page images** (PNG/JPEG/WebP
+as ZIP or separate files), **DOCX**, **HTML**, **Markdown**, structured JSON/YAML/XML,
+and other formats are also available. See [`docs/export-formats.md`](docs/export-formats.md)
+for the full matrix. Exported page images can be re-imported via OCR — see
+[`docs/import-formats.md`](docs/import-formats.md).
 
 After a successful export, **Open file** and **Show in folder** actions help you
 reach the saved file without hunting in Finder or Explorer.
@@ -216,7 +217,7 @@ control:
 
 ReVitae is an active early-stage desktop app. The structured CV form, inline
 validation UI, template preview, **optional profile photo** (prompt **023**),
-**multi-format export** (15 formats via `CvDocumentExporter`), and
+**multi-format export** (16 formats via `CvDocumentExporter` and `CvImageExporter`), and
 **multi-format CV import** (prompt **021**) through `CvDocumentImporter` are in
 place. Intro / replace flows cover PDF plus the additional structured and
 text-native formats listed above. **AI setup** (prompts **036**–**039**) adds local Ollama model detection, managed

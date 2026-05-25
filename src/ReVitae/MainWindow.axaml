@@ -1175,8 +1175,142 @@
 
                     <ScrollViewer Grid.Row="1"
                                   Margin="0,14,0,0">
-                        <StackPanel x:Name="ExportFormatCategoriesPanel"
-                                    Spacing="8" />
+                        <StackPanel Spacing="8">
+                            <StackPanel x:Name="ExportFormatCategoriesPanel"
+                                        Spacing="8" />
+                            <StackPanel x:Name="ExportImageOptionsPanel"
+                                        Spacing="14"
+                                        IsVisible="False">
+                                <TextBlock x:Name="ExportImageOptionsTitleTextBlock"
+                                           Classes="re-vitae-app-title"
+                                           FontSize="18"
+                                           Text="Image export options" />
+                                <TextBlock Classes="re-vitae-secondary"
+                                           Text="Choose format, delivery, and pages." />
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="ExportImageFormatLabelTextBlock"
+                                               Classes="re-vitae-field-label"
+                                               Text="Image format" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <RadioButton x:Name="ExportImageFormatPngRadio"
+                                                     GroupName="ExportImageFormat"
+                                                     IsChecked="True"
+                                                     Content="PNG" />
+                                        <RadioButton x:Name="ExportImageFormatJpegRadio"
+                                                     GroupName="ExportImageFormat"
+                                                     Content="JPEG" />
+                                        <RadioButton x:Name="ExportImageFormatWebpRadio"
+                                                     GroupName="ExportImageFormat"
+                                                     Content="WebP" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="ExportImageDeliveryLabelTextBlock"
+                                               Classes="re-vitae-field-label"
+                                               Text="Delivery" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <RadioButton x:Name="ExportImageDeliveryZipRadio"
+                                                     GroupName="ExportImageDelivery"
+                                                     IsChecked="True"
+                                                     Content="ZIP" />
+                                        <RadioButton x:Name="ExportImageDeliverySeparateRadio"
+                                                     GroupName="ExportImageDelivery"
+                                                     Content="Separate files" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="ExportImageQualityLabelTextBlock"
+                                               Classes="re-vitae-field-label"
+                                               Text="Quality" />
+                                    <Slider x:Name="ExportImageQualitySlider"
+                                            Minimum="70"
+                                            Maximum="100"
+                                            Value="90"
+                                            TickFrequency="5"
+                                            IsSnapToTickEnabled="True" />
+                                    <TextBlock x:Name="ExportImageQualityValueTextBlock"
+                                               Classes="re-vitae-secondary"
+                                               Text="90" />
+                                </StackPanel>
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="ExportImageScaleLabelTextBlock"
+                                               Classes="re-vitae-field-label"
+                                               Text="Resolution" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <RadioButton x:Name="ExportImageScale1xRadio"
+                                                     GroupName="ExportImageScale"
+                                                     Content="1×" />
+                                        <RadioButton x:Name="ExportImageScale2xRadio"
+                                                     GroupName="ExportImageScale"
+                                                     IsChecked="True"
+                                                     Content="2×" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="ExportImagePagesLabelTextBlock"
+                                               Classes="re-vitae-field-label"
+                                               Text="Pages" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <RadioButton x:Name="ExportImagePagesAllRadio"
+                                                     GroupName="ExportImagePages"
+                                                     IsChecked="True"
+                                                     Content="All pages" />
+                                        <RadioButton x:Name="ExportImagePagesRangeRadio"
+                                                     GroupName="ExportImagePages"
+                                                     Content="Page range" />
+                                    </StackPanel>
+                                    <Grid ColumnDefinitions="Auto,80,Auto,80"
+                                          ColumnSpacing="8"
+                                          x:Name="ExportImagePageRangeGrid"
+                                          IsVisible="False">
+                                        <TextBlock x:Name="ExportImagePageFromLabelTextBlock"
+                                                   Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="From" />
+                                        <NumericUpDown x:Name="ExportImagePageFromNumeric"
+                                                       Grid.Column="1"
+                                                       Minimum="1"
+                                                       Maximum="999"
+                                                       Value="1"
+                                                       FormatString="0"
+                                                       AllowSpin="True" />
+                                        <TextBlock x:Name="ExportImagePageToLabelTextBlock"
+                                                   Grid.Column="2"
+                                                   VerticalAlignment="Center"
+                                                   Text="To" />
+                                        <NumericUpDown x:Name="ExportImagePageToNumeric"
+                                                       Grid.Column="3"
+                                                       Minimum="1"
+                                                       Maximum="999"
+                                                       Value="1"
+                                                       FormatString="0"
+                                                       AllowSpin="True" />
+                                    </Grid>
+                                    <TextBlock x:Name="ExportImageRangeErrorTextBlock"
+                                               Foreground="#C62828"
+                                               IsVisible="False"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <TextBlock x:Name="ExportImageSizeEstimateTextBlock"
+                                           Classes="re-vitae-secondary"
+                                           Text="Calculating size…" />
+                                <TextBlock x:Name="ExportImageProgressTextBlock"
+                                           Classes="re-vitae-secondary"
+                                           IsVisible="False"
+                                           TextWrapping="Wrap" />
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Right"
+                                            Spacing="8">
+                                    <Button x:Name="ExportImageBackButton"
+                                            Content="Back to formats"
+                                            Click="OnExportImageBackClicked" />
+                                    <Button x:Name="ExportImageExportButton"
+                                            Classes="accent"
+                                            Content="Export images"
+                                            Click="OnExportImageExportClicked" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
                     </ScrollViewer>
 
                     <Button x:Name="ExportModalBottomCloseButton"

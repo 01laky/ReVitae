@@ -9,6 +9,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **CV image export** (prompt **031**): **Page images** card in the Export modal
+  (PNG / JPEG / WebP); delivery as **ZIP archive** or **separate files**; page
+  range (all or From–To); scale 1× / 2×; quality slider for JPEG/WebP; live size
+  estimate; export progress status; opaque white background via
+  `CvImageBackgroundCompositor`; `CvImageExporter` pipeline (QuestPDF → Docnet →
+  ImageSharp); **81+** new image export tests (**1273** total).
 - **Universal AI CV completion** (prompt **039**): backend-agnostic
   `AiCvCompletionService`; Ollama `POST /api/chat`; extended online chat clients
   (system + user messages); task registry and prompt templates; **Improve with AI**

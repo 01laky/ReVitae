@@ -109,7 +109,8 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 
 - All structured CV sections in the form with validation and badges,
 - Live preview across **16 built-in templates** with template-aligned QuestPDF export,
-- **Multi-format export** (15 formats) and **multi-format import** via `CvDocumentImporter`,
+- **Multi-format export** (16 formats, including **page images** PNG/JPEG/WebP) and
+  **multi-format import** via `CvDocumentImporter`,
 - Startup intro modal (**create new** or **import CV**) and header **replace import**
   confirmation when data already exists,
 - Shared **25 MB** guardrails and **XXE-safe XML** parsing via `SecureXmlReaderFactory`,
@@ -121,6 +122,8 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
   review hints, export-area summary; optional **Improve with AI** on supported hints
   (prompt **039**) — see
   [`prompts/034-cv-quality-hints.md`](../prompts/034-cv-quality-hints.md).
+- **Page image export** (prompt **031**): PNG/JPEG/WebP via `CvImageExporter`; ZIP or
+  folder delivery; page range; size estimate; export progress; opaque white background.
 - **John Doe import regression matrix** — 50 generated stress CVs assert parser
   fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`,
   prompt **035**).

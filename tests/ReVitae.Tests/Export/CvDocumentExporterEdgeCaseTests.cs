@@ -169,11 +169,15 @@ public sealed class CvDocumentExporterEdgeCaseTests
 public sealed class CvExportFormatCatalogEdgeCaseTests
 {
     [Fact]
-    public void GetEnabledFormats_ContainsAllFifteenShippedFormats()
+    public void GetEnabledFormats_ContainsAllSixteenShippedFormats()
     {
         var formats = CvExportFormatCatalog.GetEnabledFormats();
-        Assert.Equal(15, formats.Count);
-        Assert.Equal(CvExportTestFixtures.AllShippedFormats.Count(), formats.Select(f => f.Format).Distinct().Count());
+        Assert.Equal(16, formats.Count);
+        Assert.Contains(formats, descriptor => descriptor.Format == CvExportFormat.Images);
+        foreach (var shipped in CvExportTestFixtures.AllShippedFormats)
+        {
+            Assert.Contains(formats, descriptor => descriptor.Format == shipped);
+        }
     }
 
     [Fact]
@@ -196,6 +200,7 @@ public sealed class CvExportFormatCatalogEdgeCaseTests
     [Theory]
     [InlineData(CvExportFormatCategory.Documents, 4)]
     [InlineData(CvExportFormatCategory.WebAndText, 4)]
+    [InlineData(CvExportFormatCategory.Images, 1)]
     [InlineData(CvExportFormatCategory.Structured, 7)]
     public void Categories_GroupFormats(CvExportFormatCategory category, int expectedCount)
     {

@@ -83,6 +83,7 @@ public partial class MainWindow : Window
         WireValidationRefreshOnSectionExpand(ProjectsSection);
         WireValidationRefreshOnSectionExpand(LinksSection);
         WireValidationRefreshOnSectionExpand(AdditionalInformationSection);
+        WireExportImageOptionsEvents();
         ApplyLocalization();
         RefreshProfilePhotoUi();
         UpdateTemplateSelectionState();
@@ -874,7 +875,14 @@ public partial class MainWindow : Window
         }
         else if (ExportModalOverlay.IsVisible)
         {
-            SetExportModalVisible(false);
+            if (_isExportImageOptionsVisible)
+            {
+                HideExportImageOptionsPanel();
+            }
+            else
+            {
+                SetExportModalVisible(false);
+            }
         }
         else if (AiSetupModalOverlay.IsVisible)
         {
@@ -941,6 +949,12 @@ public partial class MainWindow : Window
 
     private void OnCloseExportModalClicked(object? sender, RoutedEventArgs e)
     {
+        if (_isExportImageOptionsVisible)
+        {
+            HideExportImageOptionsPanel();
+            return;
+        }
+
         SetExportModalVisible(false);
     }
 
@@ -949,6 +963,8 @@ public partial class MainWindow : Window
         SetSetupModalVisible(false);
         SetTemplatesModalVisible(false);
         SetPreviewExpandModalVisible(false);
+        HideExportImageOptionsPanel();
+        HideExportPostActions();
         PopulateExportFormatCards();
         SetExportModalVisible(true);
     }
@@ -961,6 +977,7 @@ public partial class MainWindow : Window
                  {
                      CvExportFormatCategory.Documents,
                      CvExportFormatCategory.WebAndText,
+                     CvExportFormatCategory.Images,
                      CvExportFormatCategory.Structured
                  })
         {
@@ -1037,12 +1054,19 @@ public partial class MainWindow : Window
     {
         CvExportFormatCategory.Documents => _localizer.Get(TranslationKeys.ExportCategoryDocuments),
         CvExportFormatCategory.WebAndText => _localizer.Get(TranslationKeys.ExportCategoryWebAndText),
+        CvExportFormatCategory.Images => _localizer.Get(TranslationKeys.ExportCategoryImages),
         CvExportFormatCategory.Structured => _localizer.Get(TranslationKeys.ExportCategoryStructured),
         _ => string.Empty
     };
 
     private async Task OnExportFormatSelectedAsync(CvExportFormat format)
     {
+        if (format == CvExportFormat.Images)
+        {
+            ShowExportImageOptionsPanel();
+            return;
+        }
+
         SetExportModalVisible(false);
         HideExportPostActions();
 
@@ -1224,6 +1248,7 @@ public partial class MainWindow : Window
         AutomationProperties.SetName(ExportModalTopCloseButton, closeLabel);
         ExportOpenFileButton.Content = _localizer.Get(TranslationKeys.ExportOpenFile);
         ExportShowInFolderButton.Content = _localizer.Get(TranslationKeys.ExportShowInFolder);
+        ApplyExportImageLocalization();
         PreviewTitleTextBlock.Text = _localizer.Get(TranslationKeys.Preview);
         PreviewExpandTitleTextBlock.Text = _localizer.Get(TranslationKeys.PreviewExpandTitle);
         ToolTip.SetTip(PreviewExpandTopCloseButton, closeLabel);
@@ -1362,6 +1387,10 @@ public partial class MainWindow : Window
         if (isVisible)
         {
             HideOtherContentModals(ExportModalOverlay);
+        }
+        else
+        {
+            HideExportImageOptionsPanel();
         }
 
         ExportModalOverlay.IsVisible = isVisible;

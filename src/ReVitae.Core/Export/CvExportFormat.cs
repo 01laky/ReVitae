@@ -16,12 +16,14 @@ public enum CvExportFormat
     EuropassXml,
     HrXml,
     Csv,
-    Tsv
+    Tsv,
+    Images
 }
 
 public enum CvExportFormatCategory
 {
     Documents,
     WebAndText,
+    Images,
     Structured
 }

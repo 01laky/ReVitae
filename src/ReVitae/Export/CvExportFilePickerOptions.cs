@@ -25,6 +25,29 @@ internal static class CvExportFilePickerOptions
         };
     }
 
+    public static FilePickerSaveOptions CreateZipSaveOptions(AppLocalizer localizer, string suggestedFilename) =>
+        new()
+        {
+            Title = localizer.Get(TranslationKeys.ExportImageOptionsTitle),
+            SuggestedFileName = suggestedFilename,
+            DefaultExtension = "zip",
+            FileTypeChoices =
+            [
+                new FilePickerFileType(localizer.Get(TranslationKeys.ExportZipFileType))
+                {
+                    Patterns = ["*.zip"],
+                    MimeTypes = ["application/zip"]
+                }
+            ]
+        };
+
+    public static FolderPickerOpenOptions CreateFolderPickerOptions(AppLocalizer localizer) =>
+        new()
+        {
+            Title = localizer.Get(TranslationKeys.ExportFolderPickerTitle),
+            AllowMultiple = false
+        };
+
     public static FilePickerFileType CreateFileType(CvExportFormat format, AppLocalizer localizer) =>
         new(localizer.Get(CvExportSaveDialogDefaults.GetFileTypeLabelKey(format)))
         {

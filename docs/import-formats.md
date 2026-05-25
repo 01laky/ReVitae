@@ -90,7 +90,8 @@ rather than network or file disclosure.
   `%LocalAppData%/ReVitae/tessdata/`). OCR reading order may not preserve
   multi-column layout — prefer `*.revitae.json` for round-trip.
 - **Raster images:** JPEG, PNG, WebP, TIFF, and BMP import via OCR when Tesseract
-  is available; otherwise `ImportErrorOcrUnavailable`.
+  is available; otherwise `ImportErrorOcrUnavailable`. CV **page images exported**
+  from ReVitae (prompt **031**) re-enter through this OCR path — not structured import.
 - **Password-protected Office/PDF:** rejected where libraries surface encryption.
 - **Perfect fidelity:** imports are **draft data**. Complex layouts (multi-column,
   text boxes, drawings) may collapse ordering or lose sidebar context.
@@ -116,7 +117,7 @@ Filter locally: `dotnet test --filter Category=ImportMatrix`. See
 
 ## Related docs
 
-- Export formats: [`export-formats.md`](export-formats.md)
+- Export formats (including page images): [`export-formats.md`](export-formats.md)
 - Native interchange schema: [`revitae-project-json.md`](revitae-project-json.md)
 - Product prompt and rationale: [`../prompts/021-multi-format-cv-import.md`](../prompts/021-multi-format-cv-import.md)
 - Profile photo upload and template integration: [`../prompts/023-profile-picture-upload.md`](../prompts/023-profile-picture-upload.md)

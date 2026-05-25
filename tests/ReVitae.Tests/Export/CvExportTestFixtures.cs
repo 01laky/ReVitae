@@ -257,5 +257,5 @@ internal static class CvExportTestFixtures
     }
 
     public static IEnumerable<CvExportFormat> AllShippedFormats =>
-        Enum.GetValues<CvExportFormat>();
+        Enum.GetValues<CvExportFormat>().Where(format => format != CvExportFormat.Images);
 }
