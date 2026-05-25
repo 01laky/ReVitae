@@ -549,7 +549,14 @@
                             Content="Try import again"
                             HorizontalAlignment="Left"
                             IsVisible="False"
-                            Click="OnImportCvClicked" />
+                            Click="OnIntroRetryImportClicked" />
+
+                    <Button x:Name="IntroImportForceOcrButton"
+                            Classes="re-vitae-secondary"
+                            Content="Import as scan (OCR)"
+                            HorizontalAlignment="Left"
+                            IsVisible="False"
+                            Click="OnIntroForceOcrImportClicked" />
 
                     <Button x:Name="IntroImportTryAiButton"
                             Classes="re-vitae-primary"
@@ -1185,6 +1192,13 @@
                             HorizontalAlignment="Left"
                             IsVisible="False"
                             Click="OnReplaceCvImportRetryClicked" />
+
+                    <Button x:Name="ReplaceCvImportForceOcrButton"
+                            Classes="re-vitae-secondary"
+                            Content="Import as scan (OCR)"
+                            HorizontalAlignment="Left"
+                            IsVisible="False"
+                            Click="OnReplaceCvImportForceOcrClicked" />
 
                     <Button x:Name="ReplaceImportTryAiButton"
                             Classes="re-vitae-primary"

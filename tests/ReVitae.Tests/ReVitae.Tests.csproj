@@ -37,6 +37,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Import\Fixtures\ReVitaeExportedSidebarCv.pdf</Link>
     </None>
+    <None Include="Import\Fixtures\Ocr\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Import\Fixtures\Ocr\%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="..\..\src\ReVitae\tessdata\eng.traineddata">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>tessdata\eng.traineddata</Link>
+    </None>
   </ItemGroup>
 
 </Project>

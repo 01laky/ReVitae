@@ -25,14 +25,16 @@ public sealed class TesseractOcrEngine : IOcrEngine, IDisposable
                 }
 
                 var tessdataPath = TessdataBootstrapper.EnsureDefaultTessdata();
-                _isAvailable = tessdataPath is not null;
+                _isAvailable = tessdataPath is not null && CanLoadNativeEngine(tessdataPath);
                 _availabilityChecked = true;
 
                 CvImportDiagnosticsLogger.LogStep(
                     "tesseract",
                     _isAvailable
                         ? $"Available — tessdata at {tessdataPath}"
-                        : "Not available — no eng.traineddata found in search paths");
+                        : tessdataPath is null
+                            ? "Not available — no eng.traineddata found in search paths"
+                            : $"Not available — native Tesseract libraries failed to load (tessdata at {tessdataPath})");
 
                 return _isAvailable;
             }
@@ -47,12 +49,52 @@ public sealed class TesseractOcrEngine : IOcrEngine, IDisposable
             return new OcrRecognitionResult(string.Empty);
         }
 
-        var tessdataPath = TessdataBootstrapper.EnsureDefaultTessdata()
-            ?? throw new InvalidOperationException("Tesseract tessdata is not available.");
+        try
+        {
+            var timeout = TimeSpan.FromSeconds(Math.Max(1, options.TimeoutSeconds));
+            var recognitionTask = Task.Run(() => RecognizeSynchronously(image, options));
+
+            if (!recognitionTask.Wait(timeout))
+            {
+                CvImportDiagnosticsLogger.LogStep(
+                    "tesseract",
+                    $"Recognize timed out after {options.TimeoutSeconds}s");
+                return new OcrRecognitionResult(string.Empty);
+            }
+
+            return recognitionTask.GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            CvImportDiagnosticsLogger.LogStep(
+                "tesseract",
+                $"Recognize failed: {ex.GetType().Name}: {ex.Message}");
+            return new OcrRecognitionResult(string.Empty);
+        }
+    }
+
+    private OcrRecognitionResult RecognizeSynchronously(Image image, OcrOptions options)
+    {
+        var tessdataPath = TessdataBootstrapper.EnsureDefaultTessdata();
+        if (tessdataPath is null)
+        {
+            return new OcrRecognitionResult(string.Empty);
+        }
 
         lock (_gate)
         {
-            EnsureEngine(tessdataPath, options.Languages);
+            try
+            {
+                EnsureEngine(tessdataPath, options.Languages);
+            }
+            catch (Exception ex)
+            {
+                CvImportDiagnosticsLogger.LogStep(
+                    "tesseract",
+                    $"Engine init failed: {ex.GetType().Name}: {ex.Message}");
+                return new OcrRecognitionResult(string.Empty);
+            }
+
             CvImportDiagnosticsLogger.LogStep(
                 "tesseract",
                 $"Recognizing {image.Width}x{image.Height}px, languages={options.Languages}");
@@ -68,6 +110,22 @@ public sealed class TesseractOcrEngine : IOcrEngine, IDisposable
                 $"Recognized: raw={text.Length} chars, lines={lines.Count}, normalized={normalized.Length} chars");
 
             return new OcrRecognitionResult(normalized, lines);
+        }
+    }
+
+    private static bool CanLoadNativeEngine(string tessdataPath)
+    {
+        try
+        {
+            using var probe = new TesseractEngine(tessdataPath, "eng", EngineMode.Default);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            CvImportDiagnosticsLogger.LogStep(
+                "tesseract",
+                $"Native probe failed: {ex.GetType().Name}: {ex.Message}");
+            return false;
         }
     }
 

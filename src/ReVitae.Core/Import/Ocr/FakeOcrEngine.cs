@@ -16,6 +16,17 @@ public sealed class FakeOcrEngine(string? fixedText = null) : IOcrEngine
     }
 }
 
+/// <summary>OCR engine stub that reports unavailable (tessdata missing).</summary>
+public sealed class UnavailableOcrEngine : IOcrEngine
+{
+    public string EngineName => "UnavailableOcrEngine";
+
+    public bool IsAvailable => false;
+
+    public OcrRecognitionResult Recognize(Image image, OcrOptions options) =>
+        new(string.Empty);
+}
+
 /// <summary>Fixed CV-shaped text for pipeline integration tests.</summary>
 public sealed class FixtureOcrEngine : IOcrEngine
 {

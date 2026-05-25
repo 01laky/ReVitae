@@ -6,7 +6,8 @@ namespace ReVitae.Core.Import.Ocr;
 
 public sealed class OcrImageTextExtractor(IOcrEngine ocrEngine) : ICvTextExtractor
 {
-    private readonly OcrOptions _options = new();
+    private OcrOptions CreateOptions() =>
+        new(OcrLanguageResolver.ResolveLanguages(CvImportSessionOptions.Session.UiLanguageCode));
 
     public CvTextExtractionResult Extract(string filePath)
     {
@@ -37,7 +38,8 @@ public sealed class OcrImageTextExtractor(IOcrEngine ocrEngine) : ICvTextExtract
                 "ocr-image",
                 $"Loaded image: {image.Width}x{image.Height}px, format={image.Metadata.DecodedImageFormat?.Name ?? "unknown"}");
 
-            var recognition = ocrEngine.Recognize(image, _options);
+            var options = CreateOptions();
+            var recognition = ocrEngine.Recognize(image, options);
             var text = OcrLayoutNormalizer.Normalize(recognition, logSection: "ocr-image");
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -49,7 +51,7 @@ public sealed class OcrImageTextExtractor(IOcrEngine ocrEngine) : ICvTextExtract
                 "ocr-image",
                 $"OCR success: {text.Length} chars, {text.Count(c => !char.IsWhiteSpace(c))} non-whitespace");
 
-            return OcrExtractionSupport.BuildSuccess(text, pageCount: 1, ocrEngine, _options);
+            return OcrExtractionSupport.BuildSuccess(text, pageCount: 1, ocrEngine, options);
         }
         catch (UnknownImageFormatException ex)
         {

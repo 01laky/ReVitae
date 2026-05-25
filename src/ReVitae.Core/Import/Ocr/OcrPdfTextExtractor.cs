@@ -5,7 +5,8 @@ namespace ReVitae.Core.Import.Ocr;
 
 public sealed class OcrPdfTextExtractor(IOcrEngine ocrEngine, IPdfPageRenderer pageRenderer) : ICvTextExtractor
 {
-    private readonly OcrOptions _options = new();
+    private OcrOptions CreateOptions() =>
+        new(OcrLanguageResolver.ResolveLanguages(CvImportSessionOptions.Session.UiLanguageCode));
 
     public CvTextExtractionResult Extract(string filePath)
     {
@@ -55,7 +56,8 @@ public sealed class OcrPdfTextExtractor(IOcrEngine ocrEngine, IPdfPageRenderer p
             return OcrExtractionSupport.Failed();
         }
 
-        var text = OcrExtractionSupport.RecognizePages(pages, ocrEngine, _options, "ocr-pdf");
+        var options = CreateOptions();
+        var text = OcrExtractionSupport.RecognizePages(pages, ocrEngine, options, "ocr-pdf");
         if (string.IsNullOrWhiteSpace(text))
         {
             CvImportDiagnosticsLogger.LogStep("ocr-pdf", "OCR returned empty text");
@@ -66,7 +68,7 @@ public sealed class OcrPdfTextExtractor(IOcrEngine ocrEngine, IPdfPageRenderer p
             "ocr-pdf",
             $"OCR success: {text.Length} chars, {text.Count(c => !char.IsWhiteSpace(c))} non-whitespace");
 
-        return OcrExtractionSupport.BuildSuccess(text, pages.Count, ocrEngine, _options);
+        return OcrExtractionSupport.BuildSuccess(text, pages.Count, ocrEngine, options);
     }
 
     private static bool IsPasswordProtected(Exception exception)

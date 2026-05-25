@@ -1,7 +1,7 @@
 namespace ReVitae.Core.Import;
 
 /// <summary>Per-import session flags (e.g. force OCR on text PDFs).</summary>
-public sealed record CvImportSessionOptions(bool ForceOcr = false)
+public sealed record CvImportSessionOptions(bool ForceOcr = false, string? UiLanguageCode = null)
 {
     public static CvImportSessionOptions Default { get; } = new();
 

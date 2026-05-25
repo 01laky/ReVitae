@@ -96,12 +96,18 @@ rather than network or file disclosure.
 ## Exclusions & caveats
 
 - **Image-only PDFs:** when PdfPig text fails the quality gate, ReVitae attempts
-  local OCR (Tesseract) if installed. Requires `tessdata` (bundled or under
-  `%LocalAppData%/ReVitae/tessdata/`). OCR reading order may not preserve
-  multi-column layout — prefer `*.revitae.json` for round-trip.
+  local OCR (Tesseract). English `eng.traineddata` ships with the app (~4 MB,
+  [Apache 2.0](https://github.com/tesseract-ocr/tessdata_fast/blob/main/LICENSE))
+  and is copied to `%LocalAppData%/ReVitae/tessdata/` on first use when needed.
+  Optional packs (e.g. `slk.traineddata` for Slovak UI) are used when present in
+  the same folder. OCR reading order may not preserve multi-column layout — prefer
+  `*.revitae.json` for round-trip.
 - **Raster images:** JPEG, PNG, WebP, TIFF, and BMP import via OCR when Tesseract
   is available; otherwise `ImportErrorOcrUnavailable`. CV **page images exported**
   from ReVitae re-enter through this OCR path — not structured import.
+- **Force OCR:** after a failed PDF import, **Import as scan (OCR)** re-runs import
+  on the same file with PdfPig skipped (hidden for password-protected PDFs and when
+  OCR is unavailable).
 - **Password-protected Office/PDF:** rejected where libraries surface encryption.
 - **Perfect fidelity:** imports are **draft data**. Complex layouts (multi-column,
   text boxes, drawings) may collapse ordering or lose sidebar context.

@@ -74,9 +74,21 @@ internal static class CvImportFilePickerOptions
         "*.tsv"
     ];
 
+    private static readonly string[] RasterImagePatterns =
+    [
+        "*.jpg",
+        "*.jpeg",
+        "*.png",
+        "*.webp",
+        "*.tif",
+        "*.tiff",
+        "*.bmp"
+    ];
+
     public static IReadOnlyList<FilePickerFileType> CreateFileTypeFilter(AppLocalizer localizer)
     {
         var supportedLabel = localizer.Get(TranslationKeys.ImportPdfFileType);
+        var imageLabel = localizer.Get(TranslationKeys.ImportRasterImageFileType);
 
         return
         [
@@ -87,6 +99,10 @@ internal static class CvImportFilePickerOptions
             new FilePickerFileType($"{supportedLabel} — documents")
             {
                 Patterns = DocumentPatterns
+            },
+            new FilePickerFileType(imageLabel)
+            {
+                Patterns = RasterImagePatterns
             },
             new FilePickerFileType($"{supportedLabel} — structured")
             {

@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1417%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1428%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -187,8 +187,14 @@ software architect, one realistic entry per section) at the repo root:
 
 Produces `John Doe (minimal architect).pdf` and `.txt`.
 
-**Not supported:** scanned image-only PDFs without OCR, password-protected files,
-and perfect layout fidelity from rich desktop publishing constructs.
+**Scanned PDFs and photos:** when a PDF has no usable text layer, ReVitae runs
+**local OCR** (Tesseract) with bundled English `tessdata` (~4 MB, Apache 2.0).
+JPEG, PNG, WebP, TIFF, and BMP files import the same way. OCR output is a draft —
+review all fields. Use **Import as scan (OCR)** on failed PDF imports to skip the
+text layer. Password-protected files remain unsupported.
+
+**Not supported:** password-protected files and perfect layout fidelity from rich
+desktop publishing constructs.
 
 ### Template Preview and Multi-Format Export
 

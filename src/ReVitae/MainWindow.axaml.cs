@@ -19,6 +19,7 @@ using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Cv.ProfilePhoto;
 using ReVitae.Core.Export;
 using ReVitae.Core.Import;
+using ReVitae.Core.Import.Ocr;
 using ReVitae.Core.Ai.Import;
 using ReVitae.Import;
 using ReVitae.Core.Localization;
@@ -54,6 +55,10 @@ public partial class MainWindow : Window
     private readonly ValidationFieldRegistry _personalValidationRegistry = new();
     private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
     private bool _isImportInProgress;
+    private string? _lastImportFilePath;
+    private bool _lastImportReplaceExisting;
+    private bool _lastImportUseIntroProgressUi;
+    private bool _lastImportUseReplaceProgressUi;
     private bool _isUpdatingLanguageSelection;
     private CvExportTemplateId _selectedTemplate = CvExportTemplateId.CleanTopHeader;
     private int _personalSectionErrorCount;
@@ -344,12 +349,46 @@ public partial class MainWindow : Window
 
     private async void OnReplaceCvImportRetryClicked(object? sender, RoutedEventArgs e)
     {
-        await ImportCvFromFileAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
+        await RetryLastImportAsync(forceOcr: false);
+    }
+
+    private async void OnReplaceCvImportForceOcrClicked(object? sender, RoutedEventArgs e)
+    {
+        await RetryLastImportAsync(forceOcr: true);
+    }
+
+    private async void OnIntroRetryImportClicked(object? sender, RoutedEventArgs e)
+    {
+        await RetryLastImportAsync(forceOcr: false);
+    }
+
+    private async void OnIntroForceOcrImportClicked(object? sender, RoutedEventArgs e)
+    {
+        await RetryLastImportAsync(forceOcr: true);
     }
 
     private async void OnImportCvClicked(object? sender, RoutedEventArgs e)
     {
         await ImportCvFromFileAsync(replaceExisting: false, useIntroProgressUi: true, useReplaceProgressUi: false);
+    }
+
+    private async Task RetryLastImportAsync(bool forceOcr)
+    {
+        if (_lastImportFilePath is null)
+        {
+            await ImportCvFromFileAsync(
+                _lastImportReplaceExisting,
+                _lastImportUseIntroProgressUi,
+                _lastImportUseReplaceProgressUi);
+            return;
+        }
+
+        await ImportCvFromPathAsync(
+            _lastImportFilePath,
+            _lastImportReplaceExisting,
+            _lastImportUseIntroProgressUi,
+            _lastImportUseReplaceProgressUi,
+            forceOcr);
     }
 
     private async Task ImportCvFromFileAsync(bool replaceExisting, bool useIntroProgressUi, bool useReplaceProgressUi)
@@ -396,6 +435,26 @@ public partial class MainWindow : Window
             return;
         }
 
+        await ImportCvFromPathAsync(filePath, replaceExisting, useIntroProgressUi, useReplaceProgressUi, forceOcr: false);
+    }
+
+    private async Task ImportCvFromPathAsync(
+        string filePath,
+        bool replaceExisting,
+        bool useIntroProgressUi,
+        bool useReplaceProgressUi,
+        bool forceOcr)
+    {
+        if (_isImportInProgress)
+        {
+            return;
+        }
+
+        _lastImportFilePath = filePath;
+        _lastImportReplaceExisting = replaceExisting;
+        _lastImportUseIntroProgressUi = useIntroProgressUi;
+        _lastImportUseReplaceProgressUi = useReplaceProgressUi;
+
         _isImportInProgress = true;
         SetImportProgressUiVisible(
             true,
@@ -407,12 +466,14 @@ public partial class MainWindow : Window
         {
             IntroErrorTextBlock.IsVisible = false;
             IntroRetryImportButton.IsVisible = false;
+            IntroImportForceOcrButton.IsVisible = false;
             IntroImportTryAiButton.IsVisible = false;
         }
         else if (useReplaceProgressUi)
         {
             ReplaceCvImportErrorTextBlock.IsVisible = false;
             ReplaceCvImportRetryButton.IsVisible = false;
+            ReplaceCvImportForceOcrButton.IsVisible = false;
             ReplaceImportTryAiButton.IsVisible = false;
         }
 
@@ -440,15 +501,18 @@ public partial class MainWindow : Window
             CvImportResult importResult;
             CvTextImportAttempt? textAttempt = null;
 
-            if (CvTextImportCoordinator.IsTextRoute(format))
+            using (CvImportSessionOptions.Begin(new CvImportSessionOptions(forceOcr, _localizer.LanguageCode)))
             {
-                textAttempt = await Task.Run(() => CvTextImportCoordinator.TryImport(filePath));
-                importResult = textAttempt?.Deterministic
-                    ?? CvImportResult.Failed(TranslationKeys.ImportErrorUnreadableDocument);
-            }
-            else
-            {
-                importResult = await Task.Run(() => CvDocumentImporter.Import(filePath));
+                if (CvTextImportCoordinator.IsTextRoute(format))
+                {
+                    textAttempt = await Task.Run(() => CvTextImportCoordinator.TryImport(filePath));
+                    importResult = textAttempt?.Deterministic
+                        ?? CvImportResult.Failed(TranslationKeys.ImportErrorUnreadableDocument);
+                }
+                else
+                {
+                    importResult = await Task.Run(() => CvDocumentImporter.Import(filePath));
+                }
             }
 
             _lastTextImportAttempt = textAttempt;
@@ -495,13 +559,14 @@ public partial class MainWindow : Window
                 var errorMessage = _localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadableDocument);
                 var canTryAi = textAttempt is not null &&
                                AiCvImportTriggerEvaluator.ShouldOfferAi(textAttempt);
+                var showForceOcr = OcrImportUiPolicy.CanOfferForceOcr(format, importResult.ErrorMessageKey);
                 if (useIntroProgressUi)
                 {
-                    ShowIntroImportError(errorMessage, canTryAi);
+                    ShowIntroImportError(errorMessage, canTryAi, showForceOcr);
                 }
                 else if (useReplaceProgressUi)
                 {
-                    ShowReplaceCvImportError(errorMessage, canTryAi);
+                    ShowReplaceCvImportError(errorMessage, canTryAi, showForceOcr);
                 }
 
                 return;
@@ -736,14 +801,16 @@ public partial class MainWindow : Window
         {
             ReplaceCvImportErrorTextBlock.IsVisible = false;
             ReplaceCvImportRetryButton.IsVisible = false;
+            ReplaceCvImportForceOcrButton.IsVisible = false;
         }
     }
 
-    private void ShowReplaceCvImportError(string message, bool showTryAi = false)
+    private void ShowReplaceCvImportError(string message, bool showTryAi = false, bool showForceOcr = false)
     {
         ReplaceCvImportErrorTextBlock.Text = message;
         ReplaceCvImportErrorTextBlock.IsVisible = true;
         ReplaceCvImportRetryButton.IsVisible = true;
+        ReplaceCvImportForceOcrButton.IsVisible = showForceOcr;
         ReplaceImportTryAiButton.IsVisible = showTryAi;
         ReplaceCvImportProgressTextBlock.Text = string.Empty;
     }
@@ -866,6 +933,7 @@ public partial class MainWindow : Window
         IntroProgressPanel.IsVisible = false;
         IntroErrorTextBlock.IsVisible = false;
         IntroRetryImportButton.IsVisible = false;
+        IntroImportForceOcrButton.IsVisible = false;
         IntroImportTryAiButton.IsVisible = false;
         CreateNewCvButton.IsEnabled = true;
         ImportCvButton.IsEnabled = true;
@@ -880,11 +948,12 @@ public partial class MainWindow : Window
         ImportCvButton.IsEnabled = !isVisible;
     }
 
-    private void ShowIntroImportError(string message, bool showTryAi = false)
+    private void ShowIntroImportError(string message, bool showTryAi = false, bool showForceOcr = false)
     {
         IntroErrorTextBlock.Text = message;
         IntroErrorTextBlock.IsVisible = true;
         IntroRetryImportButton.IsVisible = true;
+        IntroImportForceOcrButton.IsVisible = showForceOcr;
         IntroImportTryAiButton.IsVisible = showTryAi;
         IntroActionsPanel.IsVisible = true;
         IntroProgressPanel.IsVisible = false;
@@ -1328,6 +1397,7 @@ public partial class MainWindow : Window
         ProjectRecentClearConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
         ProjectRecentClearConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
         IntroRetryImportButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
+        IntroImportForceOcrButton.Content = _localizer.Get(TranslationKeys.ImportForceOcr);
         ReplaceCvConfirmTitleTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmTitle);
         ReplaceCvConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmMessage);
         ReplaceCvConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
@@ -1337,6 +1407,7 @@ public partial class MainWindow : Window
         NewCvConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
         NewCvConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
         ReplaceCvImportRetryButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
+        ReplaceCvImportForceOcrButton.Content = _localizer.Get(TranslationKeys.ImportForceOcr);
         AutomationProperties.SetName(CreateNewCvButton, _localizer.Get(TranslationKeys.IntroCreateNew));
         AutomationProperties.SetName(ImportCvButton, _localizer.Get(TranslationKeys.IntroImportPdf));
         FirstNameLabelTextBlock.Text = _localizer.Get(TranslationKeys.FirstName);

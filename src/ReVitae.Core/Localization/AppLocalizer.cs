@@ -552,8 +552,8 @@ public sealed class AppLocalizer
         [TranslationKeys.IntroTitle] = "Welcome to ReVitae",
         [TranslationKeys.IntroSubtitle] = "Create a new CV from scratch or import an existing file to get started faster.",
         [TranslationKeys.IntroHelper] =
-            "Works with PDF, Word, OpenDocument, RTF, text, Markdown, HTML, JSON, XML, and other common CV files. "
-            + "Scanned or image‑only PDFs are not supported.",
+            "Works with PDF, Word, OpenDocument, RTF, text, Markdown, HTML, JSON, XML, JPEG/PNG images, and other common CV files. "
+            + "Scanned or image-only PDFs and photos can be imported using built-in OCR when available.",
         [TranslationKeys.IntroCreateNew] = "Create new CV",
         [TranslationKeys.IntroOpenProject] = "Open saved project",
         [TranslationKeys.IntroImportPdf] = "Import existing CV",
@@ -819,6 +819,21 @@ public sealed class AppLocalizer
         [TranslationKeys.AiCvResponseTooLong] = "The suggestion was too long — try again or edit manually.",
         [TranslationKeys.AiCvTaskFailed] = "AI suggestion failed: {0}",
     };
+
+    private static readonly IReadOnlyDictionary<string, string> SlovakImportOverlay =
+        new Dictionary<string, string>
+        {
+            [TranslationKeys.IntroHelper] =
+                "Podporuje PDF, Word, OpenDocument, RTF, text, Markdown, HTML, JSON, XML, JPEG/PNG obrázky a ďalšie bežné formáty CV. "
+                + "Skenované alebo iba obrazové PDF a fotografie sa dajú importovať cez vstavané OCR, ak je k dispozícii.",
+            [TranslationKeys.ImportRunningOcr] = "Rozpoznávanie textu z obrázka…",
+            [TranslationKeys.ImportWarningOcrUsed] =
+                "Súbor bol načítaný pomocou OCR. Skontrolujte prosím všetky polia.",
+            [TranslationKeys.ImportErrorOcrUnavailable] = "OCR nie je na tomto systéme k dispozícii.",
+            [TranslationKeys.ImportErrorOcrFailed] = "Text v tomto obrázku alebo skene sa nepodarilo rozpoznať.",
+            [TranslationKeys.ImportRasterImageFileType] = "Obrázky (JPEG, PNG, …)",
+            [TranslationKeys.ImportForceOcr] = "Importovať ako sken (OCR)",
+        };
 
     private static readonly IReadOnlyDictionary<string, string> SlovakAiSetupOverlay =
         new Dictionary<string, string>
@@ -1093,7 +1108,9 @@ public sealed class AppLocalizer
         new Dictionary<string, IReadOnlyDictionary<string, string>>
         {
             ["sk"] = MergeOverlays(
-                Overlay("Vytvorte jednoduchý náhľad CV a exportujte plain PDF.", "Nastavenia", "Šablóny", "Jazyk", "Zavrieť", "Meno", "Priezvisko", "Profesijný titul", "Telefón", "Lokalita", "Krátke zhrnutie", "Náhľad", "Vybrané", "Pracovné skúsenosti", "Pridajte najprv poslednú pozíciu. Poradie môžete zmeniť neskôr.", "Rozbaliť náhľad", "Rozšírený náhľad"),
+                MergeOverlays(
+                    Overlay("Vytvorte jednoduchý náhľad CV a exportujte plain PDF.", "Nastavenia", "Šablóny", "Jazyk", "Zavrieť", "Meno", "Priezvisko", "Profesijný titul", "Telefón", "Lokalita", "Krátke zhrnutie", "Náhľad", "Vybrané", "Pracovné skúsenosti", "Pridajte najprv poslednú pozíciu. Poradie môžete zmeniť neskôr.", "Rozbaliť náhľad", "Rozšírený náhľad"),
+                    SlovakImportOverlay),
                 SlovakAiSetupOverlay),
             ["cs"] = Overlay("Vytvořte jednoduchý náhled CV a exportujte plain PDF.", "Nastavení", "Šablony", "Jazyk", "Zavřít", "Jméno", "Příjmení", "Profesní titul", "Telefon", "Lokalita", "Krátké shrnutí", "Náhled", "Vybráno", "Pracovní zkušenosti", "Nejprve přidejte poslední roli. Pořadí můžete změnit později.", "Rozbalit náhled", "Rozšířený náhled"),
             ["es"] = Overlay("Crea una vista previa simple del CV y exporta un PDF básico.", "Configuración", "Plantillas", "Idioma", "Cerrar", "Nombre", "Apellido", "Título profesional", "Teléfono", "Ubicación", "Resumen breve", "Vista previa", "Seleccionado", "Experiencia laboral", "Agrega tu rol más reciente primero. Puedes reordenar después.", "Expandir vista previa", "Vista previa ampliada"),

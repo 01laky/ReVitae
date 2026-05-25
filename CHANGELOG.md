@@ -7,6 +7,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- **OCR and image CV import (completion):** bundled `eng.traineddata` in app
+  output; `OcrLanguageResolver` (UI culture → Tesseract language packs);
+  **Import as scan (OCR)** retry on failed PDF imports without reopening the file
+  picker; dedicated **Images** file-picker group; Slovak OCR strings; committed
+  fixtures under `tests/.../Fixtures/Ocr/` and generator
+  `scripts/GenerateOcrImportFixtures/`; edge-case and `OcrIntegration` tests.
+
 ## [0.2.0] - 2026-05-25
 
 ### Added

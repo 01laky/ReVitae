@@ -28,4 +28,10 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\ExportFormats\**\*.svg" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="tessdata\eng.traineddata">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
