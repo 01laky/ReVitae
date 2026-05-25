@@ -9,6 +9,8 @@ internal static class CvImportDiagnosticsLogger
 {
     private static readonly object Gate = new();
     private static Stopwatch? _sessionStopwatch;
+    private static bool _sessionActive;
+    private static string? _sessionLogFilePath;
 
     public static string LogFilePath =>
         Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG") is { Length: > 0 } customPath
@@ -23,13 +25,17 @@ internal static class CvImportDiagnosticsLogger
     public static bool IsEnabled =>
         string.Equals(Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG"), "1", StringComparison.Ordinal);
 
+    private static bool ShouldLog => _sessionActive || IsEnabled;
+
     public static void BeginSession(string filePath, CvImportFormat format, long fileSizeBytes)
     {
-        if (!IsEnabled)
+        if (!ShouldLog)
         {
             return;
         }
 
+        _sessionActive = true;
+        _sessionLogFilePath = LogFilePath;
         _sessionStopwatch = Stopwatch.StartNew();
         var header = new StringBuilder()
             .AppendLine(new string('=', 80))
@@ -37,7 +43,7 @@ internal static class CvImportDiagnosticsLogger
             .AppendLine($"File: {filePath}")
             .AppendLine($"Format: {format}")
             .AppendLine($"Size: {fileSizeBytes} bytes")
-            .AppendLine($"Log: {LogFilePath}")
+            .AppendLine($"Log: {_sessionLogFilePath}")
             .AppendLine(new string('=', 80))
             .ToString();
 
@@ -48,7 +54,7 @@ internal static class CvImportDiagnosticsLogger
 
     public static void LogExtraction(CvTextExtractionResult extraction)
     {
-        if (!IsEnabled)
+        if (!ShouldLog)
         {
             return;
         }
@@ -115,7 +121,7 @@ internal static class CvImportDiagnosticsLogger
 
     public static void LogTextPipeline(string rawText, CvSegmentationResult segmentation, CvImportResult result)
     {
-        if (!IsEnabled)
+        if (!ShouldLog)
         {
             return;
         }
@@ -166,7 +172,7 @@ internal static class CvImportDiagnosticsLogger
 
     public static void LogStructuredResult(CvImportResult result)
     {
-        if (!IsEnabled)
+        if (!ShouldLog)
         {
             return;
         }
@@ -181,7 +187,7 @@ internal static class CvImportDiagnosticsLogger
 
     public static void LogFailure(string stage, string? detail = null)
     {
-        if (!IsEnabled)
+        if (!ShouldLog)
         {
             return;
         }
@@ -202,7 +208,7 @@ internal static class CvImportDiagnosticsLogger
     /// <summary>Append a single trace line to the debug log (and stderr when enabled).</summary>
     public static void LogStep(string section, string message)
     {
-        if (!IsEnabled)
+        if (!ShouldLog)
         {
             return;
         }
@@ -215,9 +221,12 @@ internal static class CvImportDiagnosticsLogger
 
     public static void EndSession(bool success)
     {
-        if (!IsEnabled)
+        if (!_sessionActive)
         {
-            return;
+            if (!ShouldLog)
+            {
+                return;
+            }
         }
 
         var elapsed = _sessionStopwatch?.ElapsedMilliseconds ?? 0;
@@ -231,6 +240,8 @@ internal static class CvImportDiagnosticsLogger
             .ToString();
 
         Write(footer);
+        _sessionActive = false;
+        _sessionLogFilePath = null;
     }
 
     private static void AppendParsedResult(StringBuilder builder, CvImportResult result)
@@ -371,15 +382,31 @@ internal static class CvImportDiagnosticsLogger
 
     private static void Write(string content)
     {
-        lock (Gate)
+        if (_sessionActive)
         {
-            var directory = Path.GetDirectoryName(LogFilePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
+            AppendToLog(_sessionLogFilePath!);
+            return;
+        }
 
-            File.AppendAllText(LogFilePath, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        if (!ShouldLog)
+        {
+            return;
+        }
+
+        AppendToLog(LogFilePath);
+
+        void AppendToLog(string path)
+        {
+            lock (Gate)
+            {
+                var directory = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                File.AppendAllText(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            }
         }
     }
 

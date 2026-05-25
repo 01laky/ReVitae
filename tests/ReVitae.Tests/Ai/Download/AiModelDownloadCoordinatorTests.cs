@@ -615,16 +615,16 @@ public sealed class AiModelDownloadCoordinatorTests
     {
         for (var i = 0; i < 200; i++)
         {
+            var state = harness.Coordinator.CurrentSnapshot.State;
             if (harness.FakePullClient.PullCallCount > 0 &&
-                harness.Coordinator.CurrentSnapshot.State is AiDownloadJobState.Idle
-                    or AiDownloadJobState.Failed
-                    or AiDownloadJobState.Completed)
+                state is AiDownloadJobState.Idle or AiDownloadJobState.Failed)
             {
-                if (harness.Coordinator.CurrentSnapshot.State == AiDownloadJobState.Completed)
-                {
-                    await Task.Delay(20);
-                }
+                return;
+            }
 
+            if (state == AiDownloadJobState.Completed)
+            {
+                await WaitForState(harness.Coordinator, AiDownloadJobState.Idle);
                 return;
             }
 
