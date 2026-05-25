@@ -21,19 +21,33 @@ or through providers you configure yourself.
 flowchart TD
     start(["Start fresh or import a CV"])
     ingest["Read your file locally\n(PDF, Word, scan, JSON, …)"]
+    parse{"Deterministic parse\n(OCR for scans)"}
+    aiImport["AI-assisted import\n(review before apply)"]
     sections["Edit structured sections\nwith live preview"]
+    hints["Quality hints · Improve with AI"]
+    aiSetup["AI backend setup\nfirst-launch wizard or robot icon"]
     replace["Import another file\n(replace with confirmation)"]
     templates["Try a different template\ncontent stays intact"]
     exportModal["Pick export format\n(16 options)"]
     exportSave["Save to your computer"]
     exportDone(["Open file or show in folder"])
 
-    start --> ingest --> sections --> templates --> exportModal --> exportSave --> exportDone
-    sections --> replace --> ingest --> sections
+    start -->|"import"| ingest --> parse
+    start -->|"new empty CV"| sections
+    parse -->|"rich draft"| sections
+    parse -->|"fail or thin draft"| aiImport --> sections
+    sections --> hints --> sections
+    sections --> aiSetup --> sections
+    sections --> replace --> ingest
+    sections --> templates --> exportModal --> exportSave --> exportDone
 
     style start fill:#eef2ff,stroke:#512BD4,stroke-width:2px,color:#1e1b4b
     style ingest fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#713f12
+    style parse fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#713f12
+    style aiImport fill:#f5f3ff,stroke:#7c3aed,stroke-width:1.5px,color:#4c1d95
     style sections fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
+    style hints fill:#f5f3ff,stroke:#7c3aed,stroke-width:1.5px,color:#4c1d95
+    style aiSetup fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px,color:#4c1d95
     style replace fill:#fff7ed,stroke:#ea580c,stroke-width:1.5px,color:#7c2d12
     style templates fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a
     style exportModal fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b
@@ -58,12 +72,15 @@ or need to turn an old PDF or Word export into something you can actually mainta
 
 Want suggestions without sending your CV to a random website? ReVitae can run
 **local AI models** (via Ollama) or connect to **online providers you configure**
-(OpenAI, Anthropic, Gemini, and others). Downloads continue in the background —
-close the setup modal, pause for lunch, even restart the app; progress picks up
-where it left off.
+(OpenAI, Anthropic, Gemini, and others). On first launch, an optional **setup
+wizard** walks you through local or online setup — or you can skip and configure
+later from the header **robot icon** or **Setup → Show AI setup wizard again**.
+Downloads continue in the background — close the setup modal, pause for lunch, even
+restart the app; progress picks up where it left off.
 
 ```mermaid
 flowchart LR
+    entry["First launch wizard\nor robot icon"]
     confirm["Confirm download"]
     engine["Auto-install Ollama\nif missing"]
     dock["Bottom-left dock\nname • % • status"]
@@ -71,13 +88,14 @@ flowchart LR
     pause["Pause / Resume / Stop"]
     manage["Remove model /\nclean failed download"]
     recover["App restart → auto-resume\n(Ollama layer cache)"]
-    done["Success → ai-settings.json"]
+    done["Active backend saved\nai-settings.json"]
+    use["Improve with AI\nAI-assisted import"]
 
-    confirm --> engine --> dock --> bg
+    entry --> confirm --> engine --> dock --> bg
     bg --> pause
     bg --> manage
     bg --> recover
-    bg --> done
+    bg --> done --> use
     pause --> bg
     manage --> bg
     recover --> bg
@@ -85,6 +103,8 @@ flowchart LR
 
 **What you get:**
 
+- **First-launch wizard** — optional cold-start path for local download, online
+  provider, remind later, or offline-only mode.
 - **Background download** — keep editing while a model installs; progress stays in the corner.
 - **Pause and resume** — stop safely; Ollama continues from cached layers.
 - **Survives restarts** — force-quit or crash; ReVitae resumes on next launch.
@@ -120,7 +140,10 @@ HTML, …) do not pull photos out of files — add one manually if you want it.
 
 ### AI setup (local and online)
 
-Open the header **robot icon** for **AI setup**:
+On **first launch**, ReVitae may show an optional **AI setup wizard** (local
+Ollama, curated online providers, remind later, or offline-only). Re-run it anytime
+from **Setup** (gear icon) → **Show AI setup wizard again**, or open the header
+**robot icon** for the full **AI setup** modal:
 
 - **Online providers** — OpenAI, Anthropic, Gemini, Groq, Azure, Mistral, DeepSeek,
   OpenRouter, or a custom endpoint. One active backend at a time; keys stored encrypted.
@@ -128,7 +151,8 @@ Open the header **robot icon** for **AI setup**:
   download (see [Local AI](#local-ai--optional-help-on-your-terms) above).
 
 **Improve with AI** on quality hints and **AI-assisted import** (below) always show
-you a review step before anything is applied. Details: [`docs/ai-setup.md`](docs/ai-setup.md).
+you a review step before anything is applied. Details: [`docs/ai-setup.md`](docs/ai-setup.md)
+and [`docs/ai-import.md`](docs/ai-import.md).
 
 ![AI setup — online provider configuration](docs/img/ai-setup-online-providers.png)
 
@@ -212,8 +236,8 @@ Pill Header Split, Navy Overlap Photo.
 
 ![Expanded preview — full-size CV modal](docs/img/expanded-preview-modal.png)
 
-**Setup** (gear icon) is for language only. **About** (last toolbar icon) shows version
-and early-preview status.
+**Setup** (gear icon) is for **language** and **Show AI setup wizard again**.
+**About** (last toolbar icon) shows version and early-preview status.
 
 ### Validation and review
 
@@ -229,10 +253,11 @@ stay highlighted until you confirm them.
 
 ## Product status
 
-ReVitae is an **early-stage desktop app** (v0.2.4) under active development. The
+ReVitae is an **early-stage desktop app** (v0.2.11) under active development. The
 core loop works today: build or import a CV, preview with templates, validate,
-save locally, and export in many formats. Local and online AI setup, AI-assisted
-import, OCR for scans, and ReVitae PDF round-trip are in place.
+save locally, and export in many formats. First-launch AI wizard, local and online
+AI setup, resumable Ollama downloads, AI-assisted import, OCR for scans, and
+ReVitae PDF round-trip are in place.
 
 **Coming next:** installers for macOS, Windows, and Linux, plus more templates beyond
 the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
@@ -241,9 +266,9 @@ the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
 
 ReVitae uses three different version concepts:
 
-- **App version** (`0.2.4`): the ReVitae product release shown in the **About**
+- **App version** (`0.2.11`): the ReVitae product release shown in the **About**
   modal (toolbar icon), README app badge, `Version.props`, and Git tags such as
-  `v0.2.4`.
+  `v0.2.11`.
 - **Tech-stack badges**: framework/platform versions such as `.NET 10` and
   `Avalonia 12`.
 - **Dependency package versions**: NuGet package versions declared in `.csproj`
@@ -257,8 +282,6 @@ To cut a release:
 4. Commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
 5. Create a GitHub Release using the matching `CHANGELOG.md` section.
 
-**Note:** Git tag `v0.2.3` may still be pending on GitHub Releases if not created separately.
-
 ## Roadmap
 
 **Planned:**
@@ -268,6 +291,8 @@ To cut a release:
 
 **Recently shipped** ([`CHANGELOG.md`](CHANGELOG.md)):
 
+- Refactoring & edge-case audit (v0.2.11) — project lifecycle service, import
+  extraction split, Ollama abstractions, **1845** tests (+244)
 - Technical debt hardening (v0.2.4) — PDF import stability, NU1903 pin, CI gates
 - First-launch AI setup wizard — [`docs/ai-setup.md`](docs/ai-setup.md#first-launch-ai-setup-wizard)
 - OCR and image import (scans, photos, Force OCR retry)
@@ -284,6 +309,8 @@ To cut a release:
 - DocumentFormat.OpenXml, NPOI, Markdig, HtmlAgilityPack, YamlDotNet, RtfPipe,
   and related libraries for multi-format CV import surfaces
 - QuestPDF for template-based PDF export; DocumentFormat.OpenXml and custom writers for DOCX/ODT/RTF/HTML/MD/TXT/LaTeX and structured JSON/YAML/XML/CSV/TSV export
+- Ollama for local AI models; encrypted credential storage for online providers
+- Tesseract OCR (English traineddata bundled) for scanned PDFs and image imports
 - xUnit for tests (including targeted import edge-case suites and the John Doe
   import regression matrix under `tests/ReVitae.Tests/Import/`)
 - markdownlint and C# build checks
@@ -349,7 +376,7 @@ match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` o
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **1840+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **1845+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash
@@ -390,14 +417,14 @@ npm run lint
 
 ```text
 src/
-  ReVitae/          Avalonia desktop UI and validation presentation layer
-  ReVitae.Core/     CV models, validation rules, import, localization
+  ReVitae/          Avalonia desktop UI, modals, validation presentation
+  ReVitae.Core/     CV models, validation, import/export, AI (Ollama/online)
 
 tests/
-  ReVitae.Tests/    Unit, import, and UI validation tests
+  ReVitae.Tests/    Unit, import, AI, Ollama, and UI validation tests
 
 docs/
-  Product concept, export/import matrices, AI setup, native project JSON
+  Product concept, export/import matrices, AI setup/import, native project JSON
   img/              App screenshots for README and docs
 ```
 
