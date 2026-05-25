@@ -241,6 +241,8 @@ public sealed class CertificatesSectionView : UserControl, IValidationNavigableS
 
     public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
 
+    public bool IsSectionExpanded => _section.IsExpanded;
+
     public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
     {
         foreach (var (entryId, card) in _cardsById)

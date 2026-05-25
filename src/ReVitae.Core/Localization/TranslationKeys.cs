@@ -119,6 +119,35 @@ public static class TranslationKeys
     public const string ExportFolderPickerTitle = "export.folderPickerTitle";
     public const string ExportedImagesToZip = "export.exportedImagesToZip";
     public const string ExportedImagesToFolder = "export.exportedImagesToFolder";
+    public const string ProjectSave = "project.save";
+    public const string ProjectSaveAs = "project.saveAs";
+    public const string ProjectOpen = "project.open";
+    public const string ProjectSaveDialogTitle = "project.saveDialogTitle";
+    public const string ProjectOpenDialogTitle = "project.openDialogTitle";
+    public const string ProjectSaved = "project.saved";
+    public const string ProjectOpened = "project.opened";
+    public const string ProjectSaveFailed = "project.saveFailed";
+    public const string ProjectOpenFailed = "project.openFailed";
+    public const string ProjectOpenEmpty = "project.openEmpty";
+    public const string ProjectUntitled = "project.untitled";
+    public const string ProjectUnsavedIndicator = "project.unsavedIndicator";
+    public const string ProjectUnsavedConfirmTitle = "project.unsavedConfirmTitle";
+    public const string ProjectUnsavedConfirmMessage = "project.unsavedConfirmMessage";
+    public const string ProjectUnsavedSave = "project.unsavedSave";
+    public const string ProjectUnsavedDiscard = "project.unsavedDiscard";
+    public const string ProjectRecentTitle = "project.recentTitle";
+    public const string ProjectRecentClear = "project.recentClear";
+    public const string ProjectRecentClearConfirmTitle = "project.recentClearConfirmTitle";
+    public const string ProjectRecentClearConfirmMessage = "project.recentClearConfirmMessage";
+    public const string ProjectRecentMissing = "project.recentMissing";
+    public const string ProjectRecoveryTitle = "project.recoveryTitle";
+    public const string ProjectRecoveryMessage = "project.recoveryMessage";
+    public const string ProjectRecoveryRestore = "project.recoveryRestore";
+    public const string ProjectRecoveryDiscard = "project.recoveryDiscard";
+    public const string ProjectSettingsPartiallyIgnored = "project.settingsPartiallyIgnored";
+    public const string ProjectSavedWithValidationErrors = "project.savedWithValidationErrors";
+    public const string ProjectFileType = "project.fileType";
+    public const string ProjectGenericJsonFileType = "project.genericJsonFileType";
     public const string Preview = "preview.title";
     public const string PreviewExpandTitle = "modal.previewExpand.title";
     public const string Setup = "modal.setup.title";
@@ -511,6 +540,7 @@ public static class TranslationKeys
     public const string IntroSubtitle = "intro.subtitle";
     public const string IntroHelper = "intro.helper";
     public const string IntroCreateNew = "intro.createNew";
+    public const string IntroOpenProject = "intro.openProject";
     public const string IntroImportPdf = "intro.importPdf";
     public const string IntroReadingPdf = "intro.readingPdf";
     public const string IntroParsingCv = "intro.parsingCv";
@@ -855,6 +885,35 @@ public static class TranslationKeys
         ExportFolderPickerTitle,
         ExportedImagesToZip,
         ExportedImagesToFolder,
+        ProjectSave,
+        ProjectSaveAs,
+        ProjectOpen,
+        ProjectSaveDialogTitle,
+        ProjectOpenDialogTitle,
+        ProjectSaved,
+        ProjectOpened,
+        ProjectSaveFailed,
+        ProjectOpenFailed,
+        ProjectOpenEmpty,
+        ProjectUntitled,
+        ProjectUnsavedIndicator,
+        ProjectUnsavedConfirmTitle,
+        ProjectUnsavedConfirmMessage,
+        ProjectUnsavedSave,
+        ProjectUnsavedDiscard,
+        ProjectRecentTitle,
+        ProjectRecentClear,
+        ProjectRecentClearConfirmTitle,
+        ProjectRecentClearConfirmMessage,
+        ProjectRecentMissing,
+        ProjectRecoveryTitle,
+        ProjectRecoveryMessage,
+        ProjectRecoveryRestore,
+        ProjectRecoveryDiscard,
+        ProjectSettingsPartiallyIgnored,
+        ProjectSavedWithValidationErrors,
+        ProjectFileType,
+        ProjectGenericJsonFileType,
         Preview,
         PreviewExpandTitle,
         Setup,
@@ -1238,6 +1297,7 @@ public static class TranslationKeys
         IntroSubtitle,
         IntroHelper,
         IntroCreateNew,
+        IntroOpenProject,
         IntroImportPdf,
         IntroReadingPdf,
         IntroParsingCv,

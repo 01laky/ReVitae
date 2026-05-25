@@ -25,6 +25,7 @@ public partial class MainWindow
     private void OnProfilePhotoRemoveClicked(object? sender, RoutedEventArgs e)
     {
         ClearProfilePhoto(showMissingWarning: false);
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
     }
@@ -66,6 +67,7 @@ public partial class MainWindow
 
         _profilePhotoPath = saveResult.StoredPath;
         ProfilePhotoErrorTextBlock.Text = string.Empty;
+        MarkProjectDirty();
         RefreshProfilePhotoUi();
         UpdatePreview();
         UpdateValidationState();

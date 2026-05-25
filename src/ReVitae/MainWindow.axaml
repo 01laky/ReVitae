@@ -23,6 +23,7 @@
         MinHeight="480"
         Title="ReVitae"
         KeyDown="OnWindowKeyDown"
+        Closing="OnWindowClosing"
         SizeChanged="OnWindowSizeChanged">
     <Grid x:Name="RootGrid"
           RowDefinitions="Auto,*"
@@ -50,6 +51,36 @@
                         ToolTip.Tip="Create new CV"
                         AutomationProperties.Name="Create new CV">
                     <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline"
+                                                Width="24"
+                                                Height="24" />
+                </Button>
+
+                <Button x:Name="SaveProjectButton"
+                        Classes="re-vitae-icon-button"
+                        Click="OnSaveProjectClicked"
+                        ToolTip.Tip="Save"
+                        AutomationProperties.Name="Save">
+                    <materialIcons:MaterialIcon Kind="ContentSave"
+                                                Width="24"
+                                                Height="24" />
+                </Button>
+
+                <Button x:Name="SaveProjectAsButton"
+                        Classes="re-vitae-icon-button"
+                        Click="OnSaveProjectAsClicked"
+                        ToolTip.Tip="Save As"
+                        AutomationProperties.Name="Save As">
+                    <materialIcons:MaterialIcon Kind="ContentSaveOutline"
+                                                Width="24"
+                                                Height="24" />
+                </Button>
+
+                <Button x:Name="OpenProjectButton"
+                        Classes="re-vitae-icon-button"
+                        Click="OnOpenProjectClicked"
+                        ToolTip.Tip="Open"
+                        AutomationProperties.Name="Open">
+                    <materialIcons:MaterialIcon Kind="FolderOpenOutline"
                                                 Width="24"
                                                 Height="24" />
                 </Button>
@@ -422,7 +453,68 @@
                                            VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
+
+                        <Button x:Name="IntroOpenProjectButton"
+                                Classes="re-vitae-secondary"
+                                HorizontalAlignment="Stretch"
+                                Click="OnIntroOpenProjectClicked"
+                                AutomationProperties.Name="Open saved project">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="10"
+                                        HorizontalAlignment="Center">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline"
+                                                            Width="20"
+                                                            Height="20" />
+                                <TextBlock x:Name="IntroOpenProjectButtonTextBlock"
+                                           Text="Open saved project"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
+
+                    <Border x:Name="IntroRecoveryPanel"
+                            Classes="re-vitae-app-card"
+                            Padding="12"
+                            IsVisible="False">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="IntroRecoveryTitleTextBlock"
+                                       Classes="re-vitae-app-title"
+                                       FontSize="16"
+                                       Text="Recover unsaved work?" />
+                            <TextBlock x:Name="IntroRecoveryMessageTextBlock"
+                                       Classes="re-vitae-secondary"
+                                       TextWrapping="Wrap"
+                                       Text="ReVitae found an autosaved CV from an unexpected exit." />
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="10">
+                                <Button x:Name="IntroRecoveryRestoreButton"
+                                        Classes="re-vitae-primary"
+                                        Content="Recover"
+                                        Click="OnIntroRecoveryRestoreClicked" />
+                                <Button x:Name="IntroRecoveryDiscardButton"
+                                        Classes="re-vitae-secondary"
+                                        Content="Discard"
+                                        Click="OnIntroRecoveryDiscardClicked" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock x:Name="IntroRecentTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="16"
+                               Text="Recent projects"
+                               IsVisible="False" />
+
+                    <StackPanel x:Name="IntroRecentProjectsPanel"
+                                Spacing="8"
+                                IsVisible="False" />
+
+                    <Button x:Name="IntroClearRecentProjectsButton"
+                            Classes="re-vitae-secondary"
+                            Content="Clear list"
+                            HorizontalAlignment="Left"
+                            IsVisible="False"
+                            Click="OnIntroClearRecentProjectsClicked" />
 
                     <StackPanel x:Name="IntroProgressPanel"
                                 Spacing="8"
@@ -965,6 +1057,82 @@
                                 Classes="re-vitae-primary"
                                 Content="OK"
                                 Click="OnNewCvConfirmOkClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="UnsavedChangesConfirmModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="UnsavedChangesConfirmModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="520"
+                    MinWidth="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="16"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="UnsavedChangesConfirmTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="24"
+                               Text="Save changes?" />
+                    <TextBlock x:Name="UnsavedChangesConfirmMessageTextBlock"
+                               Classes="re-vitae-secondary"
+                               TextWrapping="Wrap"
+                               Text="Your CV has unsaved changes. Save before continuing?" />
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="UnsavedChangesConfirmCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnUnsavedChangesCancelClicked" />
+                        <Button x:Name="UnsavedChangesConfirmDiscardButton"
+                                Classes="re-vitae-secondary"
+                                Content="Don't save"
+                                Click="OnUnsavedChangesDiscardClicked" />
+                        <Button x:Name="UnsavedChangesConfirmSaveButton"
+                                Classes="re-vitae-primary"
+                                Content="Save"
+                                Click="OnUnsavedChangesSaveClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="ProjectRecentClearConfirmModalOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border x:Name="ProjectRecentClearConfirmModalPanel"
+                    Classes="re-vitae-modal-panel"
+                    MaxWidth="520"
+                    MinWidth="320"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="16"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="ProjectRecentClearConfirmTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="24"
+                               Text="Clear recent projects?" />
+                    <TextBlock x:Name="ProjectRecentClearConfirmMessageTextBlock"
+                               Classes="re-vitae-secondary"
+                               TextWrapping="Wrap"
+                               Text="This removes the recent projects list. Saved files on disk are not deleted." />
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="ProjectRecentClearConfirmCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnProjectRecentClearConfirmCancelClicked" />
+                        <Button x:Name="ProjectRecentClearConfirmOkButton"
+                                Classes="re-vitae-primary"
+                                Content="OK"
+                                Click="OnProjectRecentClearConfirmOkClicked" />
                     </StackPanel>
                 </StackPanel>
             </Border>

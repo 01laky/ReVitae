@@ -21,6 +21,7 @@ using ReVitae.Core.Export;
 using ReVitae.Core.Import;
 using ReVitae.Import;
 using ReVitae.Core.Localization;
+using ReVitae.Core.Projects;
 using ReVitae.Controls;
 using ReVitae.Core.Validation;
 using ReVitae.Core.Validation.Presentation;
@@ -64,6 +65,7 @@ public partial class MainWindow : Window
         InitializeAiProviders();
         InitializeAiCvCompletion();
         InitializeQualityHintsUi();
+        InitializeProjectsUi();
         InitializePersonalValidation();
         InitializeLanguageSelector();
         WorkExperienceSection.EntriesChanged += OnWorkExperienceChanged;
@@ -147,6 +149,7 @@ public partial class MainWindow : Window
 
     private void OnWorkExperienceChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -154,6 +157,7 @@ public partial class MainWindow : Window
 
     private void OnEducationChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -161,6 +165,7 @@ public partial class MainWindow : Window
 
     private void OnSkillsChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -168,6 +173,7 @@ public partial class MainWindow : Window
 
     private void OnLanguagesChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -175,6 +181,7 @@ public partial class MainWindow : Window
 
     private void OnCertificatesChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -182,6 +189,7 @@ public partial class MainWindow : Window
 
     private void OnProjectsChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -189,6 +197,7 @@ public partial class MainWindow : Window
 
     private void OnLinksChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -196,6 +205,7 @@ public partial class MainWindow : Window
 
     private void OnAdditionalInformationChanged(object? sender, EventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -203,6 +213,7 @@ public partial class MainWindow : Window
 
     private void OnFormTextChanged(object? sender, TextChangedEventArgs e)
     {
+        MarkProjectDirty();
         UpdatePreview();
         UpdateValidationState();
         ExportStatusTextBlock.Text = string.Empty;
@@ -263,9 +274,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (HasCvFormData())
+        if (HasUnsavedProjectChanges())
         {
-            SetNewCvConfirmModalVisible(true);
+            _pendingProjectAction = PendingProjectAction.NewCv;
+            SetUnsavedChangesConfirmModalVisible(true);
             return;
         }
 
@@ -289,6 +301,8 @@ public partial class MainWindow : Window
         HideExportPostActions();
         ExportStatusTextBlock.Text = string.Empty;
         FormScrollViewer.Offset = new Vector(0, 0);
+        ResetProjectSession(markDirty: false);
+        CvProjectService.DeleteRecovery();
         UpdatePreview();
         UpdateValidationState();
     }
@@ -297,6 +311,13 @@ public partial class MainWindow : Window
     {
         if (IntroModalOverlay.IsVisible || _isImportInProgress)
         {
+            return;
+        }
+
+        if (HasUnsavedProjectChanges())
+        {
+            _pendingProjectAction = PendingProjectAction.ImportReplace;
+            SetUnsavedChangesConfirmModalVisible(true);
             return;
         }
 
@@ -441,6 +462,7 @@ public partial class MainWindow : Window
 
             ApplyCvImportResult(importResult);
             ShowImportWarnings(importResult);
+            ResetProjectSession(markDirty: true);
 
             if (useIntroProgressUi)
             {
@@ -848,6 +870,12 @@ public partial class MainWindow : Window
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
+        HandleProjectKeyboardShortcut(e);
+        if (e.Handled)
+        {
+            return;
+        }
+
         if (e.Key != Key.Escape)
         {
             return;
@@ -865,6 +893,14 @@ public partial class MainWindow : Window
         else if (NewCvConfirmModalOverlay.IsVisible)
         {
             SetNewCvConfirmModalVisible(false);
+        }
+        else if (UnsavedChangesConfirmModalOverlay.IsVisible)
+        {
+            OnUnsavedChangesCancelClicked(null, e);
+        }
+        else if (ProjectRecentClearConfirmModalOverlay.IsVisible)
+        {
+            SetProjectRecentClearConfirmModalVisible(false);
         }
         else if (ReplaceCvImportProgressModalOverlay.IsVisible)
         {
@@ -1187,6 +1223,12 @@ public partial class MainWindow : Window
         AutomationProperties.SetName(UploadCvButton, _localizer.Get(TranslationKeys.OpenUploadCv));
         ToolTip.SetTip(OpenCreateNewCvButton, _localizer.Get(TranslationKeys.OpenCreateNewCv));
         AutomationProperties.SetName(OpenCreateNewCvButton, _localizer.Get(TranslationKeys.OpenCreateNewCv));
+        ToolTip.SetTip(SaveProjectButton, _localizer.Get(TranslationKeys.ProjectSave));
+        AutomationProperties.SetName(SaveProjectButton, _localizer.Get(TranslationKeys.ProjectSave));
+        ToolTip.SetTip(SaveProjectAsButton, _localizer.Get(TranslationKeys.ProjectSaveAs));
+        AutomationProperties.SetName(SaveProjectAsButton, _localizer.Get(TranslationKeys.ProjectSaveAs));
+        ToolTip.SetTip(OpenProjectButton, _localizer.Get(TranslationKeys.ProjectOpen));
+        AutomationProperties.SetName(OpenProjectButton, _localizer.Get(TranslationKeys.ProjectOpen));
         ToolTip.SetTip(OpenSetupButton, _localizer.Get(TranslationKeys.OpenSetup));
         ToolTip.SetTip(OpenAiSetupButton, _localizer.Get(TranslationKeys.OpenAiSetup));
         AutomationProperties.SetName(OpenAiSetupButton, _localizer.Get(TranslationKeys.OpenAiSetup));
@@ -1212,6 +1254,22 @@ public partial class MainWindow : Window
         IntroHelperTextBlock.Text = _localizer.Get(TranslationKeys.IntroHelper);
         CreateNewCvButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroCreateNew);
         ImportCvButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroImportPdf);
+        IntroOpenProjectButtonTextBlock.Text = _localizer.Get(TranslationKeys.IntroOpenProject);
+        IntroRecoveryTitleTextBlock.Text = _localizer.Get(TranslationKeys.ProjectRecoveryTitle);
+        IntroRecoveryMessageTextBlock.Text = _localizer.Get(TranslationKeys.ProjectRecoveryMessage);
+        IntroRecoveryRestoreButton.Content = _localizer.Get(TranslationKeys.ProjectRecoveryRestore);
+        IntroRecoveryDiscardButton.Content = _localizer.Get(TranslationKeys.ProjectRecoveryDiscard);
+        IntroRecentTitleTextBlock.Text = _localizer.Get(TranslationKeys.ProjectRecentTitle);
+        IntroClearRecentProjectsButton.Content = _localizer.Get(TranslationKeys.ProjectRecentClear);
+        UnsavedChangesConfirmTitleTextBlock.Text = _localizer.Get(TranslationKeys.ProjectUnsavedConfirmTitle);
+        UnsavedChangesConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.ProjectUnsavedConfirmMessage);
+        UnsavedChangesConfirmSaveButton.Content = _localizer.Get(TranslationKeys.ProjectUnsavedSave);
+        UnsavedChangesConfirmDiscardButton.Content = _localizer.Get(TranslationKeys.ProjectUnsavedDiscard);
+        UnsavedChangesConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
+        ProjectRecentClearConfirmTitleTextBlock.Text = _localizer.Get(TranslationKeys.ProjectRecentClearConfirmTitle);
+        ProjectRecentClearConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.ProjectRecentClearConfirmMessage);
+        ProjectRecentClearConfirmCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
+        ProjectRecentClearConfirmOkButton.Content = _localizer.Get(TranslationKeys.Confirm);
         IntroRetryImportButton.Content = _localizer.Get(TranslationKeys.IntroImportRetry);
         ReplaceCvConfirmTitleTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmTitle);
         ReplaceCvConfirmMessageTextBlock.Text = _localizer.Get(TranslationKeys.ReplaceCvConfirmMessage);
@@ -1282,6 +1340,8 @@ public partial class MainWindow : Window
         ApplyAiSuggestionModalLocalization();
         ApplyAiDownloadLocalization();
         RefreshTemplateCardLabels();
+        UpdateWindowTitle();
+        RefreshIntroRecentProjects();
     }
 
     private void UpdatePreview()
@@ -1292,6 +1352,11 @@ public partial class MainWindow : Window
 
     private void SelectTemplate(CvExportTemplateId templateId)
     {
+        if (_selectedTemplate != templateId)
+        {
+            MarkProjectDirty();
+        }
+
         _selectedTemplate = templateId;
         UpdateTemplateSelectionState();
         UpdatePreview();
@@ -1299,7 +1364,11 @@ public partial class MainWindow : Window
     }
 
     private bool IsBlockingOverlayOpen() =>
-        IntroModalOverlay.IsVisible || ReplaceCvImportProgressModalOverlay.IsVisible;
+        IntroModalOverlay.IsVisible
+        || ReplaceCvImportProgressModalOverlay.IsVisible
+        || ExportModalOverlay.IsVisible
+        || AiSetupModalOverlay.IsVisible
+        || UnsavedChangesConfirmModalOverlay.IsVisible;
 
     private void HideOtherContentModals(Grid activeModal)
     {

@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1273%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1305%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
 ReVitae is a privacy-conscious desktop CV builder for creating, importing,
 editing, previewing, and exporting professional CVs.
@@ -106,9 +106,10 @@ ReVitae includes dedicated form sections for the core CV content:
 - Additional information
 
 Each section has focused validation, repeatable entries where needed, live
-preview updates, localized UI text, inline field-level error messages, and
+preview updates, localized UI text, inline field-level error messages,
 **static quality hints** (section badge → large in-window modal with suggestions;
-does not block export).
+does not block export), and **local project save/load** (`*.revitae.json` with
+Save / Save As / Open, recent projects, dirty tracking, and autosave recovery).
 
 **Profile photo (optional):** upload JPEG, PNG, or WebP up to **15 MB** from the
 top of Personal information. JPEGs are EXIF-orientation normalized on save. Click
@@ -246,10 +247,12 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 
 Planned areas:
 
-- Save and load local CV projects (native `.revitae.json` interchange is documented in [`docs/revitae-project-json.md`](docs/revitae-project-json.md); export already supports `.revitae.json`)
-- ReVitae-exported PDF re-import (template-aware parsing)
-- AI-assisted import, field rewrite, and quality-hint assist
+- ReVitae-exported PDF re-import (template-aware parsing — largely implemented; see prompt **033**)
+- AI-assisted import (prompt **040**)
 - Installer/package builds for supported platforms
+
+Native `.revitae.json` **save/load** is implemented — see
+[`docs/revitae-project-json.md`](docs/revitae-project-json.md) and prompt **041**.
 
 ## Tech Stack
 

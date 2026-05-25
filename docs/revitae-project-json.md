@@ -140,3 +140,61 @@ Empty shells fail with `TranslationKeys.ImportErrorNoStructuredData`.
 
 Prefer **`your-name.revitae.json`** so detectors classify the file without
 reading multi‑megabyte payloads twice.
+
+## Project save/load (prompt 041)
+
+The desktop app saves editable CV **projects** to the same native JSON interchange
+format. **Save** / **Save As** / **Open** use `CvProjectSerializer` in
+`ReVitae.Core/Projects/`.
+
+### Interchange vs project file
+
+| Context                         | `projectSettings` block              |
+| ------------------------------- | ------------------------------------ |
+| Export modal → **ReVitae JSON** | **Omitted** (interchange-safe)       |
+| Toolbar **Save** / **Save As**  | **Included** (editor state)          |
+| **Open** project                | Reads CV payload + optional settings |
+
+Generic import (`ReVitaeJsonMapper`) ignores unknown root keys; only the project
+loader reads `projectSettings`.
+
+### Optional `projectSettings`
+
+```json
+{
+  "projectSettings": {
+    "schemaVersion": 1,
+    "selectedTemplateId": "modernSidebar",
+    "dismissedQualityHintKeys": ["work.generic-description||description"],
+    "sectionExpandState": {
+      "personalInformation": true,
+      "workExperience": true,
+      "education": false
+    },
+    "savedAtUtc": "2026-05-25T12:00:00Z",
+    "applicationVersion": "0.1.0"
+  }
+}
+```
+
+| Field                      | Notes                                                |
+| -------------------------- | ---------------------------------------------------- |
+| `schemaVersion`            | Editor-metadata version (currently **1**)            |
+| `selectedTemplateId`       | camelCase `CvExportTemplateId` string                |
+| `dismissedQualityHintKeys` | Stable keys from `CvQualityAnalyzer.BuildDismissKey` |
+| `sectionExpandState`       | Section id → expanded bool                           |
+| `savedAtUtc`               | ISO-8601 UTC timestamp on save                       |
+| `applicationVersion`       | ReVitae app version string                           |
+
+Files exported for interchange without this block still open as projects; template
+and dismissals reset to defaults.
+
+### App data paths
+
+| Path                                                    | Purpose                  |
+| ------------------------------------------------------- | ------------------------ |
+| `%LocalAppData%/ReVitae/recent-projects.json`           | MRU list (max 8)         |
+| `%LocalAppData%/ReVitae/autosave.recovery.revitae.json` | Single recovery autosave |
+
+Recovery is written at most every **60 s** while the document is dirty; deleted
+after a successful Save or Open.

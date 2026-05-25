@@ -9,6 +9,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **Local CV project save/load** (prompt **041**): header **Save**, **Save As**, and
+  **Open** for `*.revitae.json` projects; dirty-state window title; unsaved-changes
+  confirm (Save / Don't save / Cancel) before New CV, Open, import replace, and
+  window close; intro **Open saved project** + **Recent projects** list; optional
+  autosave recovery file; `projectSettings` block (template, dismissed quality hints,
+  section expand state) via `CvProjectSerializer`; **32** new project tests
+  (**1305** total).
 - **CV image export** (prompt **031**): **Page images** card in the Export modal
   (PNG / JPEG / WebP); delivery as **ZIP archive** or **separate files**; page
   range (all or From–To); scale 1× / 2×; quality slider for JPEG/WebP; live size

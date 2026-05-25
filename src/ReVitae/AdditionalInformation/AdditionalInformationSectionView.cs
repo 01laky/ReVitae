@@ -186,6 +186,8 @@ public sealed class AdditionalInformationSectionView : UserControl, IValidationN
 
     public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
 
+    public bool IsSectionExpanded => _section.IsExpanded;
+
     public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
     {
         var contentConfidence = confidences.FirstOrDefault(

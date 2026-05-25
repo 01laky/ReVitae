@@ -178,6 +178,7 @@ public partial class MainWindow
     private void OnQualityHintDismissed(CvQualityHint hint)
     {
         _qualityHintDismissalStore.Dismiss(hint);
+        MarkProjectDirty();
         UpdateQualityHints();
     }
 

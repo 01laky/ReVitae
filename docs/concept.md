@@ -127,6 +127,10 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - **John Doe import regression matrix** — 50 generated stress CVs assert parser
   fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`,
   prompt **035**).
+- **Local CV project save/load** (prompt **041**): Save / Save As / Open toolbar
+  actions; `CvProjectSerializer` + optional `projectSettings`; recent projects;
+  dirty title indicator; unsaved-changes guard; autosave recovery — see
+  [`docs/revitae-project-json.md`](revitae-project-json.md).
 - **AI setup (prompts 036–038):** resumable background Ollama model download with
   dock, pause/resume/stop, startup recovery, managed engine install, model
   lifecycle (remove / clean stale), monotonic progress, and **online provider
@@ -143,8 +147,7 @@ Documentation:
 
 Still open for later phases:
 
-- durable save/load UX beyond interchange JSON files,
-- optional AI-assisted import and recommendations,
+- optional AI-assisted import and recommendations (prompt **040**),
 - installers or packaged binaries for each supported platform.
 
 ## Phase 2 - AI Assistance and Model Management

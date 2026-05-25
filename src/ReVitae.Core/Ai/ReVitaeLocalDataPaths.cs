@@ -28,4 +28,9 @@ public static class ReVitaeLocalDataPaths
     {
         return Path.Combine(GetReVitaeRootDirectory(), "ai-secrets.key");
     }
+
+    public static string GetProjectAutosaveRecoveryPath()
+    {
+        return Path.Combine(GetReVitaeRootDirectory(), "autosave.recovery.revitae.json");
+    }
 }
