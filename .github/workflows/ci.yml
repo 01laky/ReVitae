@@ -54,10 +54,10 @@ jobs:
 
       - name: Lint markdown
         if: runner.os != 'Windows'
-        run: npm run lint:md
+        run: ./scripts/lint-md.sh
 
       - name: Lint C# and test
-        run: npm run lint:cs
+        run: ./scripts/lint-cs.sh
 
   import-matrix:
     name: John Doe import matrix
