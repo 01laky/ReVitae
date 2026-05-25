@@ -1,4 +1,5 @@
 using System.Globalization;
+using ReVitae.Core.Export;
 
 namespace ReVitae.Core.Localization;
 
@@ -1188,6 +1189,12 @@ public sealed class AppLocalizer
     private static IReadOnlyDictionary<string, string> BuildTranslations(string languageCode)
     {
         var translations = new Dictionary<string, string>(EnglishTranslations, StringComparer.Ordinal);
+        foreach (var theme in CvThemedTemplateRegistry.All)
+        {
+            translations[theme.NameKey] = theme.NameEnglish;
+            translations[theme.DescriptionKey] = theme.DescriptionEnglish;
+        }
+
         if (TranslationOverlays.TryGetValue(languageCode, out var overlay))
         {
             foreach (var (key, value) in overlay)

@@ -58,8 +58,28 @@ public static class ReVitaePdfLayoutProfiles
         CvExportTemplateId.BlueAccentSummary
     ];
 
-    public static ReVitaePdfLayoutProfile Get(CvExportTemplateId templateId) =>
-        Profiles.TryGetValue(templateId, out var profile) ? profile : DefaultTwoColumn;
+    public static ReVitaePdfLayoutProfile Get(CvExportTemplateId templateId)
+    {
+        if (Profiles.TryGetValue(templateId, out var profile))
+        {
+            return profile;
+        }
+
+        if (CvThemedTemplateRegistry.TryGet(templateId, out var theme))
+        {
+            return theme.Layout switch
+            {
+                CvThemedTemplateLayoutKind.MinimalCenter
+                    or CvThemedTemplateLayoutKind.TopHeaderBand
+                    or CvThemedTemplateLayoutKind.TopHeaderSplit
+                    or CvThemedTemplateLayoutKind.AccentBarLeft => SingleColumn(),
+                CvThemedTemplateLayoutKind.PhotoLeftAccent => new(ReVitaePdfColumnKind.PhotoLeftBand, PhotoLeftBandRatio),
+                _ => TwoColumn(DefaultSidebarRatio)
+            };
+        }
+
+        return DefaultTwoColumn;
+    }
 
     public static ReVitaePdfLayoutProfile DefaultTwoColumn => TwoColumn(DefaultSidebarRatio);
 

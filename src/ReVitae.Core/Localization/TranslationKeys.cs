@@ -1,5 +1,7 @@
 namespace ReVitae.Core.Localization;
 
+using ReVitae.Core.Export;
+
 public static class TranslationKeys
 {
     public const string HeaderSubtitle = "header.subtitle";
@@ -805,6 +807,10 @@ public static class TranslationKeys
     public const string AiCvResponseTooLong = "aiCv.responseTooLong";
     public const string AiCvTaskFailed = "aiCv.taskFailed";
 
+    private static readonly string[] ThemedTemplateRequiredKeys = CvThemedTemplateRegistry.All
+        .SelectMany(theme => new[] { theme.NameKey, theme.DescriptionKey })
+        .ToArray();
+
     public static readonly IReadOnlyList<string> RequiredKeys =
     [
         HeaderSubtitle,
@@ -1596,5 +1602,6 @@ public static class TranslationKeys
         AiCvEmptyResponse,
         AiCvResponseTooLong,
         AiCvTaskFailed,
+        ..ThemedTemplateRequiredKeys
     ];
 }

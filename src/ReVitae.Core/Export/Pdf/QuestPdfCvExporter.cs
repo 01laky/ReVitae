@@ -32,6 +32,8 @@ public sealed class QuestPdfCvExporter : ICvPdfExporter
             CvExportTemplateId.BlueAccentSummary => BlueAccentSummaryPdfTemplate.Render(document),
             CvExportTemplateId.PillHeaderSplit => PillHeaderSplitPdfTemplate.Render(document),
             CvExportTemplateId.NavyOverlapPhoto => NavyOverlapPhotoPdfTemplate.Render(document),
+            _ when CvThemedTemplateRegistry.TryGet(document.TemplateId, out var theme) =>
+                ThemedPdfTemplate.Render(document, theme),
             _ => throw new ArgumentOutOfRangeException(nameof(document.TemplateId), document.TemplateId, null)
         };
     }

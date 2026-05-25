@@ -46,7 +46,7 @@ flowchart TD
 Most CV tools trap you in one layout. Change the design and you often lose control
 over the text. ReVitae treats **content and presentation as separate**:
 
-- **Write once, restyle anytime** — switch among 16 templates without retyping.
+- **Write once, restyle anytime** — switch among 56 templates without retyping.
 - **Import, then edit** — uploaded files become structured drafts you can fix, not frozen PDFs.
 - **Stay local** — core editing and import run on your computer; you choose if and when AI is used.
 - **Honest imports** — scanned PDFs and photos work via OCR, with a clear review step afterward.
@@ -187,7 +187,7 @@ Produces `John Doe (minimal architect).pdf` and `.txt` at the repo root.
 
 ### Templates and export
 
-Pick a look, keep your words. **16 built-in templates** — sidebar, minimal, executive,
+Pick a look, keep your words. **56 built-in templates** — sidebar, minimal, executive,
 photo-forward, and more — all driven by the same structured content. Switch anytime
 from the **Templates** toolbar icon; expand the preview for a full-size check.
 
@@ -208,7 +208,7 @@ Centered Minimal, Photo Left Band, Executive Blue Sidebar, Peach Designer, Navy 
 Forest Green Sidebar, Yellow Skill Dots, Royal Blue Sidebar, Orange Timeline, Blue Accent Summary,
 Pill Header Split, Navy Overlap Photo.
 
-![Template picker — 16 built-in QuestPDF layouts](docs/img/template-picker-modal.png)
+![Template picker — 56 built-in QuestPDF layouts](docs/img/template-picker-modal.png)
 
 ![Expanded preview — full-size CV modal](docs/img/expanded-preview-modal.png)
 

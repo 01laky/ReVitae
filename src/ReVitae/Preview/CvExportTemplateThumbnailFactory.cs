@@ -9,6 +9,11 @@ internal static class CvExportTemplateThumbnailFactory
 {
     public static Control Create(CvExportTemplateId templateId)
     {
+        if (CvThemedTemplateRegistry.TryGet(templateId, out var theme))
+        {
+            return CreateThemedThumbnail(theme);
+        }
+
         return templateId switch
         {
             CvExportTemplateId.ClassicSidebar => TwoColumn("#D8D8D8", "#FFFFFF", 36, 64),
@@ -31,6 +36,24 @@ internal static class CvExportTemplateThumbnailFactory
         };
     }
 
+    private static Control CreateThemedThumbnail(CvThemedTemplateDefinition theme)
+    {
+        return theme.Layout switch
+        {
+            CvThemedTemplateLayoutKind.LeftSidebarLight => TwoColumn(theme.SidebarColor, "#FFFFFF", 34, 66),
+            CvThemedTemplateLayoutKind.RightSidebarLight => TwoColumn("#FFFFFF", theme.SidebarColor, 66, 34),
+            CvThemedTemplateLayoutKind.TopHeaderBand => TopBand(theme.HeaderColor),
+            CvThemedTemplateLayoutKind.TopHeaderSplit => TopBand(theme.HeaderColor),
+            CvThemedTemplateLayoutKind.MinimalCenter => StackedBands(theme.SidebarColor, theme.AccentColor),
+            CvThemedTemplateLayoutKind.TimelineLeft => OrangeTimeline(theme.AccentColor),
+            CvThemedTemplateLayoutKind.TimelineRight => OrangeTimeline(theme.AccentColor),
+            CvThemedTemplateLayoutKind.PhotoLeftAccent => PhotoHeader(theme.AccentColor, theme.SidebarColor),
+            CvThemedTemplateLayoutKind.FullSidebarDark => DarkFullSidebar(theme.SidebarColor),
+            CvThemedTemplateLayoutKind.AccentBarLeft => OrangeTimeline(theme.AccentColor),
+            _ => TwoColumn(theme.SidebarColor, "#FFFFFF", 34, 66)
+        };
+    }
+
     private static Grid TwoColumn(string left, string right, int leftWeight, int rightWeight)
     {
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions($"{leftWeight}*,{rightWeight}*") };
@@ -38,6 +61,16 @@ internal static class CvExportTemplateThumbnailFactory
         var rightBorder = new Border { Background = Brush.Parse(right) };
         Grid.SetColumn(rightBorder, 1);
         grid.Children.Add(rightBorder);
+        return grid;
+    }
+
+    private static Grid DarkFullSidebar(string sidebarColor)
+    {
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("36*,64*") };
+        grid.Children.Add(new Border { Background = Brush.Parse(sidebarColor) });
+        var body = new Border { Background = Brushes.White };
+        Grid.SetColumn(body, 1);
+        grid.Children.Add(body);
         return grid;
     }
 

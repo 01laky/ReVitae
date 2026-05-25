@@ -64,6 +64,16 @@ public static class CvPdfSectionContent
         ComposeCertificates(column, document);
     }
 
+    public static void ComposeCustomLinksPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeCustomLinks(column, document);
+    }
+
+    public static void ComposeLinksPublic(ColumnDescriptor column, CvExportDocument document)
+    {
+        ComposeLinks(column, document.Labels.Links, CvExportPreviewContentBuilder.BuildLinksLines(document));
+    }
+
     private static void ComposeLinks(ColumnDescriptor column, string linksSectionTitle, string linksSectionContent)
     {
         if (string.IsNullOrWhiteSpace(linksSectionContent) || linksSectionContent == "-")

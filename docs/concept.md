@@ -114,7 +114,7 @@ Future export formats may include:
 As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expanded import:
 
 - All structured CV sections in the form with validation and badges,
-- Live preview across **16 built-in templates** with template-aligned QuestPDF export,
+- Live preview across **56 built-in templates** with template-aligned QuestPDF export,
 - **Multi-format export** (16 formats, including **page images** PNG/JPEG/WebP) and
   **multi-format import** via `CvDocumentImporter`,
 - Startup intro modal (**create new** or **import CV**) and header **replace import**

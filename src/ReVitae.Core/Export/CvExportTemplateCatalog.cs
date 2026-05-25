@@ -10,7 +10,7 @@ public sealed record CvExportTemplateDescriptor(
 
 public static class CvExportTemplateCatalog
 {
-    private static readonly IReadOnlyList<CvExportTemplateDescriptor> Templates =
+    private static readonly IReadOnlyList<CvExportTemplateDescriptor> LegacyTemplates =
     [
         new(CvExportTemplateId.ClassicSidebar, TranslationKeys.ClassicSidebar, TranslationKeys.ClassicSidebarDescription, "#F47C2C"),
         new(CvExportTemplateId.ModernSidebar, TranslationKeys.ModernSidebar, TranslationKeys.ModernSidebarDescription, "#444444"),
@@ -29,6 +29,14 @@ public static class CvExportTemplateCatalog
         new(CvExportTemplateId.PillHeaderSplit, TranslationKeys.PillHeaderSplit, TranslationKeys.PillHeaderSplitDescription, "#E9967A"),
         new(CvExportTemplateId.NavyOverlapPhoto, TranslationKeys.NavyOverlapPhoto, TranslationKeys.NavyOverlapPhotoDescription, "#1E3A5F")
     ];
+
+    private static readonly IReadOnlyList<CvExportTemplateDescriptor> ThemedTemplates =
+        CvThemedTemplateRegistry.All
+            .Select(theme => new CvExportTemplateDescriptor(theme.Id, theme.NameKey, theme.DescriptionKey, theme.AccentColor))
+            .ToArray();
+
+    private static readonly IReadOnlyList<CvExportTemplateDescriptor> Templates =
+        LegacyTemplates.Concat(ThemedTemplates).ToArray();
 
     public static IReadOnlyList<CvExportTemplateDescriptor> All => Templates;
 

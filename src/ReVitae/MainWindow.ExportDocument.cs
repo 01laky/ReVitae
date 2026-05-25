@@ -103,6 +103,8 @@ public partial class MainWindow
             CvExportTemplateId.BlueAccentSummary => BuildBlueAccentSummaryTemplate(document),
             CvExportTemplateId.PillHeaderSplit => BuildPillHeaderSplitTemplate(document),
             CvExportTemplateId.NavyOverlapPhoto => BuildNavyOverlapPhotoTemplate(document),
+            _ when CvThemedTemplateRegistry.TryGet(_selectedTemplate, out var theme) =>
+                BuildThemedTemplate(document, theme),
             _ => throw new ArgumentOutOfRangeException(nameof(_selectedTemplate))
         };
     }

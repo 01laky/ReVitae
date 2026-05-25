@@ -9,6 +9,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **40 themed CV templates:** parametric QuestPDF layouts (10 layout archetypes ×
+  distinct color themes) inspired by popular free online résumé styles — **56**
+  built-in templates total with live preview and PDF export.
 - **Edge-case test hardening:** 41 new tests across OCR composite routing,
   `OcrPdfTextExtractor`, quality-gate boundaries, tessdata discovery, import
   session/progress, `CvTextImportCoordinator`/`CvTextImportFlows`, YAML importer
