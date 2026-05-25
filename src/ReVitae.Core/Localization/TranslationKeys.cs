@@ -578,6 +578,45 @@ public static class TranslationKeys
     public const string ImportRasterImageFileType = "import.rasterImageFileType";
     public const string ImportForceOcr = "import.forceOcr";
 
+    public const string ImportAiTryButton = "import.ai.tryButton";
+    public const string IntroImportTryAi = "intro.import.tryAi";
+    public const string ReplaceImportTryAi = "replaceImport.tryAi";
+    public const string ImportAiEnhanceButton = "import.ai.enhanceButton";
+    public const string ImportAiProgressTitle = "import.ai.progressTitle";
+    public const string ImportAiProgressStep = "import.ai.progressStep";
+    public const string ImportAiProgressBatch = "import.ai.progressBatch";
+    public const string ImportAiReviewTitle = "import.ai.reviewTitle";
+    public const string ImportAiReviewSummaryTitle = "import.ai.reviewSummaryTitle";
+    public const string ImportAiReviewSummaryBefore = "import.ai.reviewSummaryBefore";
+    public const string ImportAiReviewSummaryAfter = "import.ai.reviewSummaryAfter";
+    public const string ImportAiReviewSectionsImproved = "import.ai.reviewSectionsImproved";
+    public const string ImportAiReviewPersonalPartial = "import.ai.reviewPersonalPartial";
+    public const string ImportAiReviewPersonalComplete = "import.ai.reviewPersonalComplete";
+    public const string ImportAiReviewEmptyDash = "import.ai.reviewEmptyDash";
+    public const string ImportAiReviewEntryCount = "import.ai.reviewEntryCount";
+    public const string ImportAiPhotoNotExtracted = "import.ai.photoNotExtracted";
+    public const string ImportAiReviewDetails = "import.ai.reviewDetails";
+    public const string ImportAiReviewWarning = "import.ai.reviewWarning";
+    public const string ImportAiReviewApply = "import.ai.reviewApply";
+    public const string ImportAiReviewCancel = "import.ai.reviewCancel";
+    public const string ImportAiReviewMergeEmpty = "import.ai.reviewMergeEmpty";
+    public const string ImportAiOnlineConfirm = "import.ai.onlineConfirm";
+    public const string ImportAiFailed = "import.ai.failed";
+    public const string ImportAiPartialWarning = "import.ai.partialWarning";
+    public const string ImportAiNoBackend = "import.ai.noBackend";
+    public const string ImportAiBannerIncomplete = "import.ai.bannerIncomplete";
+    public const string ImportWarningAiAssisted = "import.warning.aiAssisted";
+    public const string ImportWarningAiPartial = "import.warning.aiPartial";
+    public const string ImportAiPhasePersonal = "import.ai.phase.personal";
+    public const string ImportAiPhaseWork = "import.ai.phase.work";
+    public const string ImportAiPhaseEducation = "import.ai.phase.education";
+    public const string ImportAiPhaseSkills = "import.ai.phase.skills";
+    public const string ImportAiPhaseLanguages = "import.ai.phase.languages";
+    public const string ImportAiPhaseCertificates = "import.ai.phase.certificates";
+    public const string ImportAiPhaseProjects = "import.ai.phase.projects";
+    public const string ImportAiPhaseLinks = "import.ai.phase.links";
+    public const string ImportAiPhaseAdditional = "import.ai.phase.additional";
+
     public const string QualityHintFlyoutTitle = "quality.flyoutTitle";
     public const string QualityHintGoToField = "quality.goToField";
     public const string QualityHintDismiss = "quality.dismiss";
@@ -1334,6 +1373,44 @@ public static class TranslationKeys
         ImportErrorOcrFailed,
         ImportRasterImageFileType,
         ImportForceOcr,
+        ImportAiTryButton,
+        IntroImportTryAi,
+        ReplaceImportTryAi,
+        ImportAiEnhanceButton,
+        ImportAiProgressTitle,
+        ImportAiProgressStep,
+        ImportAiProgressBatch,
+        ImportAiReviewTitle,
+        ImportAiReviewSummaryTitle,
+        ImportAiReviewSummaryBefore,
+        ImportAiReviewSummaryAfter,
+        ImportAiReviewSectionsImproved,
+        ImportAiReviewPersonalPartial,
+        ImportAiReviewPersonalComplete,
+        ImportAiReviewEmptyDash,
+        ImportAiReviewEntryCount,
+        ImportAiPhotoNotExtracted,
+        ImportAiReviewDetails,
+        ImportAiReviewWarning,
+        ImportAiReviewApply,
+        ImportAiReviewCancel,
+        ImportAiReviewMergeEmpty,
+        ImportAiOnlineConfirm,
+        ImportAiFailed,
+        ImportAiPartialWarning,
+        ImportAiNoBackend,
+        ImportAiBannerIncomplete,
+        ImportWarningAiAssisted,
+        ImportWarningAiPartial,
+        ImportAiPhasePersonal,
+        ImportAiPhaseWork,
+        ImportAiPhaseEducation,
+        ImportAiPhaseSkills,
+        ImportAiPhaseLanguages,
+        ImportAiPhaseCertificates,
+        ImportAiPhaseProjects,
+        ImportAiPhaseLinks,
+        ImportAiPhaseAdditional,
         QualityHintFlyoutTitle,
         QualityHintGoToField,
         QualityHintDismiss,

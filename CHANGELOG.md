@@ -9,6 +9,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
+- **AI-assisted CV import** (prompt **040**): `CvTextImportCoordinator` retains
+  normalized text on deterministic failure; `AiCvImportService` with model-aware
+  batch profiles (Compact → ExtraLarge), sequential phased extraction, review
+  summary diff, Try AI / Enhance with AI UI, online session confirm reuse from
+  **039**; EN + SK localization; **`docs/ai-import.md`**; **71** new tests in
+  `tests/ReVitae.Tests/Ai/Import/` (**1376** total).
 - **Local CV project save/load** (prompt **041**): header **Save**, **Save As**, and
   **Open** for `*.revitae.json` projects; dirty-state window title; unsaved-changes
   confirm (Save / Don't save / Cancel) before New CV, Open, import replace, and

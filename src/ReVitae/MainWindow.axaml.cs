@@ -19,6 +19,7 @@ using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Cv.ProfilePhoto;
 using ReVitae.Core.Export;
 using ReVitae.Core.Import;
+using ReVitae.Core.Ai.Import;
 using ReVitae.Import;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Projects;
@@ -406,11 +407,13 @@ public partial class MainWindow : Window
         {
             IntroErrorTextBlock.IsVisible = false;
             IntroRetryImportButton.IsVisible = false;
+            IntroImportTryAiButton.IsVisible = false;
         }
         else if (useReplaceProgressUi)
         {
             ReplaceCvImportErrorTextBlock.IsVisible = false;
             ReplaceCvImportRetryButton.IsVisible = false;
+            ReplaceImportTryAiButton.IsVisible = false;
         }
 
         UploadCvButton.IsEnabled = false;
@@ -433,23 +436,72 @@ public partial class MainWindow : Window
 
         try
         {
-            var importResult = await Task.Run(() => CvDocumentImporter.Import(filePath));
+            var format = CvImportFormatDetector.DetectFormat(filePath);
+            CvImportResult importResult;
+            CvTextImportAttempt? textAttempt = null;
+
+            if (CvTextImportCoordinator.IsTextRoute(format))
+            {
+                textAttempt = await Task.Run(() => CvTextImportCoordinator.TryImport(filePath));
+                importResult = textAttempt?.Deterministic
+                    ?? CvImportResult.Failed(TranslationKeys.ImportErrorUnreadableDocument);
+            }
+            else
+            {
+                importResult = await Task.Run(() => CvDocumentImporter.Import(filePath));
+            }
+
+            _lastTextImportAttempt = textAttempt;
+
             SetImportProgressUiVisible(
                 true,
                 _localizer.Get(TranslationKeys.IntroParsingCv),
                 useIntroProgressUi,
                 useReplaceProgressUi);
 
-            if (!importResult.Success)
+            if (AiCvImportTriggerEvaluator.ShouldSkipForStructuredSuccess(format, importResult))
             {
-                var errorMessage = _localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadableDocument);
+                if (replaceExisting)
+                {
+                    ClearCvForm();
+                }
+
+                ApplyCvImportResult(importResult);
+                ShowImportWarnings(importResult);
+                ResetProjectSession(markDirty: true);
+
                 if (useIntroProgressUi)
                 {
-                    ShowIntroImportError(errorMessage);
+                    SetIntroModalVisible(false);
                 }
                 else if (useReplaceProgressUi)
                 {
-                    ShowReplaceCvImportError(errorMessage);
+                    SetReplaceCvImportProgressModalVisible(false);
+                }
+
+                UpdatePreview();
+                UpdateValidationState();
+                if (!HasOcrImportWarning(importResult))
+                {
+                    ExportStatusTextBlock.Text = string.Empty;
+                }
+
+                HideImportAiEnhancePanel();
+                return;
+            }
+
+            if (!importResult.Success)
+            {
+                var errorMessage = _localizer.Get(importResult.ErrorMessageKey ?? TranslationKeys.ImportErrorUnreadableDocument);
+                var canTryAi = textAttempt is not null &&
+                               AiCvImportTriggerEvaluator.ShouldOfferAi(textAttempt);
+                if (useIntroProgressUi)
+                {
+                    ShowIntroImportError(errorMessage, canTryAi);
+                }
+                else if (useReplaceProgressUi)
+                {
+                    ShowReplaceCvImportError(errorMessage, canTryAi);
                 }
 
                 return;
@@ -479,6 +531,8 @@ public partial class MainWindow : Window
             {
                 ExportStatusTextBlock.Text = string.Empty;
             }
+
+            UpdateImportAiEnhanceBanner(textAttempt);
         }
         finally
         {
@@ -685,11 +739,12 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ShowReplaceCvImportError(string message)
+    private void ShowReplaceCvImportError(string message, bool showTryAi = false)
     {
         ReplaceCvImportErrorTextBlock.Text = message;
         ReplaceCvImportErrorTextBlock.IsVisible = true;
         ReplaceCvImportRetryButton.IsVisible = true;
+        ReplaceImportTryAiButton.IsVisible = showTryAi;
         ReplaceCvImportProgressTextBlock.Text = string.Empty;
     }
 
@@ -811,6 +866,7 @@ public partial class MainWindow : Window
         IntroProgressPanel.IsVisible = false;
         IntroErrorTextBlock.IsVisible = false;
         IntroRetryImportButton.IsVisible = false;
+        IntroImportTryAiButton.IsVisible = false;
         CreateNewCvButton.IsEnabled = true;
         ImportCvButton.IsEnabled = true;
     }
@@ -824,11 +880,12 @@ public partial class MainWindow : Window
         ImportCvButton.IsEnabled = !isVisible;
     }
 
-    private void ShowIntroImportError(string message)
+    private void ShowIntroImportError(string message, bool showTryAi = false)
     {
         IntroErrorTextBlock.Text = message;
         IntroErrorTextBlock.IsVisible = true;
         IntroRetryImportButton.IsVisible = true;
+        IntroImportTryAiButton.IsVisible = showTryAi;
         IntroActionsPanel.IsVisible = true;
         IntroProgressPanel.IsVisible = false;
         CreateNewCvButton.IsEnabled = true;
@@ -1338,6 +1395,7 @@ public partial class MainWindow : Window
         AutomationProperties.SetName(QualityHintModalTopCloseButton, closeLabel);
         ApplyAiSetupLocalization();
         ApplyAiSuggestionModalLocalization();
+        ApplyImportAiLocalization();
         ApplyAiDownloadLocalization();
         RefreshTemplateCardLabels();
         UpdateWindowTitle();
@@ -1368,7 +1426,10 @@ public partial class MainWindow : Window
         || ReplaceCvImportProgressModalOverlay.IsVisible
         || ExportModalOverlay.IsVisible
         || AiSetupModalOverlay.IsVisible
-        || UnsavedChangesConfirmModalOverlay.IsVisible;
+        || UnsavedChangesConfirmModalOverlay.IsVisible
+        || AiImportProgressOverlay.IsVisible
+        || AiImportReviewOverlay.IsVisible
+        || AiImportOnlineConfirmOverlay.IsVisible;
 
     private void HideOtherContentModals(Grid activeModal)
     {

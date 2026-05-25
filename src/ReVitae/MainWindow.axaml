@@ -339,6 +339,19 @@
                         <TextBlock x:Name="ExportStatusTextBlock"
                                    Classes="re-vitae-secondary" />
 
+                        <StackPanel x:Name="ImportAiEnhancePanel"
+                                    Orientation="Horizontal"
+                                    Spacing="12"
+                                    IsVisible="False">
+                            <TextBlock x:Name="ImportAiEnhanceBannerTextBlock"
+                                       Classes="re-vitae-secondary"
+                                       VerticalAlignment="Center" />
+                            <Button x:Name="ImportAiEnhanceButton"
+                                    Classes="re-vitae-secondary"
+                                    Content="Enhance with AI"
+                                    Click="OnImportAiEnhanceClicked" />
+                        </StackPanel>
+
                         <StackPanel x:Name="ExportPostActionPanel"
                                     Orientation="Horizontal"
                                     Spacing="12"
@@ -537,6 +550,13 @@
                             HorizontalAlignment="Left"
                             IsVisible="False"
                             Click="OnImportCvClicked" />
+
+                    <Button x:Name="IntroImportTryAiButton"
+                            Classes="re-vitae-primary"
+                            Content="Try AI import"
+                            HorizontalAlignment="Left"
+                            IsVisible="False"
+                            Click="OnIntroImportTryAiClicked" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -1165,6 +1185,13 @@
                             HorizontalAlignment="Left"
                             IsVisible="False"
                             Click="OnReplaceCvImportRetryClicked" />
+
+                    <Button x:Name="ReplaceImportTryAiButton"
+                            Classes="re-vitae-primary"
+                            Content="Try AI import"
+                            HorizontalAlignment="Left"
+                            IsVisible="False"
+                            Click="OnReplaceImportTryAiClicked" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -1669,6 +1696,132 @@
                        LineHeight="22"
                        MaxWidth="720" />
         </Border>
+
+        <Grid x:Name="AiImportProgressOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border Classes="re-vitae-modal-panel"
+                    MaxWidth="520"
+                    MinWidth="360"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="12"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="AiImportProgressTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="22"
+                               Text="AI import" />
+                    <TextBlock x:Name="AiImportProgressStepTextBlock"
+                               TextWrapping="Wrap"
+                               Classes="re-vitae-secondary" />
+                    <TextBlock x:Name="AiImportProgressBackendTextBlock"
+                               Classes="re-vitae-secondary" />
+                    <ProgressBar x:Name="AiImportProgressBar"
+                                 Height="6"
+                                 Minimum="0"
+                                 Maximum="100" />
+                    <Button x:Name="AiImportProgressCancelButton"
+                            Classes="re-vitae-secondary"
+                            Content="Cancel"
+                            HorizontalAlignment="Left"
+                            Click="OnAiImportProgressCancelClicked" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="AiImportReviewOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border Classes="re-vitae-modal-panel"
+                    MaxWidth="760"
+                    MinWidth="420"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="12"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="AiImportReviewTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="22"
+                               Text="Review AI import" />
+                    <TextBlock x:Name="AiImportReviewBackendTextBlock"
+                               Classes="re-vitae-secondary" />
+                    <TextBlock x:Name="AiImportReviewWarningTextBlock"
+                               TextWrapping="Wrap"
+                               Classes="re-vitae-error" />
+                    <TextBlock x:Name="AiImportReviewPhotoNoteTextBlock"
+                               TextWrapping="Wrap"
+                               Classes="re-vitae-secondary" />
+                    <TextBlock x:Name="AiImportReviewSummaryTitleTextBlock"
+                               Classes="re-vitae-app-title"
+                               FontSize="16"
+                               Text="Section summary" />
+                    <StackPanel x:Name="AiImportReviewSummaryPanel"
+                                Spacing="6" />
+                    <TextBlock x:Name="AiImportReviewImprovedTextBlock"
+                               TextWrapping="Wrap"
+                               Classes="re-vitae-secondary" />
+                    <TextBlock x:Name="AiImportReviewPartialWarningTextBlock"
+                               TextWrapping="Wrap"
+                               Classes="re-vitae-error"
+                               IsVisible="False" />
+                    <Expander x:Name="AiImportReviewDetailsExpander"
+                              Header="Details"
+                              IsVisible="False">
+                        <TextBlock x:Name="AiImportReviewDetailsTextBlock"
+                                   TextWrapping="Wrap"
+                                   Classes="re-vitae-secondary" />
+                    </Expander>
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="12"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="AiImportReviewCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnAiImportReviewCancelClicked" />
+                        <Button x:Name="AiImportReviewMergeEmptyButton"
+                                Classes="re-vitae-secondary"
+                                Content="Fill empty fields only"
+                                IsVisible="False"
+                                Click="OnAiImportReviewMergeEmptyClicked" />
+                        <Button x:Name="AiImportReviewApplyButton"
+                                Classes="re-vitae-primary"
+                                Content="Apply to form"
+                                Click="OnAiImportReviewApplyClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="AiImportOnlineConfirmOverlay"
+              Grid.RowSpan="2"
+              Classes="re-vitae-modal-overlay"
+              IsVisible="False">
+            <Border Classes="re-vitae-modal-panel"
+                    MaxWidth="520"
+                    MinWidth="360"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="12"
+                            Classes="re-vitae-section-body">
+                    <TextBlock x:Name="AiImportOnlineConfirmTextBlock"
+                               TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="12"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="AiImportOnlineConfirmCancelButton"
+                                Classes="re-vitae-secondary"
+                                Content="Cancel"
+                                Click="OnAiImportOnlineConfirmCancelClicked" />
+                        <Button x:Name="AiImportOnlineConfirmOkButton"
+                                Classes="re-vitae-primary"
+                                Content="OK"
+                                Click="OnAiImportOnlineConfirmOkClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <Border x:Name="AiDownloadDockOverlay"
                 Grid.RowSpan="2"

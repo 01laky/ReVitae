@@ -510,10 +510,12 @@ Unreleased **Added**: prompt 039 universal AI CV completion, Ollama chat, qualit
   [`039-universal-ai-cv-completion.md`](039-universal-ai-cv-completion.md)”.
 - [`prompts/034-cv-quality-hints.md`](034-cv-quality-hints.md): add note that **039**
   adds optional AI button on supported hints (deterministic hints remain).
+- [`prompts/040-ai-assisted-cv-import.md`](040-ai-assisted-cv-import.md): import uses
+  the same active backend, `uiCulture` in prompts, and online session confirm flag.
 
 ## Out of Scope (Follow-Up Prompts)
 
-- **040** — AI-assisted import fallback (full document / structured JSON extraction),
+- **040** — implemented: [`040-ai-assisted-cv-import.md`](040-ai-assisted-cv-import.md),
 - Multi-turn “refine this suggestion” chat,
 - AI on export preview or template styling,
 - Batch “improve all hints” single click,

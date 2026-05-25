@@ -1,8 +1,9 @@
 # AI setup (local and online providers)
 
 ReVitae includes an **AI setup** modal for choosing a **local Ollama model** or
-configuring an **online AI provider**. This is Phase 2 foundation — the app does
-**not** yet use AI to rewrite CV content or run import extraction (prompt **039+**).
+configuring an **online AI provider**. The active backend powers **Improve with AI**
+(quality hints) and **AI-assisted CV import** when deterministic parsing is
+insufficient — see [`ai-import.md`](ai-import.md).
 
 At most **one** AI backend may be **active** at a time: a local Ollama model **or**
 one online provider (OpenAI, Anthropic, Gemini, Groq, Azure OpenAI, Mistral,
@@ -324,11 +325,11 @@ API keys live only in `ai-secrets.enc`, not in settings JSON.
 ## Related docs
 
 - Product concept (Phase 2): [`concept.md`](concept.md)
-- Implementation prompts: [`../prompts/036-ai-setup-modal-system-detection.md`](../prompts/036-ai-setup-modal-system-detection.md), [`../prompts/037-resumable-ai-model-download.md`](../prompts/037-resumable-ai-model-download.md), [`../prompts/038-ai-provider-list-and-configuration.md`](../prompts/038-ai-provider-list-and-configuration.md), [`../prompts/039-universal-ai-cv-completion.md`](../prompts/039-universal-ai-cv-completion.md)
+- Implementation prompts: [`../prompts/036-ai-setup-modal-system-detection.md`](../prompts/036-ai-setup-modal-system-detection.md), [`../prompts/037-resumable-ai-model-download.md`](../prompts/037-resumable-ai-model-download.md), [`../prompts/038-ai-provider-list-and-configuration.md`](../prompts/038-ai-provider-list-and-configuration.md), [`../prompts/039-universal-ai-cv-completion.md`](../prompts/039-universal-ai-cv-completion.md), [`../prompts/040-ai-assisted-cv-import.md`](../prompts/040-ai-assisted-cv-import.md)
+- AI-assisted import (batching, triggers, review): [`ai-import.md`](ai-import.md)
 
 ## Not in scope yet
 
-- AI-assisted import (**040**)
 - Automatic first-launch wizard
 - Parallel downloads of multiple models
 - Download bandwidth throttling
@@ -368,3 +369,10 @@ validation rules or remove hints automatically. Export remains blocked only by
 
 See also [`concept.md`](concept.md) (Phase 2) and
 [`../prompts/039-universal-ai-cv-completion.md`](../prompts/039-universal-ai-cv-completion.md).
+
+### Model tier and import batch size (040)
+
+**AI-assisted import** reuses the same active backend but sends **many small
+extraction batches** instead of one large prompt. Compact local models (e.g.
+**Gemma 2 2B**) use ~1 200 characters per call; larger catalog tiers and online
+models scale up automatically. Details: [`ai-import.md`](ai-import.md).

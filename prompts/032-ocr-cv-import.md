@@ -496,3 +496,7 @@ After implementation:
 produces **plain text** for the existing `CvTextImportPipeline`. For PDF, try
 PdfPig first; OCR only when the quality gate fails. Never merge two
 `CvImportResult` objects.
+
+When OCR + heuristics still yield a failed or thin draft, optional batched AI
+import (**040**, [`040-ai-assisted-cv-import.md`](040-ai-assisted-cv-import.md))
+can consume the same normalized text via `CvTextImportCoordinator`.

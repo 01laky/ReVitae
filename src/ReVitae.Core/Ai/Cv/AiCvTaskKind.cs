@@ -7,4 +7,5 @@ public enum AiCvTaskKind
     ImproveProfessionalSummary = 2,
     DraftProfessionalSummary = 3,
     ImproveProjectDescription = 4,
+    ExtractCvImportBatch = 100,
 }

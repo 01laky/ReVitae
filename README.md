@@ -161,6 +161,12 @@ imports each file, and asserts extraction counts, spot checks, and **zero
 post-import form validation errors** — the same rules the UI uses before export.
 See [`prompts/035-john-doe-import-regression-matrix.md`](prompts/035-john-doe-import-regression-matrix.md).
 
+**AI-assisted import (040):** when deterministic parsing fails or returns a thin
+draft, ReVitae offers optional **batched AI extraction** through the active backend
+(Try AI import / Enhance with AI → review summary → Apply). Compact models such as
+Gemma 2 2B use small sequential slices (~1 200 chars/call). See
+[`docs/ai-import.md`](docs/ai-import.md).
+
 For manual import demos, regenerate a **compact** English John Doe CV (senior
 software architect, one realistic entry per section) at the repo root:
 
@@ -248,8 +254,10 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 Planned areas:
 
 - ReVitae-exported PDF re-import (template-aware parsing — largely implemented; see prompt **033**)
-- AI-assisted import (prompt **040**)
 - Installer/package builds for supported platforms
+
+**AI-assisted import** (prompt **040**) is implemented — batched fallback when
+deterministic parsing fails or is thin; see [`docs/ai-import.md`](docs/ai-import.md).
 
 Native `.revitae.json` **save/load** is implemented — see
 [`docs/revitae-project-json.md`](docs/revitae-project-json.md) and prompt **041**.

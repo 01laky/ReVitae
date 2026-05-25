@@ -38,7 +38,7 @@ public partial class MainWindow
             GetActiveBackendKind = () => ActiveBackendService.GetActiveSnapshot().Kind,
             ImproveWithAi = hint => _ = BeginAiCvImprovementAsync(hint),
             SetUpAi = () => SetAiSetupModalVisible(true),
-            IsCompletionInFlight = () => _aiCvCompletionInFlight,
+            IsCompletionInFlight = () => _aiCvCompletionInFlight || _aiImportInFlight,
         };
     }
 

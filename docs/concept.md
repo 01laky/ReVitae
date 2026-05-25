@@ -147,8 +147,11 @@ Documentation:
 
 Still open for later phases:
 
-- optional AI-assisted import and recommendations (prompt **040**),
 - installers or packaged binaries for each supported platform.
+
+**Implemented (prompt 040):** optional [AI-assisted CV import](ai-import.md) —
+batched extraction fallback when deterministic import fails or is incomplete;
+review-before-apply; model-aware batch profiles for compact local models.
 
 ## Phase 2 - AI Assistance and Model Management
 

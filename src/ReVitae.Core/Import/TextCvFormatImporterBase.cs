@@ -18,4 +18,7 @@ public abstract class TextCvFormatImporterBase : ICvFormatImporter
     {
         return CvTextImportFlows.FromExtractor(_extractor, filePath);
     }
+
+    public CvTextImportAttempt TryImportDetailed(string filePath) =>
+        CvTextImportFlows.TryFromExtractor(_extractor, filePath, Format);
 }

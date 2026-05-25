@@ -102,6 +102,17 @@ rather than network or file disclosure.
 - **Unknown XML:** Generic XML without Europass / HR‑XML heuristics maps to
   **unsupported format**.
 
+## AI-assisted fallback
+
+When deterministic text import **fails** or returns a **thin / low-confidence**
+draft, ReVitae can offer optional **batched AI extraction** (prompt **040**).
+This applies only to **text routes** — structured mapper success with enough
+sections skips AI automatically.
+
+- Input to the model is **normalized plain text** only (no PDF/image bytes in v1).
+- User must **review and Apply** — the form is not changed silently.
+- Profile photos are **not** extracted from documents; see [`ai-import.md`](ai-import.md).
+
 ## Regression testing
 
 The **John Doe import matrix** (`tests/ReVitae.Tests/Import/JohnDoeImportRegressionMatrixTests`,
@@ -118,6 +129,7 @@ Filter locally: `dotnet test --filter Category=ImportMatrix`. See
 ## Related docs
 
 - Export formats (including page images): [`export-formats.md`](export-formats.md)
+- AI-assisted import fallback: [`ai-import.md`](ai-import.md)
 - Native interchange schema: [`revitae-project-json.md`](revitae-project-json.md)
 - Product prompt and rationale: [`../prompts/021-multi-format-cv-import.md`](../prompts/021-multi-format-cv-import.md)
 - Profile photo upload and template integration: [`../prompts/023-profile-picture-upload.md`](../prompts/023-profile-picture-upload.md)

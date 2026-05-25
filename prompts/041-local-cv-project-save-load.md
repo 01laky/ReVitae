@@ -496,18 +496,18 @@ zero validation errors after load when fixture is complete.
 
 ## Documentation Updates
 
-| File                                                              | Change                                                                             |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`docs/revitae-project-json.md`](../docs/revitae-project-json.md) | Document optional `projectSettings` block + autosave recovery path                 |
-| [`docs/concept.md`](../docs/concept.md)                           | Move save/load from “Still open” to implemented after prompt lands                 |
-| [`README.md`](../README.md)                                       | Highlight Save/Open/Recent; update roadmap; mermaid optional branch “Save project” |
-| [`CHANGELOG.md`](../CHANGELOG.md)                                 | Unreleased entry with test count delta                                             |
-| [`prompts/034-cv-quality-hints.md`](034-cv-quality-hints.md)      | Cross-link: dismiss persistence via **041**                                        |
-| [`prompts/031-image-export.md`](031-image-export.md)              | Cross-link: remember-last image options follow-up after **041**                    |
+| File                                                                   | Change                                                                             |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [`docs/revitae-project-json.md`](../docs/revitae-project-json.md)      | Document optional `projectSettings` block + autosave recovery path                 |
+| [`docs/concept.md`](../docs/concept.md)                                | Move save/load from “Still open” to implemented after prompt lands                 |
+| [`README.md`](../README.md)                                            | Highlight Save/Open/Recent; update roadmap; mermaid optional branch “Save project” |
+| [`CHANGELOG.md`](../CHANGELOG.md)                                      | Unreleased entry with test count delta                                             |
+| [`prompts/034-cv-quality-hints.md`](034-cv-quality-hints.md)           | Cross-link: dismiss persistence via **041**                                        |
+| [`prompts/031-image-export.md`](031-image-export.md)                   | Cross-link: remember-last image options follow-up after **041**                    |
+| [`prompts/040-ai-assisted-cv-import.md`](040-ai-assisted-cv-import.md) | Cross-link: dirty guard on Enhance replace; `ApplyCvImportResult` hydration        |
 
 ## Out of Scope (Follow-Ups)
 
-- **040** — AI-assisted import,
 - per-project export preferences (image options, last used export format),
 - “Pin” favorite projects,
 - macOS document model / single-instance open file event,
