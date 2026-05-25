@@ -9,6 +9,8 @@ modal (options panel → save or folder picker).
 See also: [`import-formats.md`](import-formats.md) (symmetric import),
 [`revitae-project-json.md`](revitae-project-json.md) (native JSON schema).
 
+![Export CV modal — PDF, documents, web & text, and page images](img/export-cv-modal.png)
+
 ## User flow
 
 ### Standard formats (PDF, DOCX, JSON, …)

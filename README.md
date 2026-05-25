@@ -13,6 +13,8 @@ It keeps the CV content structured and editable, while templates handle only the
 visual presentation. The goal is simple: spend time improving your CV, not
 wrestling with formatting.
 
+![Main editor — structured form with live template preview](docs/img/main-editor-personal-info-preview.png)
+
 ```mermaid
 flowchart TD
     start(["Start fresh or import a CV file"])
@@ -87,6 +89,8 @@ flowchart LR
 - **Local-only** — detection and files stay on your device.
 - **11 curated models** — RAM-aware recommendations with disk-space checks.
 
+![AI setup — local Ollama model catalog and download](docs/img/ai-setup-local-models.png)
+
 Full user guide: [`docs/ai-setup.md`](docs/ai-setup.md).
 
 ## Current Highlights
@@ -130,11 +134,15 @@ time; API keys are encrypted in `ai-secrets.enc`. **Improve with AI** on support
 quality hints uses a universal completion layer (local Ollama chat or online provider)
 — user reviews suggestions before Accept / Edit; see [`docs/ai-setup.md`](docs/ai-setup.md).
 
+![AI setup — online provider configuration](docs/img/ai-setup-online-providers.png)
+
 ### CV import (multi-format)
 
 On startup, ReVitae lets you create a new CV or **import an existing document**.
 You can import again later from the header toolbar; if the form already holds
 data, the app asks for confirmation before replacing the current CV.
+
+![Welcome — create a new CV, import a file, or open a saved project](docs/img/welcome-onboarding-modal.png)
 
 Imports run entirely **locally** behind `CvDocumentImporter`: the correct parser
 is chosen from the file extension (with lightweight JSON/XML sniffing where
@@ -192,6 +200,8 @@ and other formats are also available. See [`docs/export-formats.md`](docs/export
 for the full matrix. Exported page images can be re-imported via OCR — see
 [`docs/import-formats.md`](docs/import-formats.md).
 
+![Export CV — choose PDF, documents, web formats, or page images](docs/img/export-cv-modal.png)
+
 After a successful export, **Open file** and **Show in folder** actions help you
 reach the saved file without hunting in Finder or Explorer.
 
@@ -205,6 +215,10 @@ Current template styles (16 built-in designs):
 Open the **Templates** toolbar icon to preview and switch designs. **About**
 (version, tagline, early-preview badge) lives in a separate modal from the last
 toolbar icon — **Setup** covers language selection only.
+
+![Template picker — 16 built-in QuestPDF layouts](docs/img/template-picker-modal.png)
+
+![Expanded preview — full-size CV modal](docs/img/expanded-preview-modal.png)
 
 The preview can be expanded into a larger modal and scrolls independently from
 the form. Exported PDFs use A4 layout, support Unicode text (including Slovak and
@@ -224,6 +238,10 @@ control:
 - Section error badges when a collapsed section contains problems
 - Scroll-to-first-error on failed export
 - Imported low-confidence fields highlighted for review
+
+![Validation errors and quality-hint badges on section headers](docs/img/main-editor-validation-suggestions.png)
+
+![Quality hints — large in-window suggestion modal](docs/img/quality-hints-languages-modal.png)
 
 ## Product Status
 
@@ -336,6 +354,7 @@ tests/
 
 docs/
   Product concept, export/import matrices, AI setup, native project JSON
+  img/              App screenshots for README and docs
 ```
 
 ## Design Principles

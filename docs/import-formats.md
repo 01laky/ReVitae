@@ -3,6 +3,16 @@
 This document describes how ReVitae routes CV files through `CvDocumentImporter`,
 what users can expect from each category, and non‑goals / security boundaries.
 
+## Getting started
+
+On first launch (or after **New CV**), ReVitae offers three entry points:
+
+- **Create new CV** — empty structured form with live preview.
+- **Import existing CV** — local file routed through the format matrix below.
+- **Open saved project** — load a `*.revitae.json` file from disk or recent list.
+
+![Welcome onboarding — create, import, or open a saved project](img/welcome-onboarding-modal.png)
+
 ## Format matrix
 
 Detection happens in `CvImportFormatDetector` (extension first; `.json` / `.xml`

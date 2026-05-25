@@ -29,6 +29,8 @@ The first phase should focus on the core product without making local AI model m
 
 Phase 1 should deliver a usable CV builder with structured data entry, template selection, preview, and multi-format export (PDF plus structured and document interchange formats — see [`docs/export-formats.md`](export-formats.md)).
 
+![Main editor — structured sections with live template preview](img/main-editor-personal-info-preview.png)
+
 ### Structured CV Form
 
 The application should provide an editable form that stores all CV information in a structured format.
@@ -48,6 +50,10 @@ Initial form sections should include:
 - additional information.
 
 The form should be the main source of truth for the CV. Users should be able to edit every field manually at any time.
+
+![Template picker — switch among built-in preview layouts](img/template-picker-modal.png)
+
+![Expanded preview modal for full-size review](img/expanded-preview-modal.png)
 
 Optional profile photos (JPEG/PNG/WebP, max 15 MB) are stored locally, normalized
 for EXIF orientation, shown in template preview and visual exports, and embedded in
@@ -120,6 +126,11 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - **Static CV quality hints** — deterministic rules in Core (`CvQualityAnalyzer`),
   section badges with a **large in-window modal**, session dismiss, import-aware
   review hints, export-area summary; optional **Improve with AI** on supported hints.
+
+![Section validation errors and quality-hint badges](img/main-editor-validation-suggestions.png)
+
+![Quality hints modal — example for Languages section](img/quality-hints-languages-modal.png)
+
 - **Page image export**: PNG/JPEG/WebP via `CvImageExporter`; ZIP or
   folder delivery; page range; size estimate; export progress; opaque white background.
 - **John Doe import regression matrix** — **51** generated stress CVs assert parser

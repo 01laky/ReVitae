@@ -13,6 +13,8 @@ Downloads of local models run as a **background job**: you can close the modal,
 keep editing your CV, pause for later, or restart the app — ReVitae picks up
 where Ollama left off using cached layers.
 
+![AI setup — online providers (OpenAI, Anthropic, Gemini, Groq, Azure, …)](img/ai-setup-online-providers.png)
+
 ## Open the modal
 
 1. Dismiss the intro overlay if it is still open.
@@ -69,6 +71,8 @@ provider’s servers when an online backend is active.
 Supported presets: **OpenAI**, **Anthropic**, **Google Gemini**, **Groq**,
 **Azure OpenAI**, **Mistral**, **DeepSeek**, **OpenRouter**, and **Custom**
 (LM Studio, local Ollama `/v1`, or any OpenAI-compatible URL).
+
+![AI setup — local Ollama model catalog with RAM-aware recommendations](img/ai-setup-local-models.png)
 
 ### API key storage
 
