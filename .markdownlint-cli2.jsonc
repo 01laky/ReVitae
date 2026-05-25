@@ -1,9 +1,9 @@
 {
+  "globs": ["**/*.md", "!node_modules/**", "!prompts/021-multi-format-cv-import.md"],
   "config": {
     "MD013": false,
     "MD024": {
       "siblings_only": true
     }
-  },
-  "ignores": ["prompts/021-multi-format-cv-import.md"]
+  }
 }
