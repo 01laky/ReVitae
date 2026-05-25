@@ -315,7 +315,24 @@ public partial class MainWindow
 			return;
 		}
 
-		await OpenProjectFromPathAsync(filePath, closeIntro);
+		if (CvOpenFileRouting.ShouldLoadAsSavedProject(filePath))
+		{
+			await OpenProjectFromPathAsync(filePath, closeIntro);
+			return;
+		}
+
+		if (CvOpenFileRouting.IsImportableCvFile(filePath))
+		{
+			await ImportCvFromPathAsync(
+				filePath,
+				replaceExisting: !closeIntro,
+				useIntroProgressUi: closeIntro,
+				useReplaceProgressUi: !closeIntro,
+				forceOcr: false);
+			return;
+		}
+
+		ShowProjectSnackbar(_localizer.Get(TranslationKeys.ProjectOpenFailed));
 	}
 
 	private async Task OpenProjectFromPathAsync(string filePath, bool closeIntro)

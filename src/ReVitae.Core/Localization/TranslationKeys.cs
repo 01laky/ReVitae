@@ -590,6 +590,8 @@ public static class TranslationKeys
 	public const string UploadCvFilePickerTitle = "import.uploadCvFilePickerTitle";
 	public const string ImportCvFilePickerTitle = "import.importCvFilePickerTitle";
 	public const string ImportPdfFileType = "import.pdfFileType";
+	public const string ImportPdfOnlyFileType = "import.pdfOnlyFileType";
+	public const string ImportPlainTextFileType = "import.plainTextFileType";
 	public const string ImportErrorFileNotFound = "import.error.fileNotFound";
 	public const string ImportErrorEmptyPdf = "import.error.emptyPdf";
 	public const string ImportErrorUnreadablePdf = "import.error.unreadablePdf";
@@ -1426,6 +1428,8 @@ public static class TranslationKeys
 		UploadCvFilePickerTitle,
 		ImportCvFilePickerTitle,
 		ImportPdfFileType,
+		ImportPdfOnlyFileType,
+		ImportPlainTextFileType,
 		ImportErrorFileNotFound,
 		ImportErrorEmptyPdf,
 		ImportErrorUnreadablePdf,
