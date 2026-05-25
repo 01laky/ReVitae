@@ -8,9 +8,14 @@ namespace ReVitae.Core.Import;
 internal static class CvImportDiagnosticsLogger
 {
     private static readonly object Gate = new();
-    private static Stopwatch? _sessionStopwatch;
-    private static bool _sessionActive;
-    private static string? _sessionLogFilePath;
+    private static readonly AsyncLocal<ImportDebugSession?> CurrentSession = new();
+
+    private sealed class ImportDebugSession
+    {
+        public required string LogFilePath { get; init; }
+
+        public Stopwatch Stopwatch { get; } = Stopwatch.StartNew();
+    }
 
     public static string LogFilePath =>
         Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG_LOG") is { Length: > 0 } customPath
@@ -25,25 +30,24 @@ internal static class CvImportDiagnosticsLogger
     public static bool IsEnabled =>
         string.Equals(Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG"), "1", StringComparison.Ordinal);
 
-    private static bool ShouldLog => _sessionActive || IsEnabled;
+    private static bool ShouldLog => CurrentSession.Value != null || IsEnabled;
 
     public static void BeginSession(string filePath, CvImportFormat format, long fileSizeBytes)
     {
-        if (!ShouldLog)
+        if (!IsEnabled)
         {
             return;
         }
 
-        _sessionActive = true;
-        _sessionLogFilePath = LogFilePath;
-        _sessionStopwatch = Stopwatch.StartNew();
+        var session = new ImportDebugSession { LogFilePath = LogFilePath };
+        CurrentSession.Value = session;
         var header = new StringBuilder()
             .AppendLine(new string('=', 80))
             .AppendLine($"ReVitae import debug — {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}")
             .AppendLine($"File: {filePath}")
             .AppendLine($"Format: {format}")
             .AppendLine($"Size: {fileSizeBytes} bytes")
-            .AppendLine($"Log: {_sessionLogFilePath}")
+            .AppendLine($"Log: {session.LogFilePath}")
             .AppendLine(new string('=', 80))
             .ToString();
 
@@ -221,16 +225,16 @@ internal static class CvImportDiagnosticsLogger
 
     public static void EndSession(bool success)
     {
-        if (!_sessionActive)
+        var session = CurrentSession.Value;
+        if (session is null)
         {
-            if (!ShouldLog)
+            if (!IsEnabled)
             {
                 return;
             }
         }
 
-        var elapsed = _sessionStopwatch?.ElapsedMilliseconds ?? 0;
-        _sessionStopwatch = null;
+        var elapsed = session?.Stopwatch.ElapsedMilliseconds ?? 0;
 
         var footer = new StringBuilder()
             .AppendLine(new string('=', 80))
@@ -240,8 +244,7 @@ internal static class CvImportDiagnosticsLogger
             .ToString();
 
         Write(footer);
-        _sessionActive = false;
-        _sessionLogFilePath = null;
+        CurrentSession.Value = null;
     }
 
     private static void AppendParsedResult(StringBuilder builder, CvImportResult result)
@@ -382,13 +385,13 @@ internal static class CvImportDiagnosticsLogger
 
     private static void Write(string content)
     {
-        if (_sessionActive)
+        if (CurrentSession.Value is { } session)
         {
-            AppendToLog(_sessionLogFilePath!);
+            AppendToLog(session.LogFilePath);
             return;
         }
 
-        if (!ShouldLog)
+        if (!IsEnabled)
         {
             return;
         }
