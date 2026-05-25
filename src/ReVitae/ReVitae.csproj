@@ -26,6 +26,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="ReVitae.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<AvaloniaResource Include="Assets\ExportFormats\**\*.svg" />
 	</ItemGroup>
 

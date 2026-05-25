@@ -282,6 +282,8 @@ public partial class MainWindow
 				await ImportCvFromFileAsync(replaceExisting: true, useIntroProgressUi: false, useReplaceProgressUi: true);
 				break;
 			case PendingProjectAction.CloseWindow:
+				ClearProjectDirtyState();
+				CvProjectService.DeleteRecovery();
 				_projectAutosaveTimer?.Stop();
 				Close();
 				break;

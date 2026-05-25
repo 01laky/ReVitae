@@ -22,18 +22,17 @@ internal static class CvProjectFilePickerOptions
 
 	public static FilePickerOpenOptions CreateOpenOptions(AppLocalizer localizer)
 	{
-		var filters = new List<FilePickerFileType>
-		{
-			CreateProjectFileType(localizer),
-			CreateGenericJsonFileType(localizer),
-		};
-		filters.AddRange(CvImportFilePickerOptions.CreateFileTypeFilter(localizer));
+		var filters = new List<FilePickerFileType>(CvImportFilePickerOptions.CreateFileTypeFilter(localizer));
+		var defaultFilter = filters[0];
+		filters.Insert(1, CreateProjectFileType(localizer));
+		filters.Insert(2, CreateGenericJsonFileType(localizer));
 
 		return new FilePickerOpenOptions
 		{
 			Title = localizer.Get(TranslationKeys.ProjectOpenDialogTitle),
 			AllowMultiple = false,
 			FileTypeFilter = filters,
+			SuggestedFileType = defaultFilter,
 		};
 	}
 
