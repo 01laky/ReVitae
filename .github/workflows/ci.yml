@@ -53,6 +53,7 @@ jobs:
         run: ./scripts/verify-version.sh
 
       - name: Lint markdown
+        if: runner.os != 'Windows'
         run: npm run lint:md
 
       - name: Lint C# and test
