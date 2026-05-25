@@ -137,19 +137,18 @@ public sealed class AiDownloadJobStorageTests
         var snapshot = CreateSampleSnapshot(clock.UtcNow) with { State = AiDownloadJobState.Downloading };
 
         storage.Save(snapshot, forceFlush: true);
-        var firstWrite = File.GetLastWriteTimeUtc(path);
+        var jsonAfterFirstFlush = File.ReadAllText(path);
 
         for (var i = 0; i < 10; i++)
         {
             storage.Save(snapshot with { CompletedBytes = i * 100L });
         }
 
-        var secondWrite = File.GetLastWriteTimeUtc(path);
-        Assert.Equal(firstWrite, secondWrite);
+        Assert.Equal(jsonAfterFirstFlush, File.ReadAllText(path));
 
         clock.Advance(TimeSpan.FromMilliseconds(600));
         storage.Save(snapshot with { CompletedBytes = 9999 });
-        Assert.True(File.GetLastWriteTimeUtc(path) > firstWrite);
+        Assert.NotEqual(jsonAfterFirstFlush, File.ReadAllText(path));
     }
 
     [Fact]
@@ -619,7 +618,6 @@ public sealed class AiModelDownloadCoordinatorTests
             if (harness.FakePullClient.PullCallCount > 0 &&
                 harness.Coordinator.CurrentSnapshot.State is AiDownloadJobState.Idle
                     or AiDownloadJobState.Failed
-                    or AiDownloadJobState.Paused
                     or AiDownloadJobState.Completed)
             {
                 if (harness.Coordinator.CurrentSnapshot.State == AiDownloadJobState.Completed)
