@@ -1,5 +1,5 @@
 {
-  "globs": ["**/*.md", "!node_modules/**", "!prompts/021-multi-format-cv-import.md", "!prompts/042-first-launch-ai-setup-wizard.md"],
+  "globs": ["**/*.md", "!node_modules/**", "!prompts/021-multi-format-cv-import.md", "!prompts/042-first-launch-ai-setup-wizard.md", "!prompts/043-technical-debt-hardening.md"],
   "config": {
     "MD013": false,
     "MD024": {

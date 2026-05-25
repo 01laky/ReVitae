@@ -182,6 +182,11 @@ trait `ImportMatrix`) generates **51** fully populated CV files at runtime from
 
 Filter locally: `dotnet test --filter Category=ImportMatrix`.
 
+PDF re-import edge tests use trait `ImportPdfReimport` and run in a serial xUnit collection
+(`ImportPdfSerialCollection`) with the matrix to avoid QuestPDF/PdfPig flakes under parallel
+load. CI runs the matrix on Ubuntu plus a **3×** stress guard on ClassicSidebar variant **02**.
+See the **Test categories and CI** table in [`README.md`](../README.md#test-categories-and-ci).
+
 ## Related docs
 
 - Export formats (including page images): [`export-formats.md`](export-formats.md)

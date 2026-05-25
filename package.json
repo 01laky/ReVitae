@@ -1,6 +1,6 @@
 {
   "name": "revitae",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "ReVitae is a cross-platform desktop application for creating and exporting CVs.",
   "directories": {
     "doc": "docs"

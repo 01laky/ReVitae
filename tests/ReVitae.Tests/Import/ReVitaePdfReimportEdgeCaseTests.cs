@@ -9,6 +9,7 @@ using ReVitae.Tests.Import.Fixtures.JohnDoe;
 namespace ReVitae.Tests.Import;
 
 [Trait("Category", "ImportPdfReimport")]
+[Collection(nameof(ImportPdfSerialCollection))]
 public sealed class ReVitaePdfReimportEdgeCaseTests
 {
 	public static IEnumerable<object[]> MatrixVariants =>
@@ -17,12 +18,6 @@ public sealed class ReVitaePdfReimportEdgeCaseTests
 	[Theory]
 	[InlineData("01")]
 	public void Variant01_ModernSidebar_MeetsPdfFull(string variantId) =>
-		AssertVariant(variantId);
-
-	[Theory]
-	[InlineData("02")]
-	[InlineData("07")]
-	public void TierB_SidebarTemplates_MeetPdfSidebarCounts(string variantId) =>
 		AssertVariant(variantId);
 
 	[Theory]

@@ -1,10 +1,10 @@
 # ReVitae
 
-[![App](https://img.shields.io/badge/app-0.2.3-blue)](https://github.com/01laky/ReVitae/releases)
+[![App](https://img.shields.io/badge/app-0.2.4-blue)](https://github.com/01laky/ReVitae/releases)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1548%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1601%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 [![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
@@ -229,7 +229,7 @@ stay highlighted until you confirm them.
 
 ## Product status
 
-ReVitae is an **early-stage desktop app** (v0.2.3) under active development. The
+ReVitae is an **early-stage desktop app** (v0.2.4) under active development. The
 core loop works today: build or import a CV, preview with templates, validate,
 save locally, and export in many formats. Local and online AI setup, AI-assisted
 import, OCR for scans, and ReVitae PDF round-trip are in place.
@@ -241,16 +241,23 @@ the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
 
 ReVitae uses three different version concepts:
 
-- **App version** (`0.2.3`): the ReVitae product release shown in the **About**
+- **App version** (`0.2.4`): the ReVitae product release shown in the **About**
   modal (toolbar icon), README app badge, `Version.props`, and Git tags such as
-  `v0.2.3`.
+  `v0.2.4`.
 - **Tech-stack badges**: framework/platform versions such as `.NET 10` and
   `Avalonia 12`.
 - **Dependency package versions**: NuGet package versions declared in `.csproj`
   files (QuestPDF, PdfPig, Material.Avalonia, etc.).
 
-To cut a release, update `Version.props`, `CHANGELOG.md`, and the README app
-badge, then run `./scripts/verify-version.sh` before tagging.
+To cut a release:
+
+1. Update `Version.props`, `CHANGELOG.md`, and the README app badge.
+2. Run `./scripts/verify-version.sh` and `./scripts/verify-vulnerable-packages.sh`.
+3. Run `npm run lint` (full suite).
+4. Commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+5. Create a GitHub Release using the matching `CHANGELOG.md` section.
+
+**Note:** Git tag `v0.2.3` may still be pending on GitHub Releases if not created separately.
 
 ## Roadmap
 
@@ -261,6 +268,7 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 
 **Recently shipped** ([`CHANGELOG.md`](CHANGELOG.md)):
 
+- Technical debt hardening (v0.2.4) — PDF import stability, NU1903 pin, CI gates
 - First-launch AI setup wizard — [`docs/ai-setup.md`](docs/ai-setup.md#first-launch-ai-setup-wizard)
 - OCR and image import (scans, photos, Force OCR retry)
 - ReVitae PDF round-trip — [`docs/import-formats.md`](docs/import-formats.md#revitae-pdf-round-trip)
@@ -307,6 +315,47 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 
 CI runs the same lint and test pipeline on every push to `main` (see
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
+### Test categories and CI
+
+| Category | Local `npm run lint` | Ubuntu/macOS CI | Windows CI | Ubuntu `import-matrix` |
+| -------- | -------------------- | --------------- | ---------- | ---------------------- |
+| Default suite | yes | yes | yes | no |
+| `ImportPdfReimport` | yes | yes | no | flake guard (3× stress) |
+| `OcrIntegration` | yes | yes | no | no |
+| `ImportMatrix` (51 variants) | yes | no | no | yes |
+
+Windows CI skips PDF re-import and OCR integration tests (PdfPig geometry and Tesseract
+differ on runners); Ubuntu covers them. `dotnet format` and markdown lint run on Ubuntu
+and macOS CI only — run `npm run lint` locally on Windows before pushing.
+
+Filter examples:
+
+```bash
+dotnet test --filter "Category=ImportMatrix"
+dotnet test --filter "Category=ImportPdfReimport"
+```
+
+### Fast pre-commit (optional)
+
+Full pre-commit runs all **1600+** tests including the 51-variant matrix. For intermediate
+commits:
+
+```bash
+./scripts/pre-commit-fast.sh
+```
+
+This sets `REVITAE_FAST_PRECOMMIT=1` (skips `ImportMatrix` only). Run full `npm run lint`
+before push or PR.
+
+### Supply-chain check
+
+`System.Security.Cryptography.Xml` is pinned in `ReVitae.Core` to override a vulnerable
+NPOI transitive. Verify with:
+
+```bash
+./scripts/verify-vulnerable-packages.sh
+```
 
 ### Lint
 

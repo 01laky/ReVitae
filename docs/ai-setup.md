@@ -37,6 +37,12 @@ overlay. The wizard is skippable at any step (Escape or **Skip for now**).
 4. **Complete** — summary of active backend, download in progress, remind-later,
    or offline-only choice.
 
+![First-launch wizard — Welcome](img/ai-wizard-welcome.png)
+
+![First-launch wizard — Choose path](img/ai-wizard-choose-path.png)
+
+![First-launch wizard — Complete](img/ai-wizard-complete.png)
+
 ### Persistence
 
 Preferences are stored in `%LocalAppData%/ReVitae/app-settings.json` (schema v2):
@@ -371,6 +377,25 @@ API keys live only in `ai-secrets.enc`, not in settings JSON.
 13. Configure OpenAI → Test → Activate → Active strip and header badge update.
 14. Switch from local active to online → confirm dialog → only one backend active.
 15. Reset provider config → API key removed from secrets file; row returns to Configure.
+
+### First-launch wizard
+
+1. Fresh profile (`REVITAE_RESET_AI_WIZARD=1`) → wizard before intro; intro hidden.
+2. **Skip for now** on Welcome → intro; relaunch → no wizard; Try AI still visible on failed import.
+3. **I won't use AI** → Complete → Get started → Try AI / Enhance with AI hidden.
+4. **Local path** → detection → download confirm → dock → Complete → intro.
+5. **Online path** → Test → Activate → Complete shows provider name.
+6. **More providers…** → full AI modal → close → back on wizard Online step.
+7. Welcome **Change language** → Setup → pick SK → return → Slovak strings.
+8. **Escape** on Welcome → skip confirm → intro.
+9. Upgrade user with active backend → no wizard on launch.
+10. Autosave recovery → intro recovery first; after discard → wizard when eligible.
+11. **Ollama missing** on local path → managed install messaging (macOS + Windows spot-check).
+12. SK locale — all wizard strings present.
+13. After **Remind later** → robot icon opens full AI modal.
+14. Setup → **Show AI setup wizard again** → manual rerun; completing clears offline-only hide.
+15. Keyboard: Tab through Welcome → Next; Choose path card via Space.
+16. Offline-only cleared when user activates any backend from robot icon.
 
 ## Related docs
 

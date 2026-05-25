@@ -4,6 +4,7 @@ using ReVitae.Tests.Import.Fixtures.JohnDoe;
 namespace ReVitae.Tests.Import;
 
 [Trait("Category", "ImportMatrix")]
+[Collection(nameof(ImportPdfSerialCollection))]
 public sealed class JohnDoeImportRegressionMatrixTests : IDisposable
 {
 	public static IEnumerable<object[]> AllVariants =>

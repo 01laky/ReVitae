@@ -24,6 +24,9 @@ if [ -n "${CI:-}" ]; then
 	fi
 
 	dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build --filter "$TEST_FILTER"
+elif [ -n "${REVITAE_FAST_PRECOMMIT:-}" ]; then
+	# Skips the 51-variant John Doe matrix; still runs ImportPdfReimport and the default suite.
+	dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build --filter "Category!=ImportMatrix"
 else
 	dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-build
 fi

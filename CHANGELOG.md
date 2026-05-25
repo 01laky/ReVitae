@@ -7,17 +7,31 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-05-21
+
 ### Added
 
-- **40 themed CV templates:** parametric QuestPDF layouts (10 layout archetypes ×
-  distinct color themes) inspired by popular free online résumé styles — **56**
-  built-in templates total with live preview and PDF export.
-- **Edge-case test hardening:** 41 new tests across OCR composite routing,
-  `OcrPdfTextExtractor`, quality-gate boundaries, tessdata discovery, import
-  session/progress, `CvTextImportCoordinator`/`CvTextImportFlows`, YAML importer
-  facade, Slovak OCR localization, and OCR extraction metadata (**1469** total).
-- **GitHub Actions CI:** lint + full test suite on Ubuntu, macOS, and Windows;
-  separate John Doe import matrix job on Ubuntu.
+- **Technical debt hardening:** serial `ImportPdfSerialCollection` for PDF import and
+  John Doe matrix tests; TierB sidebar stress repeat test; `GeneratedJohnDoeVariantFile`
+  write validation; `scripts/verify-vulnerable-packages.sh` and CI gate;
+  `scripts/pre-commit-fast.sh` (`REVITAE_FAST_PRECOMMIT=1` skips matrix locally);
+  Ubuntu import-matrix **3×** PDF flake guard; first-launch wizard doc screenshots;
+  **12** edge-case tests in `tests/ReVitae.Tests/Import/` and
+  `VerifyVulnerablePackagesScriptTests` (**1601** total).
+
+### Changed
+
+- **NuGet security:** explicit pin `System.Security.Cryptography.Xml` **10.0.6**
+  (overrides NPOI 2.7.5 transitive **8.0.2** / NU1903).
+- **PDF re-import tests:** variants **02** / **07** covered via matrix + stability suite
+  only (deduplicated from `ReVitaePdfReimportEdgeCaseTests`).
+- **README:** CI test category map, release/tag workflow, fast pre-commit docs.
+
+### Fixed
+
+- **Flaky pre-commit:** intermittent `import.error.unreadableDocument` on ClassicSidebar
+  variant **02** under parallel full-suite load.
+- **CS9191** in `CvExportFormatIconLoader` (`in` vs `ref` for SkiaSharp matrix).
 
 ## [0.2.3] - 2026-05-21
 
@@ -41,7 +55,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [0.2.2] - 2026-05-21
 
+Also included in the **0.2.2** codebase (initial release notes were incomplete):
+
 ### Added
+
+- **40 themed CV templates:** parametric QuestPDF layouts (10 layout archetypes ×
+  distinct color themes) — **56** built-in templates total with live preview and PDF export.
+- **Edge-case test hardening:** OCR composite routing, quality-gate boundaries,
+  tessdata discovery, import session/progress, YAML importer facade, Slovak OCR
+  localization, and related suites (see commits from `33d4090` onward).
+- **GitHub Actions CI:** lint + test on Ubuntu, macOS, and Windows; dedicated John Doe
+  **import-matrix** job on Ubuntu.
+
+### Added (release notes)
 
 - **Author metadata:** Ladislav Kostolny and contact email in the About dialog,
   `Version.props`, npm `package.json`, README, and assembly metadata

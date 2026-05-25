@@ -46,7 +46,7 @@ internal static class CvExportFormatIconLoader
 		using var canvas = new SKCanvas(bitmap);
 		canvas.Clear(SKColors.Transparent);
 		canvas.Translate((IconSize - bounds.Width * scale) / 2f, (IconSize - bounds.Height * scale) / 2f);
-		canvas.DrawPicture(svg.Picture, ref matrix);
+		canvas.DrawPicture(svg.Picture, in matrix);
 
 		using var image = SKImage.FromBitmap(bitmap);
 		using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
