@@ -39,6 +39,7 @@ public partial class MainWindow
 			ImproveWithAi = hint => _ = BeginAiCvImprovementAsync(hint),
 			SetUpAi = () => SetAiSetupModalVisible(true),
 			IsCompletionInFlight = () => _aiCvCompletionInFlight || _aiImportInFlight,
+			ShouldShowAiPromotions = ShouldShowAiPromotionsInUi,
 		};
 	}
 

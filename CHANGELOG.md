@@ -19,6 +19,26 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - **GitHub Actions CI:** lint + full test suite on Ubuntu, macOS, and Windows;
   separate John Doe import matrix job on Ubuntu.
 
+## [0.2.3] - 2026-05-21
+
+### Added
+
+- **First-launch AI setup wizard:** multi-step overlay on cold start (before the
+  intro) with Welcome → Choose path → Local or Online setup → Complete. Four
+  paths: local Ollama download, curated online providers (OpenAI, Anthropic,
+  Gemini, Groq), **Remind me later**, and **I won't use AI** (hides Try AI /
+  Enhance with AI promotions). Persists to `%LocalAppData%/ReVitae/app-settings.json`
+  (schema v2); upgrade migration auto-completes when an active AI backend or
+  resumable download job already exists. Setup modal link **Show AI setup wizard
+  again**; Welcome step language shortcut opens Setup and returns. EN + SK
+  localization; **42** edge-case tests in `tests/ReVitae.Tests/AppPreferences/`
+  (**1591** total).
+
+### Changed
+
+- **AI setup detection:** shared `RunAiSetupDetectionAsync` visibility guard so
+  hardware detection works from both the AI modal and the first-launch wizard.
+
 ## [0.2.2] - 2026-05-21
 
 ### Added

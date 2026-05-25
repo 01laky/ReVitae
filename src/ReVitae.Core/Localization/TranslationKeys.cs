@@ -157,6 +157,42 @@ public static class TranslationKeys
 	public const string SetupAppName = "modal.setup.appName";
 	public const string SetupVersion = "modal.setup.version";
 	public const string SetupEarlyPreview = "modal.setup.earlyPreview";
+	public const string SetupShowAiWizardAgain = "modal.setup.showAiWizardAgain";
+	public const string FirstLaunchAiWizardTitle = "firstLaunchAiWizard.title";
+	public const string FirstLaunchAiWizardWelcomeLead = "firstLaunchAiWizard.welcome.lead";
+	public const string FirstLaunchAiWizardWelcomeReview = "firstLaunchAiWizard.welcome.review";
+	public const string FirstLaunchAiWizardWelcomePrivacy = "firstLaunchAiWizard.welcome.privacy";
+	public const string FirstLaunchAiWizardWelcomeLanguage = "firstLaunchAiWizard.welcome.language";
+	public const string FirstLaunchAiWizardWelcomeChangeLanguage = "firstLaunchAiWizard.welcome.changeLanguage";
+	public const string FirstLaunchAiWizardChoosePathTitle = "firstLaunchAiWizard.choosePath.title";
+	public const string FirstLaunchAiWizardPathLocalTitle = "firstLaunchAiWizard.path.local.title";
+	public const string FirstLaunchAiWizardPathLocalSubtitle = "firstLaunchAiWizard.path.local.subtitle";
+	public const string FirstLaunchAiWizardPathOnlineTitle = "firstLaunchAiWizard.path.online.title";
+	public const string FirstLaunchAiWizardPathOnlineSubtitle = "firstLaunchAiWizard.path.online.subtitle";
+	public const string FirstLaunchAiWizardPathSkipTitle = "firstLaunchAiWizard.path.skip.title";
+	public const string FirstLaunchAiWizardPathSkipSubtitle = "firstLaunchAiWizard.path.skip.subtitle";
+	public const string FirstLaunchAiWizardPathOfflineTitle = "firstLaunchAiWizard.path.offline.title";
+	public const string FirstLaunchAiWizardPathOfflineSubtitle = "firstLaunchAiWizard.path.offline.subtitle";
+	public const string FirstLaunchAiWizardLocalDetecting = "firstLaunchAiWizard.local.detecting";
+	public const string FirstLaunchAiWizardLocalDetectionFailed = "firstLaunchAiWizard.local.detectionFailed";
+	public const string FirstLaunchAiWizardLocalRecommended = "firstLaunchAiWizard.local.recommended";
+	public const string FirstLaunchAiWizardLocalDownloadActivate = "firstLaunchAiWizard.local.downloadActivate";
+	public const string FirstLaunchAiWizardLocalDownloadInProgress = "firstLaunchAiWizard.local.downloadInProgress";
+	public const string FirstLaunchAiWizardOnlineMoreProviders = "firstLaunchAiWizard.online.moreProviders";
+	public const string FirstLaunchAiWizardCompleteActiveLocal = "firstLaunchAiWizard.complete.activeLocal";
+	public const string FirstLaunchAiWizardCompleteActiveOnline = "firstLaunchAiWizard.complete.activeOnline";
+	public const string FirstLaunchAiWizardCompleteSkipped = "firstLaunchAiWizard.complete.skipped";
+	public const string FirstLaunchAiWizardCompleteRemindLater = "firstLaunchAiWizard.complete.remindLater";
+	public const string FirstLaunchAiWizardCompleteOfflineOnly = "firstLaunchAiWizard.complete.offlineOnly";
+	public const string FirstLaunchAiWizardCompleteChangeAiHint = "firstLaunchAiWizard.complete.changeAiHint";
+	public const string FirstLaunchAiWizardSkipConfirm = "firstLaunchAiWizard.skipConfirm";
+	public const string FirstLaunchAiWizardOfflineConfirm = "firstLaunchAiWizard.offlineConfirm";
+	public const string FirstLaunchAiWizardSkip = "firstLaunchAiWizard.skip";
+	public const string FirstLaunchAiWizardBack = "firstLaunchAiWizard.back";
+	public const string FirstLaunchAiWizardNext = "firstLaunchAiWizard.next";
+	public const string FirstLaunchAiWizardGetStarted = "firstLaunchAiWizard.getStarted";
+	public const string FirstLaunchAiWizardStepIndicator = "firstLaunchAiWizard.stepIndicator";
+	public const string FirstLaunchAiWizardRetry = "firstLaunchAiWizard.retry";
 	public const string Templates = "modal.templates.title";
 	public const string Close = "action.close";
 	public const string Language = "setup.language";
@@ -966,6 +1002,42 @@ public static class TranslationKeys
 		SetupAppName,
 		SetupVersion,
 		SetupEarlyPreview,
+		SetupShowAiWizardAgain,
+		FirstLaunchAiWizardTitle,
+		FirstLaunchAiWizardWelcomeLead,
+		FirstLaunchAiWizardWelcomeReview,
+		FirstLaunchAiWizardWelcomePrivacy,
+		FirstLaunchAiWizardWelcomeLanguage,
+		FirstLaunchAiWizardWelcomeChangeLanguage,
+		FirstLaunchAiWizardChoosePathTitle,
+		FirstLaunchAiWizardPathLocalTitle,
+		FirstLaunchAiWizardPathLocalSubtitle,
+		FirstLaunchAiWizardPathOnlineTitle,
+		FirstLaunchAiWizardPathOnlineSubtitle,
+		FirstLaunchAiWizardPathSkipTitle,
+		FirstLaunchAiWizardPathSkipSubtitle,
+		FirstLaunchAiWizardPathOfflineTitle,
+		FirstLaunchAiWizardPathOfflineSubtitle,
+		FirstLaunchAiWizardLocalDetecting,
+		FirstLaunchAiWizardLocalDetectionFailed,
+		FirstLaunchAiWizardLocalRecommended,
+		FirstLaunchAiWizardLocalDownloadActivate,
+		FirstLaunchAiWizardLocalDownloadInProgress,
+		FirstLaunchAiWizardOnlineMoreProviders,
+		FirstLaunchAiWizardCompleteActiveLocal,
+		FirstLaunchAiWizardCompleteActiveOnline,
+		FirstLaunchAiWizardCompleteSkipped,
+		FirstLaunchAiWizardCompleteRemindLater,
+		FirstLaunchAiWizardCompleteOfflineOnly,
+		FirstLaunchAiWizardCompleteChangeAiHint,
+		FirstLaunchAiWizardSkipConfirm,
+		FirstLaunchAiWizardOfflineConfirm,
+		FirstLaunchAiWizardSkip,
+		FirstLaunchAiWizardBack,
+		FirstLaunchAiWizardNext,
+		FirstLaunchAiWizardGetStarted,
+		FirstLaunchAiWizardStepIndicator,
+		FirstLaunchAiWizardRetry,
 		Templates,
 		Close,
 		Language,

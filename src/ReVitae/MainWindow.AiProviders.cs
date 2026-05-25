@@ -20,6 +20,7 @@ public partial class MainWindow
 	private readonly AiProviderConfigService _aiProviderConfigService = new();
 	private AiActiveBackendService? _aiActiveBackendService;
 	private readonly Dictionary<string, AiProviderUiRow> _aiProviderUiRows = new(StringComparer.Ordinal);
+	private readonly Dictionary<string, AiProviderUiRow> _wizardProviderUiRows = new(StringComparer.Ordinal);
 	private string? _openProviderFormId;
 	private string? _pendingProviderSwitchTargetId;
 	private AiBackendKind _pendingProviderSwitchTargetKind;
@@ -52,6 +53,8 @@ public partial class MainWindow
 
 	private void OnAiActiveBackendChanged()
 	{
+		_appPreferencesService.ClearHideAiPromotionsOnBackendActivated();
+		OnFirstLaunchAiWizardBackendActivated();
 		OnAiProviderSettingsChanged();
 	}
 
@@ -338,6 +341,40 @@ public partial class MainWindow
 		return container;
 	}
 
+	private void RenderWizardCuratedProviderRows()
+	{
+		FirstLaunchAiWizardOnlineProvidersPanel.Children.Clear();
+		_wizardProviderUiRows.Clear();
+
+		foreach (var provider in FirstLaunchAiWizardCuratedProviders.GetDefinitions())
+		{
+			var row = BuildProviderRow(provider);
+			_wizardProviderUiRows[provider.Id] = row;
+			FirstLaunchAiWizardOnlineProvidersPanel.Children.Add(row.Container);
+		}
+
+		RefreshWizardProviderRowStates();
+	}
+
+	private void RefreshWizardProviderRowStates()
+	{
+		foreach (var providerId in FirstLaunchAiWizardCuratedProviders.ProviderIds)
+		{
+			if (!_wizardProviderUiRows.TryGetValue(providerId, out var row))
+			{
+				continue;
+			}
+
+			var provider = AiOnlineProviderCatalog.TryGetById(providerId);
+			if (provider is null)
+			{
+				continue;
+			}
+
+			ApplyProviderRowPresentation(provider, row);
+		}
+	}
+
 	private void RefreshAiProviderRowStates()
 	{
 		foreach (var provider in AiOnlineProviderCatalog.GetAll())
@@ -347,69 +384,71 @@ public partial class MainWindow
 				continue;
 			}
 
-			var presentation = AiProviderRowStateMapper.Map(
-				provider,
-				_aiProviderConfigService.CurrentSettings,
-				_aiProviderConfigService.SecretStorage);
-
-			row.PrimaryButton.Content = presentation.PrimaryAction switch
-			{
-				AiProviderUiAction.Configure => _localizer.Get(TranslationKeys.AiSetupProviderConfigure),
-				AiProviderUiAction.Activate => _localizer.Get(TranslationKeys.AiSetupProviderActivate),
-				AiProviderUiAction.Deactivate => _localizer.Get(TranslationKeys.AiSetupProviderDeactivate),
-				_ => _localizer.Get(TranslationKeys.AiSetupProviderConfigure),
-			};
-
-			row.EditButton.IsVisible = presentation.ShowEditLink;
-			row.StatusText.Text = presentation.IsActive
-				? _localizer.Get(TranslationKeys.AiSetupProviderActive)
-				: presentation.IsConfigured
-					? _localizer.Get(TranslationKeys.AiSetupProviderConfigured)
-					: _localizer.Get(TranslationKeys.AiSetupProviderNotConfigured);
-			row.StatusText.Classes.Clear();
-			row.StatusText.Classes.Add(presentation.IsActive ? "re-vitae-primary" : presentation.IsConfigured ? "re-vitae-secondary" : "re-vitae-secondary");
-
-			if (presentation.LastTestSucceeded is true)
-			{
-				row.LastTestText.Text = _localizer.Get(TranslationKeys.AiSetupProviderLastTestOk);
-				row.LastTestText.Classes.Clear();
-				row.LastTestText.Classes.Add("re-vitae-primary");
-				row.LastTestText.IsVisible = true;
-			}
-			else if (presentation.LastTestSucceeded is false)
-			{
-				row.LastTestText.Text = _localizer.Get(TranslationKeys.AiSetupProviderLastTestFailed);
-				row.LastTestText.Classes.Clear();
-				row.LastTestText.Classes.Add("re-vitae-error");
-				row.LastTestText.IsVisible = true;
-			}
-			else
-			{
-				row.LastTestText.IsVisible = false;
-			}
-
-			row.CardBorder.BorderBrush = presentation.IsActive
-				? new SolidColorBrush(Color.Parse("#2563EB"))
-				: Brushes.Transparent;
+			ApplyProviderRowPresentation(provider, row);
 		}
+
+		RefreshWizardProviderRowStates();
+	}
+
+	private void ApplyProviderRowPresentation(AiOnlineProviderDefinition provider, AiProviderUiRow row)
+	{
+		var presentation = AiProviderRowStateMapper.Map(
+			provider,
+			_aiProviderConfigService.CurrentSettings,
+			_aiProviderConfigService.SecretStorage);
+
+		row.PrimaryButton.Content = presentation.PrimaryAction switch
+		{
+			AiProviderUiAction.Configure => _localizer.Get(TranslationKeys.AiSetupProviderConfigure),
+			AiProviderUiAction.Activate => _localizer.Get(TranslationKeys.AiSetupProviderActivate),
+			AiProviderUiAction.Deactivate => _localizer.Get(TranslationKeys.AiSetupProviderDeactivate),
+			_ => _localizer.Get(TranslationKeys.AiSetupProviderConfigure),
+		};
+
+		row.EditButton.IsVisible = presentation.ShowEditLink;
+		row.StatusText.Text = presentation.IsActive
+			? _localizer.Get(TranslationKeys.AiSetupProviderActive)
+			: presentation.IsConfigured
+				? _localizer.Get(TranslationKeys.AiSetupProviderConfigured)
+				: _localizer.Get(TranslationKeys.AiSetupProviderNotConfigured);
+		row.StatusText.Classes.Clear();
+		row.StatusText.Classes.Add(presentation.IsActive ? "re-vitae-primary" : "re-vitae-secondary");
+
+		if (presentation.LastTestSucceeded is true)
+		{
+			row.LastTestText.Text = _localizer.Get(TranslationKeys.AiSetupProviderLastTestOk);
+			row.LastTestText.Classes.Clear();
+			row.LastTestText.Classes.Add("re-vitae-primary");
+			row.LastTestText.IsVisible = true;
+		}
+		else if (presentation.LastTestSucceeded is false)
+		{
+			row.LastTestText.Text = _localizer.Get(TranslationKeys.AiSetupProviderLastTestFailed);
+			row.LastTestText.Classes.Clear();
+			row.LastTestText.Classes.Add("re-vitae-error");
+			row.LastTestText.IsVisible = true;
+		}
+		else
+		{
+			row.LastTestText.IsVisible = false;
+		}
+
+		row.CardBorder.BorderBrush = presentation.IsActive
+			? new SolidColorBrush(Color.Parse("#2563EB"))
+			: Brushes.Transparent;
 	}
 
 	private void ToggleProviderForm(string providerId, bool open)
 	{
 		if (open)
 		{
-			foreach (var pair in _aiProviderUiRows)
-			{
-				var form = (StackPanel)pair.Value.FormPanel;
-				form.IsVisible = string.Equals(pair.Key, providerId, StringComparison.Ordinal);
-			}
-
+			CloseAllProviderFormsExcept(providerId);
 			_openProviderFormId = providerId;
 			PopulateProviderForm(providerId);
 		}
 		else
 		{
-			if (_aiProviderUiRows.TryGetValue(providerId, out var row))
+			if (TryGetProviderRow(providerId, out var row))
 			{
 				row.FormPanel.IsVisible = false;
 			}
@@ -421,9 +460,34 @@ public partial class MainWindow
 		}
 	}
 
+	private bool TryGetProviderRow(string providerId, out AiProviderUiRow row)
+	{
+		if (_aiProviderUiRows.TryGetValue(providerId, out row!))
+		{
+			return true;
+		}
+
+		return _wizardProviderUiRows.TryGetValue(providerId, out row!);
+	}
+
+	private void CloseAllProviderFormsExcept(string providerId)
+	{
+		foreach (var pair in _aiProviderUiRows)
+		{
+			((StackPanel)pair.Value.FormPanel).IsVisible =
+				string.Equals(pair.Key, providerId, StringComparison.Ordinal);
+		}
+
+		foreach (var pair in _wizardProviderUiRows)
+		{
+			((StackPanel)pair.Value.FormPanel).IsVisible =
+				string.Equals(pair.Key, providerId, StringComparison.Ordinal);
+		}
+	}
+
 	private void PopulateProviderForm(string providerId)
 	{
-		if (!_aiProviderUiRows.TryGetValue(providerId, out var row))
+		if (!TryGetProviderRow(providerId, out var row))
 		{
 			return;
 		}
@@ -562,7 +626,7 @@ public partial class MainWindow
 
 	private async Task OnProviderPrimaryActionClicked(string providerId)
 	{
-		if (!_aiProviderUiRows.TryGetValue(providerId, out var row))
+		if (!TryGetProviderRow(providerId, out var row))
 		{
 			return;
 		}
@@ -613,7 +677,7 @@ public partial class MainWindow
 
 	private async Task OnProviderSaveClicked(string providerId)
 	{
-		if (!_aiProviderUiRows.TryGetValue(providerId, out var row))
+		if (!TryGetProviderRow(providerId, out var row))
 		{
 			return;
 		}
@@ -627,7 +691,7 @@ public partial class MainWindow
 
 	private async Task OnProviderTestClicked(string providerId)
 	{
-		if (!_aiProviderUiRows.TryGetValue(providerId, out var row))
+		if (!TryGetProviderRow(providerId, out var row))
 		{
 			return;
 		}

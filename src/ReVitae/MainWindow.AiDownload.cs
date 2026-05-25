@@ -30,22 +30,22 @@ public partial class MainWindow
 
 	private async void OnMainWindowOpenedForAiDownload(object? sender, EventArgs e)
 	{
-		if (IntroModalOverlay.IsVisible)
-		{
-			return;
-		}
-
-		await RunAiDownloadRecoveryAsync().ConfigureAwait(true);
+		ScheduleAiDownloadRecoveryWhenStartupUnblocked();
 	}
 
-	private void ScheduleAiDownloadRecoveryWhenIntroDismissed()
+	internal void ScheduleAiDownloadRecoveryWhenStartupUnblocked()
 	{
-		if (IntroModalOverlay.IsVisible)
+		if (IntroModalOverlay.IsVisible || FirstLaunchAiWizardOverlay.IsVisible)
 		{
 			return;
 		}
 
 		_ = RunAiDownloadRecoveryAsync();
+	}
+
+	private void ScheduleAiDownloadRecoveryWhenIntroDismissed()
+	{
+		ScheduleAiDownloadRecoveryWhenStartupUnblocked();
 	}
 
 	private async Task RunAiDownloadRecoveryAsync()

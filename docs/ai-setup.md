@@ -15,6 +15,52 @@ where Ollama left off using cached layers.
 
 ![AI setup — online providers (OpenAI, Anthropic, Gemini, Groq, Azure, …)](img/ai-setup-online-providers.png)
 
+## First launch AI setup wizard
+
+On the **first cold start** (when no AI backend is active and the wizard has not
+been completed), ReVitae shows a **multi-step setup wizard** before the intro
+overlay. The wizard is skippable at any step (Escape or **Skip for now**).
+
+### Steps
+
+1. **Welcome** — privacy note, optional link to change language (opens **Setup**,
+   then returns to the wizard).
+2. **Choose path** — four cards:
+   - **Local AI** — hardware detection and recommended Ollama model download.
+   - **Online AI** — curated providers (OpenAI, Anthropic, Gemini, Groq) with
+     **More providers…** opening the full AI setup modal.
+   - **Remind me later** — dismisses until the next manual run from Setup.
+   - **I won't use AI** — offline-only mode; hides **Try AI import** and
+     **Enhance with AI** promotions (header robot icon stays available for later).
+3. **Local setup** or **Online setup** — reuses the same detection, download, and
+   provider configuration flows as the AI setup modal.
+4. **Complete** — summary of active backend, download in progress, remind-later,
+   or offline-only choice.
+
+### Persistence
+
+Preferences are stored in `%LocalAppData%/ReVitae/app-settings.json` (schema v2):
+
+| Field | Purpose |
+| ----- | ------- |
+| `firstLaunchAiWizardStatus` | `NotStarted`, `RemindLater`, `Completed`, or `DeclinedOffline` |
+| `hideAiPromotionsInUi` | When true (offline-only path), AI promotion buttons are hidden until a backend is activated |
+| `firstLaunchAiWizardCompletedAtUtc` | Timestamp when the user finished or skipped |
+
+**Upgrade migration:** existing installs with an active AI backend in
+`ai-settings.json`, or a resumable entry in `ai-download-job.json`, are treated
+as wizard **Completed** automatically.
+
+### Run the wizard again
+
+Open **Setup** (gear icon) → **Show AI setup wizard again**. Manual reruns do not
+auto-appear on every launch.
+
+### Developer reset
+
+Set environment variable `REVITAE_RESET_AI_WIZARD=1` (or `true`) before launch to
+reset wizard state to defaults (useful for QA).
+
 ## Open the modal
 
 1. Dismiss the intro overlay if it is still open.
@@ -333,7 +379,6 @@ API keys live only in `ai-secrets.enc`, not in settings JSON.
 
 ## Not in scope yet
 
-- Automatic first-launch wizard
 - Parallel downloads of multiple models
 - Download bandwidth throttling
 

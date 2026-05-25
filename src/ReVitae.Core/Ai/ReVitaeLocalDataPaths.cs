@@ -33,4 +33,9 @@ public static class ReVitaeLocalDataPaths
 	{
 		return Path.Combine(GetReVitaeRootDirectory(), "autosave.recovery.revitae.json");
 	}
+
+	public static string GetAppSettingsFilePath()
+	{
+		return Path.Combine(GetReVitaeRootDirectory(), "app-settings.json");
+	}
 }

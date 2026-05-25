@@ -50,8 +50,8 @@ public sealed class AppVersionTests
 	{
 		AppVersion.Initialize(Assembly.GetExecutingAssembly());
 
-		Assert.Equal("0.2.2", AppVersion.Current);
-		Assert.StartsWith("0.2.2", AppVersion.Informational, StringComparison.Ordinal);
+		Assert.Equal("0.2.3", AppVersion.Current);
+		Assert.StartsWith("0.2.3", AppVersion.Informational, StringComparison.Ordinal);
 		Assert.True(AppVersion.IsPreRelease);
 	}
 }

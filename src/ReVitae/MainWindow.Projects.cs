@@ -195,6 +195,7 @@ public partial class MainWindow
 	{
 		CvProjectService.DeleteRecovery();
 		IntroRecoveryPanel.IsVisible = false;
+		TryShowFirstLaunchAiWizardOnOpened();
 	}
 
 	private async void OnUnsavedChangesSaveClicked(object? sender, RoutedEventArgs e)

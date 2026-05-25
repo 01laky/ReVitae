@@ -24,6 +24,8 @@ public sealed class QualityHintAiOptions
 	public Action? SetUpAi { get; init; }
 
 	public Func<bool>? IsCompletionInFlight { get; init; }
+
+	public Func<bool>? ShouldShowAiPromotions { get; set; }
 }
 
 public sealed class QualityHintModalPresenter
@@ -123,6 +125,7 @@ public sealed class QualityHintModalPresenter
 		}
 
 		if (aiOptions is not null &&
+			aiOptions.ShouldShowAiPromotions?.Invoke() != false &&
 			aiOptions.IsSupported?.Invoke(hint) == true)
 		{
 			var backendKind = aiOptions.GetActiveBackendKind?.Invoke() ?? AiBackendKind.None;

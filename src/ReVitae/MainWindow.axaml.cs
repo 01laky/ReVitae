@@ -68,6 +68,7 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 		InitializeAiDownload();
+		InitializeFirstLaunchAiWizard();
 		InitializeAiProviders();
 		InitializeAiCvCompletion();
 		InitializeQualityHintsUi();
@@ -811,7 +812,7 @@ public partial class MainWindow : Window
 		ReplaceCvImportErrorTextBlock.IsVisible = true;
 		ReplaceCvImportRetryButton.IsVisible = true;
 		ReplaceCvImportForceOcrButton.IsVisible = showForceOcr;
-		ReplaceImportTryAiButton.IsVisible = showTryAi;
+		ReplaceImportTryAiButton.IsVisible = showTryAi && ShouldShowAiPromotionsInUi();
 		ReplaceCvImportProgressTextBlock.Text = string.Empty;
 	}
 
@@ -954,7 +955,7 @@ public partial class MainWindow : Window
 		IntroErrorTextBlock.IsVisible = true;
 		IntroRetryImportButton.IsVisible = true;
 		IntroImportForceOcrButton.IsVisible = showForceOcr;
-		IntroImportTryAiButton.IsVisible = showTryAi;
+		IntroImportTryAiButton.IsVisible = showTryAi && ShouldShowAiPromotionsInUi();
 		IntroActionsPanel.IsVisible = true;
 		IntroProgressPanel.IsVisible = false;
 		CreateNewCvButton.IsEnabled = true;
@@ -964,6 +965,23 @@ public partial class MainWindow : Window
 	private void OnCloseSetupClicked(object? sender, RoutedEventArgs e)
 	{
 		SetSetupModalVisible(false);
+	}
+
+	private void SetSetupModalVisible(bool isVisible)
+	{
+		if (isVisible)
+		{
+			HideOtherContentModals(SetupModalOverlay);
+		}
+		else if (_wizardReturnToWelcomeAfterSetup)
+		{
+			_wizardReturnToWelcomeAfterSetup = false;
+			ResumeFirstLaunchAiWizardAfterSubModal(FirstLaunchAiWizardStep.Welcome);
+			return;
+		}
+
+		SetupModalOverlay.IsVisible = isVisible;
+		UpdateModalSizes();
 	}
 
 	private void OnCloseAboutClicked(object? sender, RoutedEventArgs e)
@@ -1004,6 +1022,13 @@ public partial class MainWindow : Window
 
 		if (e.Key != Key.Escape)
 		{
+			return;
+		}
+
+		if (FirstLaunchAiWizardOverlay.IsVisible)
+		{
+			ConfirmAndSkipFirstLaunchAiWizard();
+			e.Handled = true;
 			return;
 		}
 
@@ -1469,6 +1494,8 @@ public partial class MainWindow : Window
 		ApplyAiSuggestionModalLocalization();
 		ApplyImportAiLocalization();
 		ApplyAiDownloadLocalization();
+		ApplyFirstLaunchAiWizardLocalization();
+		UpdateAiPromotionsUiVisibility();
 		RefreshTemplateCardLabels();
 		UpdateWindowTitle();
 		RefreshIntroRecentProjects();
@@ -1494,7 +1521,8 @@ public partial class MainWindow : Window
 	}
 
 	private bool IsBlockingOverlayOpen() =>
-		IntroModalOverlay.IsVisible
+		FirstLaunchAiWizardOverlay.IsVisible
+		|| IntroModalOverlay.IsVisible
 		|| ReplaceCvImportProgressModalOverlay.IsVisible
 		|| ExportModalOverlay.IsVisible
 		|| AiSetupModalOverlay.IsVisible
@@ -1505,6 +1533,19 @@ public partial class MainWindow : Window
 
 	private void HideOtherContentModals(Grid activeModal)
 	{
+		if (!ReferenceEquals(FirstLaunchAiWizardOverlay, activeModal))
+		{
+			if (FirstLaunchAiWizardOverlay.IsVisible && !_wizardSuspendedForSubModal)
+			{
+				CancelAiDetectionOnly();
+			}
+
+			if (!ReferenceEquals(activeModal, FirstLaunchAiWizardOverlay))
+			{
+				FirstLaunchAiWizardOverlay.IsVisible = false;
+			}
+		}
+
 		if (!ReferenceEquals(SetupModalOverlay, activeModal))
 		{
 			SetupModalOverlay.IsVisible = false;
@@ -1539,17 +1580,6 @@ public partial class MainWindow : Window
 
 			AiSetupModalOverlay.IsVisible = false;
 		}
-	}
-
-	private void SetSetupModalVisible(bool isVisible)
-	{
-		if (isVisible)
-		{
-			HideOtherContentModals(SetupModalOverlay);
-		}
-
-		SetupModalOverlay.IsVisible = isVisible;
-		UpdateModalSizes();
 	}
 
 	private void SetAboutModalVisible(bool isVisible)

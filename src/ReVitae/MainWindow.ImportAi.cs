@@ -340,6 +340,12 @@ public partial class MainWindow
 
 	private void UpdateImportAiEnhanceBanner(CvTextImportAttempt? attempt)
 	{
+		if (!ShouldShowAiPromotionsInUi())
+		{
+			HideImportAiEnhancePanel();
+			return;
+		}
+
 		if (attempt is null || !AiCvImportTriggerEvaluator.ShouldOfferAi(attempt))
 		{
 			HideImportAiEnhancePanel();

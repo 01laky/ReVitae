@@ -7,6 +7,8 @@ using Avalonia.Threading;
 using ReVitae.Core.Ai;
 using ReVitae.Core.Ai.Download;
 using ReVitae.Core.Ai.Ollama;
+using ReVitae.Core.Ai.Providers;
+using ReVitae.Core.AppPreferences;
 using ReVitae.Core.Localization;
 using System;
 using System.Collections.Generic;
@@ -87,6 +89,12 @@ public partial class MainWindow
 
 			UpdateAiDownloadUi();
 		}
+		else if (_wizardSuspendedForSubModal &&
+				 _appPreferencesService.Current.FirstLaunchAiWizardStatus == FirstLaunchAiWizardStatus.NotStarted)
+		{
+			ResumeFirstLaunchAiWizardAfterSubModal(FirstLaunchAiWizardStep.OnlineSetup);
+			return;
+		}
 
 		AiSetupModalOverlay.IsVisible = isVisible;
 		UpdateModalSizes();
@@ -143,15 +151,42 @@ public partial class MainWindow
 												 _aiDownloadCoordinator.HasActiveJob;
 		_aiDetectionCts = new CancellationTokenSource();
 		var token = _aiDetectionCts.Token;
-		_ = RunAiSetupDetectionAsync(token);
+		_ = RunAiSetupDetectionAsync(
+			token,
+			() => AiSetupModalOverlay.IsVisible,
+			onStarted: null,
+			onSuccess: ApplyAiSetupDetectionResult,
+			onFailed: ShowAiSetupDetectionFailed);
 	}
 
-	private async Task RunAiSetupDetectionAsync(CancellationToken cancellationToken)
+	internal void StartFirstLaunchAiWizardDetection()
+	{
+		CancelAiDetectionOnly();
+		FirstLaunchAiWizardLocalDetectionProgressPanel.IsVisible = true;
+		FirstLaunchAiWizardLocalDetectionFailedPanel.IsVisible = false;
+		FirstLaunchAiWizardLocalContentPanel.IsVisible = false;
+		_aiDetectionCts = new CancellationTokenSource();
+		var token = _aiDetectionCts.Token;
+		_ = RunAiSetupDetectionAsync(
+			token,
+			() => FirstLaunchAiWizardOverlay.IsVisible && _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.LocalSetup,
+			onStarted: null,
+			onSuccess: ApplyFirstLaunchAiWizardDetectionResult,
+			onFailed: ShowFirstLaunchAiWizardDetectionFailed);
+	}
+
+	private async Task RunAiSetupDetectionAsync(
+		CancellationToken cancellationToken,
+		Func<bool> isTargetVisible,
+		Action? onStarted,
+		Action<AiSystemDetectionResult> onSuccess,
+		Action onFailed)
 	{
 		var startedAt = Environment.TickCount64;
 
 		try
 		{
+			onStarted?.Invoke();
 			var profileTask = _systemProfileDetector.DetectAsync(cancellationToken);
 			var ollamaTask = _ollamaRuntimeProbe.ProbeAsync(cancellationToken);
 			await Task.WhenAll(profileTask, ollamaTask).ConfigureAwait(false);
@@ -173,12 +208,12 @@ public partial class MainWindow
 
 			await Dispatcher.UIThread.InvokeAsync(() =>
 			{
-				if (!AiSetupModalOverlay.IsVisible)
+				if (!isTargetVisible())
 				{
 					return;
 				}
 
-				ApplyAiSetupDetectionResult(detectionResult);
+				onSuccess(detectionResult);
 			});
 		}
 		catch (OperationCanceledException)
@@ -193,12 +228,12 @@ public partial class MainWindow
 
 			await Dispatcher.UIThread.InvokeAsync(() =>
 			{
-				if (!AiSetupModalOverlay.IsVisible)
+				if (!isTargetVisible())
 				{
 					return;
 				}
 
-				ShowAiSetupDetectionFailed();
+				onFailed();
 			});
 		}
 	}
@@ -782,6 +817,8 @@ public partial class MainWindow
 		EnterAiSetupDownloadMode();
 		AiSetupStatusTextBlock.IsVisible = false;
 		UpdateAiSetupDownloadButtonState();
+		UpdateFirstLaunchAiWizardLocalDownloadButtonState();
+		OnFirstLaunchAiWizardDownloadStarted();
 		UpdateAiDownloadUi();
 	}
 

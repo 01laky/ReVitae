@@ -169,6 +169,12 @@ This phase focuses on importing existing CVs, extracting structured information,
 
 ### First Launch AI Setup
 
+**Implemented:** optional **first-launch AI setup wizard** on cold start (before
+the intro) with Welcome → Choose path → Local/Online setup → Complete; four paths
+(local download, curated online providers, remind later, offline-only); persistence
+in `app-settings.json` (schema v2); Setup link **Show AI setup wizard again**; EN +
+SK localization. See [`docs/ai-setup.md`](ai-setup.md#first-launch-ai-setup-wizard).
+
 **Implemented:** the header **AI icon** opens an on-demand setup
 modal with **online provider configuration** (OpenAI, Anthropic, Gemini, Groq,
 Azure OpenAI, Mistral, DeepSeek, OpenRouter, Custom), a single active backend
@@ -176,8 +182,8 @@ Azure OpenAI, Mistral, DeepSeek, OpenRouter, Custom), a single active backend
 Ollama model, a downloadable catalog, **managed Ollama install** when no engine
 is present, **background resumable download** (dock, pause/resume/stop, startup
 recovery), and **model lifecycle** actions (remove installed models, clean stale
-partial downloads). See [`docs/ai-setup.md`](ai-setup.md). A dedicated
-first-launch gate remains planned.
+partial downloads). See [`docs/ai-setup.md`](ai-setup.md). The first-launch
+wizard reuses these flows.
 
 **Implemented:** universal **CV completion** layer — whichever active
 backend the user chose powers **Improve with AI** on selected quality hints.
