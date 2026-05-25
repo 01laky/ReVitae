@@ -14,8 +14,9 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Local planning notes (not in git)
 prompts/
+
+.cursor/
 
 # Local generated stress fixtures (regenerate: dotnet run --project scripts/GenerateJohnDoeStressPdf)
 /John Doe.pdf
