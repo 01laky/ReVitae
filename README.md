@@ -6,25 +6,26 @@
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
 [![Tests](https://img.shields.io/badge/tests-1428%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 
-ReVitae is a privacy-conscious desktop CV builder for creating, importing,
-editing, previewing, and exporting professional CVs.
+ReVitae is a **desktop CV builder** that keeps your content editable, your templates
+swappable, and your files on your machine. Import an existing CV — PDF, Word, scan,
+or photo — refine it in clear sections with live preview, then export to PDF or
+15 other formats when you are ready.
 
-It keeps the CV content structured and editable, while templates handle only the
-visual presentation. The goal is simple: spend time improving your CV, not
-wrestling with formatting.
+No account required. No cloud upload for everyday editing. Optional AI runs locally
+or through providers you configure yourself.
 
 ![Main editor — structured form with live template preview](docs/img/main-editor-personal-info-preview.png)
 
 ```mermaid
 flowchart TD
-    start(["Start fresh or import a CV file"])
-    ingest["Detect format • enforce 25 MB limit • extract text or structured data"]
-    sections["Fill structured CV sections"]
-    replace["Import another file with replace confirmation"]
-    templates["Switch preview templates anytime"]
-    exportModal["Choose export format (16 formats)"]
-    exportSave["Save dialog with correct extension"]
-    exportDone(["Download locally • Open file / Show in folder"])
+    start(["Start fresh or import a CV"])
+    ingest["Read your file locally\n(PDF, Word, scan, JSON, …)"]
+    sections["Edit structured sections\nwith live preview"]
+    replace["Import another file\n(replace with confirmation)"]
+    templates["Try a different template\ncontent stays intact"]
+    exportModal["Pick export format\n(16 options)"]
+    exportSave["Save to your computer"]
+    exportDone(["Open file or show in folder"])
 
     start --> ingest --> sections --> templates --> exportModal --> exportSave --> exportDone
     sections --> replace --> ingest --> sections
@@ -41,21 +42,24 @@ flowchart TD
 
 ## Why ReVitae
 
-Most CV workflows mix content and layout together. ReVitae separates them.
+Most CV tools trap you in one layout. Change the design and you often lose control
+over the text. ReVitae treats **content and presentation as separate**:
 
-- Your CV data is the source of truth.
-- Templates can change without losing content.
-- Imported data stays editable.
-- The app runs locally by default.
-- Imported documents are treated as drafts, not as magic.
+- **Write once, restyle anytime** — switch among 16 templates without retyping.
+- **Import, then edit** — uploaded files become structured drafts you can fix, not frozen PDFs.
+- **Stay local** — core editing and import run on your computer; you choose if and when AI is used.
+- **Honest imports** — scanned PDFs and photos work via OCR, with a clear review step afterward.
 
-## Local AI — download that survives interruptions
+**Good fit if you** want a focused CV app (not a full office suite), care about privacy,
+or need to turn an old PDF or Word export into something you can actually maintain.
 
-ReVitae helps you bring a **local AI model** onto your machine without
-babysitting a modal. Start a download from the **AI setup** panel (header robot
-icon), keep editing your CV, pause for lunch, or close the app — when you
-return, the bottom-left progress dock and automatic recovery pick up where
-Ollama left off.
+## Local AI — optional help, on your terms
+
+Want suggestions without sending your CV to a random website? ReVitae can run
+**local AI models** (via Ollama) or connect to **online providers you configure**
+(OpenAI, Anthropic, Gemini, and others). Downloads continue in the background —
+close the setup modal, pause for lunch, even restart the app; progress picks up
+where it left off.
 
 ```mermaid
 flowchart LR
@@ -78,190 +82,159 @@ flowchart LR
     recover --> bg
 ```
 
-**Key guarantees:**
+**What you get:**
 
-- **Background download** — close the AI modal; progress stays in the corner.
-- **Pause and resume** — stop the stream safely; Ollama continues from cached layers.
+- **Background download** — keep editing while a model installs; progress stays in the corner.
+- **Pause and resume** — stop safely; Ollama continues from cached layers.
 - **Survives restarts** — force-quit or crash; ReVitae resumes on next launch.
-- **Managed Ollama** — ReVitae can install and run a local engine when none is present.
-- **Model lifecycle** — per-model status, remove installed models, clean stale downloads.
-- **Monotonic progress** — percent updates smoothly even when Ollama resets layer totals.
-- **Local-only** — detection and files stay on your device.
+- **Managed Ollama** — ReVitae can install a local engine when none is present.
+- **Model lifecycle** — see status, remove models, clean failed downloads.
+- **Smooth progress** — percent updates even when layer totals change mid-download.
+- **Local-first** — system detection and model files stay on your device.
 - **11 curated models** — RAM-aware recommendations with disk-space checks.
 
 ![AI setup — local Ollama model catalog and download](docs/img/ai-setup-local-models.png)
 
 Full user guide: [`docs/ai-setup.md`](docs/ai-setup.md).
 
-## Current Highlights
+## Features
 
-### Structured CV Builder
+### Structured CV builder
 
-ReVitae includes dedicated form sections for the core CV content:
+Everything lives in focused sections — personal info, experience, education,
+skills, languages, certificates, projects, links, and free-form notes. Each section
+validates as you type, updates the preview instantly, and can expand or collapse
+so long CVs stay manageable.
 
-- Personal information (optional profile photo), professional summary, and contact fields
-- Work experience
-- Education
-- Skills
-- Languages
-- Certificates
-- Projects
-- Additional custom links
-- Additional information
+**Also included:**
 
-Each section has focused validation, repeatable entries where needed, live
-preview updates, localized UI text, inline field-level error messages,
-**static quality hints** (section badge → large in-window modal with suggestions;
-does not block export), and **local project save/load** (`*.revitae.json` with
-Save / Save As / Open, recent projects, dirty tracking, and autosave recovery).
+- Optional **profile photo** (JPEG, PNG, WebP up to 15 MB) with EXIF correction
+- **Quality hints** — gentle suggestions in a modal; they never block export
+- **Save your work** as `*.revitae.json` (Save / Save As / Open, recent projects,
+  autosave recovery)
+- **12 UI languages** including English, Slovak, and Czech
 
-**Profile photo (optional):** upload JPEG, PNG, or WebP up to **15 MB** from the
-top of Personal information. JPEGs are EXIF-orientation normalized on save. Click
-the photo to replace it; sidebar templates show **initials** when no photo is set.
-Photos appear in template preview and in PDF/HTML/DOCX export. ReVitae JSON/YAML
-**v2** round-trips embedded photo bytes; document imports (PDF, DOCX, HTML, …)
-do not extract photos.
+Photos appear in preview and in PDF/HTML/DOCX export. Document imports (PDF, Word,
+HTML, …) do not pull photos out of files — add one manually if you want it.
 
-### AI setup (local and online providers, Phase 2 foundation)
+### AI setup (local and online)
 
-See **[Local AI — download that survives interruptions](#local-ai--download-that-survives-interruptions)**
-above for local download behavior. The header **robot icon** opens **AI setup** with
-two sections: **Online providers** (expanded by default — OpenAI, Anthropic, Gemini,
-Groq, Azure, Mistral, DeepSeek, OpenRouter, Custom) and **Local models** (collapsed
-by default — system detection, **11 curated Ollama instruct models**, managed install,
-background download, activate/deactivate). Exactly **one** backend may be active at a
-time; API keys are encrypted in `ai-secrets.enc`. **Improve with AI** on supported
-quality hints uses a universal completion layer (local Ollama chat or online provider)
-— user reviews suggestions before Accept / Edit; see [`docs/ai-setup.md`](docs/ai-setup.md).
+Open the header **robot icon** for **AI setup**:
+
+- **Online providers** — OpenAI, Anthropic, Gemini, Groq, Azure, Mistral, DeepSeek,
+  OpenRouter, or a custom endpoint. One active backend at a time; keys stored encrypted.
+- **Local models** — curated Ollama instruct models with managed install and background
+  download (see [Local AI](#local-ai--optional-help-on-your-terms) above).
+
+**Improve with AI** on quality hints and **AI-assisted import** (below) always show
+you a review step before anything is applied. Details: [`docs/ai-setup.md`](docs/ai-setup.md).
 
 ![AI setup — online provider configuration](docs/img/ai-setup-online-providers.png)
 
-### CV import (multi-format)
+### CV import — bring what you already have
 
-On startup, ReVitae lets you create a new CV or **import an existing document**.
-You can import again later from the header toolbar; if the form already holds
-data, the app asks for confirmation before replacing the current CV.
+Start from the welcome screen or the header **Upload** button. If the form already
+has data, ReVitae asks before replacing it. Everything runs **locally** on your machine.
 
 ![Welcome — create a new CV, import a file, or open a saved project](docs/img/welcome-onboarding-modal.png)
 
-Imports run entirely **locally** behind `CvDocumentImporter`: the correct parser
-is chosen from the file extension (with lightweight JSON/XML sniffing where
-needed), a **25 MB** size guard applies before extraction, and structured or
-flattened text is mapped into the same deterministic CV pipeline used for PDFs.
+**Works with many formats you already have:**
 
-**Supported categories today** include PDF; plain text; Markdown and HTML;
-DOC/DOCX; ODT and RTF; several additional legacy/desktop formats (AbiWord,
-Pages, WPS, LaTeX); Json Resume and **native ReVitae JSON** (`*.revitae.json`);
-YAML interchange; CSV/TSV header rows; and Europass / HR‑XML‑style resumes when
-XML heuristics match. See [`docs/import-formats.md`](docs/import-formats.md) for
-the full matrix, limits, XXE-safe XML handling, and exclusions.
+| Category       | Examples                                                         |
+| -------------- | ---------------------------------------------------------------- |
+| Documents      | PDF, DOC/DOCX, ODT, RTF, TXT, Markdown, HTML                     |
+| Structured     | Json Resume, native `*.revitae.json`, YAML, CSV/TSV              |
+| Scans & photos | Image-only PDFs, JPEG, PNG, WebP, TIFF, BMP                      |
+| Other          | Europass / HR-XML-style XML, LaTeX, legacy AbiWord / Pages / WPS |
 
-Parsed sections expand for review, empty sections stay collapsed, and
-low-confidence fields remain highlighted exactly like PDF drafts. The shared text
-pipeline merges PDF layout artifacts such as institution names split across blank
-lines (for example `High School of Electrical` / `and Training` / `Engineering`),
-parses certificate metadata without false date matches on credential IDs, and
-handles institution-first education blocks and inline certificate headers.
+Full matrix, limits, and caveats: [`docs/import-formats.md`](docs/import-formats.md).
 
-**Regression coverage:** `JohnDoeImportRegressionMatrixTests` generates **50**
-fully populated John Doe CV variants at test time (PDF, TXT, MD, HTML, DOCX),
-imports each file, and asserts extraction counts, spot checks, and **zero
-post-import form validation errors** — the same rules the UI uses before export.
-The matrix includes **51** variants (PDF templates **01–10**, **49–50**, deferred-sidebar **51**, plus text/export fixtures). Filter locally: `dotnet test --filter Category=ImportMatrix`.
+**What happens after import:** sections populate for review, empty ones stay collapsed,
+and uncertain fields stay highlighted so you know what to double-check. ReVitae-exported
+PDFs get **smart re-import** (layout hints from export metadata) — no OCR needed when
+the text layer is good.
 
-**ReVitae PDF round-trip:** PdfPig reads export metadata (`Producer`, `template:`),
-applies per-template column profiles, and threads `ReVitaePdfExportHints` into the parser.
-Committed stress fixture: `tests/ReVitae.Tests/Import/Fixtures/JohnDoeStressCv.pdf`.
-See [`docs/import-formats.md`](docs/import-formats.md#revitae-pdf-round-trip).
+**Scanned PDFs and photos:** when a file has no usable text, ReVitae uses **local OCR**
+(Tesseract, English data bundled). Output is always a draft — review every field. On a
+failed PDF import, choose **Import as scan (OCR)** to skip the text layer and read the
+scan directly. Password-protected files are not supported.
 
-**AI-assisted import:** when deterministic parsing fails or returns a thin
-draft, ReVitae offers optional **batched AI extraction** through the active backend
-(Try AI import / Enhance with AI → review summary → Apply). Compact models such as
-Gemma 2 2B use small sequential slices (~1 200 chars/call). See
-[`docs/ai-import.md`](docs/ai-import.md).
+**When parsing is thin or fails:** optional **AI-assisted import** walks through your
+document in small steps, then shows a summary before Apply. See [`docs/ai-import.md`](docs/ai-import.md).
 
-For manual import demos, regenerate a **compact** English John Doe CV (senior
-software architect, one realistic entry per section) at the repo root:
+#### For developers: import pipeline and tests
 
-`dotnet run --project scripts/GenerateJohnDoeMinimalArchitectCv`
+Imports use `CvDocumentImporter` with extension-based format detection, a 25 MB size
+guard, and a shared text pipeline (PDF layout cleanup, certificate date handling,
+institution-first education blocks, and more).
 
-Produces `John Doe (minimal architect).pdf` and `.txt`.
+**Regression:** `JohnDoeImportRegressionMatrixTests` generates **51** John Doe variants
+(PDF templates 01–10, 49–51, plus text/export fixtures) and asserts zero post-import
+validation errors. Filter: `dotnet test --filter Category=ImportMatrix`.
 
-**Scanned PDFs and photos:** when a PDF has no usable text layer, ReVitae runs
-**local OCR** (Tesseract) with bundled English `tessdata` (~4 MB, Apache 2.0).
-JPEG, PNG, WebP, TIFF, and BMP files import the same way. OCR output is a draft —
-review all fields. Use **Import as scan (OCR)** on failed PDF imports to skip the
-text layer. Password-protected files remain unsupported.
+**ReVitae PDF round-trip:** PdfPig reads export metadata, applies per-template column
+profiles, and threads layout hints into the parser. Stress fixture:
+`tests/ReVitae.Tests/Import/Fixtures/JohnDoeStressCv.pdf`.
 
-**Not supported:** password-protected files and perfect layout fidelity from rich
-desktop publishing constructs.
+Demo CV generator:
 
-### Template Preview and Multi-Format Export
+```bash
+dotnet run --project scripts/GenerateJohnDoeMinimalArchitectCv
+```
 
-You can switch between multiple built-in preview templates without changing your
-CV content. **Export** opens a format picker modal, then a native save dialog for
-the chosen type. **PDF** remains the primary template-aligned output; **page images** (PNG/JPEG/WebP
-as ZIP or separate files), **DOCX**, **HTML**, **Markdown**, structured JSON/YAML/XML,
-and other formats are also available. See [`docs/export-formats.md`](docs/export-formats.md)
-for the full matrix. Exported page images can be re-imported via OCR — see
-[`docs/import-formats.md`](docs/import-formats.md).
+Produces `John Doe (minimal architect).pdf` and `.txt` at the repo root.
+
+### Templates and export
+
+Pick a look, keep your words. **16 built-in templates** — sidebar, minimal, executive,
+photo-forward, and more — all driven by the same structured content. Switch anytime
+from the **Templates** toolbar icon; expand the preview for a full-size check.
+
+**Export** opens a format picker, then saves locally:
+
+- **PDF** — primary, template-aligned, A4, Unicode-safe (Slovak/Czech diacritics included)
+- **Documents** — DOCX, ODT, RTF, TXT, Markdown, HTML, LaTeX
+- **Structured** — JSON, YAML, XML, CSV/TSV
+- **Page images** — PNG, JPEG, or WebP (ZIP or separate files)
+
+After export: **Open file** or **Show in folder**. Full matrix:
+[`docs/export-formats.md`](docs/export-formats.md). Page images can be re-imported via OCR.
 
 ![Export CV — choose PDF, documents, web formats, or page images](docs/img/export-cv-modal.png)
 
-After a successful export, **Open file** and **Show in folder** actions help you
-reach the saved file without hunting in Finder or Explorer.
-
-Current template styles (16 built-in designs):
-
-- Classic Sidebar, Modern Sidebar, Clean Top Header, Dark Sidebar Accent
-- Centered Minimal, Photo Left Band, Executive Blue Sidebar, Peach Designer
-- Navy Profile Split, Forest Green Sidebar, Yellow Skill Dots, Royal Blue Sidebar
-- Orange Timeline, Blue Accent Summary, Pill Header Split, Navy Overlap Photo
-
-Open the **Templates** toolbar icon to preview and switch designs. **About**
-(version, tagline, early-preview badge) lives in a separate modal from the last
-toolbar icon — **Setup** covers language selection only.
+**Template styles:** Classic Sidebar, Modern Sidebar, Clean Top Header, Dark Sidebar Accent,
+Centered Minimal, Photo Left Band, Executive Blue Sidebar, Peach Designer, Navy Profile Split,
+Forest Green Sidebar, Yellow Skill Dots, Royal Blue Sidebar, Orange Timeline, Blue Accent Summary,
+Pill Header Split, Navy Overlap Photo.
 
 ![Template picker — 16 built-in QuestPDF layouts](docs/img/template-picker-modal.png)
 
 ![Expanded preview — full-size CV modal](docs/img/expanded-preview-modal.png)
 
-The preview can be expanded into a larger modal and scrolls independently from
-the form. Exported PDFs use A4 layout, support Unicode text (including Slovak and
-Czech diacritics), paginate long CVs automatically, and suggest a filename from
-the candidate name.
+**Setup** (gear icon) is for language only. **About** (last toolbar icon) shows version
+and early-preview status.
 
-### Validation and Review
+### Validation and review
 
-The app validates fields while you work and shows errors inline under the related
-control:
-
-- Required personal and section fields
-- Date ranges (DatePicker fields in repeatable sections)
-- URL formats
-- Duplicate entries where relevant
-- Maximum field lengths
-- Section error badges when a collapsed section contains problems
-- Scroll-to-first-error on failed export
-- Imported low-confidence fields highlighted for review
+ReVitae catches problems while you work — required fields, date ranges, URLs,
+duplicates, and length limits — with errors shown right under the field. Section
+headers show a badge when something inside needs attention; export scrolls to the
+first issue if you try to leave with errors. Imported fields that looked uncertain
+stay highlighted until you confirm them.
 
 ![Validation errors and quality-hint badges on section headers](docs/img/main-editor-validation-suggestions.png)
 
 ![Quality hints — large in-window suggestion modal](docs/img/quality-hints-languages-modal.png)
 
-## Product Status
+## Product status
 
-ReVitae is an active early-stage desktop app. The structured CV form, inline
-validation UI, template preview, **optional profile photo**, **multi-format export**
-(16 formats via `CvDocumentExporter` and `CvImageExporter`), and **multi-format CV import**
-through `CvDocumentImporter` are in place. Intro / replace flows cover PDF plus
-structured and text-native formats listed above. **AI setup** adds local Ollama model
-detection, managed engine install, **resumable background download** with dock and
-startup recovery, model lifecycle management (remove / clean stale), monotonic progress
-display, and **online provider configuration** with a single active backend (local or
-cloud). **AI-assisted import**, **Improve with AI** quality hints, **local project
-save/load**, and **ReVitae PDF round-trip** import are implemented. Next major themes
-include installers and broader template coverage beyond the regression matrix.
+ReVitae is an **early-stage desktop app** (v0.2.0) under active development. The
+core loop works today: build or import a CV, preview with templates, validate,
+save locally, and export in many formats. Local and online AI setup, AI-assisted
+import, OCR for scans, and ReVitae PDF round-trip are in place.
+
+**Coming next:** installers for macOS, Windows, and Linux, plus more templates beyond
+the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
 
 ### Versioning
 
@@ -280,17 +253,18 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 
 ## Roadmap
 
-Planned areas:
+**Planned:**
 
-- Installer/package builds for supported platforms
-- Additional QuestPDF templates beyond the current John Doe regression matrix
+- Installers for macOS, Windows, and Linux
+- More QuestPDF templates
 - Optional first-launch AI setup wizard
 
-Implemented recently (see [`CHANGELOG.md`](CHANGELOG.md)):
+**Recently shipped** ([`CHANGELOG.md`](CHANGELOG.md)):
 
-- ReVitae-exported PDF re-import — [`docs/import-formats.md`](docs/import-formats.md#revitae-pdf-round-trip)
+- OCR and image import (scans, photos, Force OCR retry)
+- ReVitae PDF round-trip — [`docs/import-formats.md`](docs/import-formats.md#revitae-pdf-round-trip)
 - AI-assisted import — [`docs/ai-import.md`](docs/ai-import.md)
-- Native `.revitae.json` save/load — [`docs/revitae-project-json.md`](docs/revitae-project-json.md)
+- Native `.revitae.json` projects — [`docs/revitae-project-json.md`](docs/revitae-project-json.md)
 
 ## Tech Stack
 
@@ -363,13 +337,13 @@ docs/
   img/              App screenshots for README and docs
 ```
 
-## Design Principles
+## Design principles
 
-- Keep user data local by default.
-- Keep content separate from presentation.
-- Make imported content editable immediately.
-- Prefer deterministic behavior before AI.
-- Add tests for edge cases, not only happy paths.
+- **Local first** — your CV stays on your machine unless you opt into online AI.
+- **Content over layout** — templates decorate; they do not own your data.
+- **Editable imports** — every upload is a starting point, not a final answer.
+- **Deterministic before AI** — rules and parsers first; models only when needed.
+- **Test the edges** — regressions cover real-world mess, not just happy paths.
 
 ## License
 
