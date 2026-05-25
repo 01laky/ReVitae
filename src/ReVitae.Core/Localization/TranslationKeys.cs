@@ -64,6 +64,7 @@ public static class TranslationKeys
     public const string ExportCategoryDocuments = "export.category.documents";
     public const string ExportCategoryWebAndText = "export.category.webAndText";
     public const string ExportCategoryStructured = "export.category.structured";
+    public const string ExportCategoryImages = "export.category.images";
     public const string ExportFormatPdf = "export.format.pdf";
     public const string ExportFormatPdfHint = "export.format.pdfHint";
     public const string ExportFormatDocx = "export.format.docx";
@@ -80,9 +81,44 @@ public static class TranslationKeys
     public const string ExportFormatHrXml = "export.format.hrXml";
     public const string ExportFormatCsv = "export.format.csv";
     public const string ExportFormatTsv = "export.format.tsv";
+    public const string ExportFormatImages = "export.format.images";
+    public const string ExportFormatImagesHint = "export.format.imagesHint";
     public const string ExportFormatRecommended = "export.format.recommended";
     public const string ExportOpenFile = "export.openFile";
     public const string ExportShowInFolder = "export.showInFolder";
+    public const string ExportImageOptionsTitle = "export.image.optionsTitle";
+    public const string ExportImageFormatLabel = "export.image.formatLabel";
+    public const string ExportImageFormatPng = "export.image.formatPng";
+    public const string ExportImageFormatJpeg = "export.image.formatJpeg";
+    public const string ExportImageFormatWebp = "export.image.formatWebp";
+    public const string ExportImageDeliveryLabel = "export.image.deliveryLabel";
+    public const string ExportImageDeliveryZip = "export.image.deliveryZip";
+    public const string ExportImageDeliveryZipHint = "export.image.deliveryZipHint";
+    public const string ExportImageDeliverySeparate = "export.image.deliverySeparate";
+    public const string ExportImageDeliverySeparateHint = "export.image.deliverySeparateHint";
+    public const string ExportImageQualityLabel = "export.image.qualityLabel";
+    public const string ExportImageScaleLabel = "export.image.scaleLabel";
+    public const string ExportImageScale1x = "export.image.scale1x";
+    public const string ExportImageScale2x = "export.image.scale2x";
+    public const string ExportImagePagesLabel = "export.image.pagesLabel";
+    public const string ExportImagePagesAll = "export.image.pagesAll";
+    public const string ExportImagePagesRange = "export.image.pagesRange";
+    public const string ExportImagePageFromLabel = "export.image.pageFromLabel";
+    public const string ExportImagePageToLabel = "export.image.pageToLabel";
+    public const string ExportImageRangeInvalid = "export.image.rangeInvalid";
+    public const string ExportImageSizeEstimate = "export.image.sizeEstimate";
+    public const string ExportImageSizeEstimateUnknown = "export.image.sizeEstimateUnknown";
+    public const string ExportImageProgressRendering = "export.image.progressRendering";
+    public const string ExportImageProgressWriting = "export.image.progressWriting";
+    public const string ExportImageExportButton = "export.image.exportButton";
+    public const string ExportImageBackButton = "export.image.backButton";
+    public const string ExportImageOptionsRequired = "export.image.optionsRequired";
+    public const string ExportImageTooManyPages = "export.image.tooManyPages";
+    public const string ExportImageRasterFailed = "export.image.rasterFailed";
+    public const string ExportZipFileType = "export.zipFileType";
+    public const string ExportFolderPickerTitle = "export.folderPickerTitle";
+    public const string ExportedImagesToZip = "export.exportedImagesToZip";
+    public const string ExportedImagesToFolder = "export.exportedImagesToFolder";
     public const string Preview = "preview.title";
     public const string PreviewExpandTitle = "modal.previewExpand.title";
     public const string Setup = "modal.setup.title";
@@ -764,6 +800,7 @@ public static class TranslationKeys
         ExportCategoryDocuments,
         ExportCategoryWebAndText,
         ExportCategoryStructured,
+        ExportCategoryImages,
         ExportFormatPdf,
         ExportFormatPdfHint,
         ExportFormatDocx,
@@ -780,9 +817,44 @@ public static class TranslationKeys
         ExportFormatHrXml,
         ExportFormatCsv,
         ExportFormatTsv,
+        ExportFormatImages,
+        ExportFormatImagesHint,
         ExportFormatRecommended,
         ExportOpenFile,
         ExportShowInFolder,
+        ExportImageOptionsTitle,
+        ExportImageFormatLabel,
+        ExportImageFormatPng,
+        ExportImageFormatJpeg,
+        ExportImageFormatWebp,
+        ExportImageDeliveryLabel,
+        ExportImageDeliveryZip,
+        ExportImageDeliveryZipHint,
+        ExportImageDeliverySeparate,
+        ExportImageDeliverySeparateHint,
+        ExportImageQualityLabel,
+        ExportImageScaleLabel,
+        ExportImageScale1x,
+        ExportImageScale2x,
+        ExportImagePagesLabel,
+        ExportImagePagesAll,
+        ExportImagePagesRange,
+        ExportImagePageFromLabel,
+        ExportImagePageToLabel,
+        ExportImageRangeInvalid,
+        ExportImageSizeEstimate,
+        ExportImageSizeEstimateUnknown,
+        ExportImageProgressRendering,
+        ExportImageProgressWriting,
+        ExportImageExportButton,
+        ExportImageBackButton,
+        ExportImageOptionsRequired,
+        ExportImageTooManyPages,
+        ExportImageRasterFailed,
+        ExportZipFileType,
+        ExportFolderPickerTitle,
+        ExportedImagesToZip,
+        ExportedImagesToFolder,
         Preview,
         PreviewExpandTitle,
         Setup,
