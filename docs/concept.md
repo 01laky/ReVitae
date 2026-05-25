@@ -135,6 +135,11 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
   folder delivery; page range; size estimate; export progress; opaque white background.
 - **John Doe import regression matrix** — **51** generated stress CVs assert parser
   fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`).
+- **Core-first test strategy (v0.2.11):** business logic extracted to Core services
+  (`CvProjectLifecycleService`, `FirstLaunchAiWizardController`, import section
+  extractors under `Import/Extraction/`). Avalonia UI remains thin wiring; **1845**
+  automated tests with drift guard (`scripts/verify-test-count.sh`). UI section views
+  are not headless-tested — extend Core before adding UI tests.
 - **Local CV project save/load**: Save / Save As / Open toolbar
   actions; `CvProjectSerializer` + optional `projectSettings`; recent projects;
   dirty title indicator; unsaved-changes guard; autosave recovery — see

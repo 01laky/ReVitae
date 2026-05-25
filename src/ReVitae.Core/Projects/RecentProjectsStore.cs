@@ -12,7 +12,7 @@ public sealed class RecentProjectsStore
 	private readonly string _filePath;
 
 	public RecentProjectsStore()
-		: this(Path.Combine(ReVitaeLocalDataPaths.GetReVitaeRootDirectory(), "recent-projects.json"))
+		: this(ReVitaeLocalDataPaths.GetRecentProjectsPath())
 	{
 	}
 

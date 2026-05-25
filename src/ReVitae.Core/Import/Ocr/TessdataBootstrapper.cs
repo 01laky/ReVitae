@@ -1,3 +1,5 @@
+using ReVitae.Core.Ai;
+
 namespace ReVitae.Core.Import.Ocr;
 
 /// <summary>Ensures tessdata exists under local app data when bundled resources are present.</summary>
@@ -20,10 +22,7 @@ internal static class TessdataBootstrapper
 			return null;
 		}
 
-		var targetDirectory = Path.Combine(
-			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-			"ReVitae",
-			"tessdata");
+		var targetDirectory = ReVitaeLocalDataPaths.GetTessdataDirectory();
 
 		CvImportDiagnosticsLogger.LogStep(
 			"tessdata",

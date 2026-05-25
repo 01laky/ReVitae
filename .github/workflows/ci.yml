@@ -59,6 +59,10 @@ jobs:
         if: runner.os != 'Windows'
         run: ./scripts/lint-md.sh
 
+      - name: Verify test count baseline
+        if: runner.os == 'Linux'
+        run: ./scripts/verify-test-count.sh
+
       - name: Lint C# and test
         run: ./scripts/lint-cs.sh
 

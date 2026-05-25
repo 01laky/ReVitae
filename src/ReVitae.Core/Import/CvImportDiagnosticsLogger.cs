@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using ReVitae.Core.Ai;
 using ReVitae.Core.Import.Extraction;
 
 namespace ReVitae.Core.Import;
@@ -22,10 +23,7 @@ internal static class CvImportDiagnosticsLogger
 			? customPath
 			: DefaultLogFilePath;
 
-	private static string DefaultLogFilePath => Path.Combine(
-		Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-		"ReVitae",
-		"import-debug.log");
+	private static string DefaultLogFilePath => ReVitaeLocalDataPaths.GetImportDebugLogPath();
 
 	public static bool IsEnabled =>
 		string.Equals(Environment.GetEnvironmentVariable("REVITAE_IMPORT_DEBUG"), "1", StringComparison.Ordinal);

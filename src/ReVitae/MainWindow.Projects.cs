@@ -35,14 +35,16 @@ public partial class MainWindow
 	}
 
 	private readonly RecentProjectsStore _recentProjectsStore = new();
+	private readonly CvProjectLifecycleService _projectLifecycle = new(
+		SystemClock.Instance,
+		new FileProjectAutosaveStore());
+	private bool _isProjectDirty => _projectLifecycle.HasUnsavedChanges();
 	private QualityHintSnackbarPresenter? _projectSnackbarPresenter;
 	private PendingProjectAction _pendingProjectAction = PendingProjectAction.None;
 	private string? _pendingRecentProjectPath;
 	private string? _projectFilePath;
-	private bool _isProjectDirty;
 	private bool _suppressProjectDirtyTracking;
 	private DispatcherTimer? _projectAutosaveTimer;
-	private DateTimeOffset _lastAutosaveUtc = DateTimeOffset.MinValue;
 
 	private void InitializeProjectsUi()
 	{
@@ -64,27 +66,27 @@ public partial class MainWindow
 
 	private void MarkProjectDirty()
 	{
-		if (_suppressProjectDirtyTracking || _isProjectDirty)
+		if (_suppressProjectDirtyTracking || _projectLifecycle.IsDirty)
 		{
 			return;
 		}
 
-		_isProjectDirty = true;
+		_projectLifecycle.MarkDirty();
 		UpdateWindowTitle();
 	}
 
 	private void ClearProjectDirtyState()
 	{
-		_isProjectDirty = false;
+		_projectLifecycle.ClearDirty();
 		UpdateWindowTitle();
 	}
 
-	private bool HasUnsavedProjectChanges() => _isProjectDirty;
+	private bool HasUnsavedProjectChanges() => _projectLifecycle.HasUnsavedChanges();
 
 	private void ResetProjectSession(bool markDirty)
 	{
 		_projectFilePath = null;
-		_isProjectDirty = markDirty;
+		_projectLifecycle.SetDirty(markDirty);
 		UpdateWindowTitle();
 	}
 
@@ -94,11 +96,11 @@ public partial class MainWindow
 		if (!string.IsNullOrWhiteSpace(_projectFilePath))
 		{
 			var fileName = Path.GetFileName(_projectFilePath);
-			Title = _isProjectDirty ? $"* {fileName} — {appName}" : $"{fileName} — {appName}";
+			Title = _projectLifecycle.IsDirty ? $"* {fileName} — {appName}" : $"{fileName} — {appName}";
 			return;
 		}
 
-		if (_isProjectDirty)
+		if (_projectLifecycle.IsDirty)
 		{
 			Title = $"* {_localizer.Get(TranslationKeys.ProjectUntitled)} — {appName}";
 			return;
@@ -318,6 +320,15 @@ public partial class MainWindow
 
 	private async Task OpenProjectFromPathAsync(string filePath, bool closeIntro)
 	{
+		var pathValidation = CvProjectPathValidator.ValidateOpenPath(filePath);
+		if (!pathValidation.IsValid || pathValidation.NormalizedPath is null)
+		{
+			ShowProjectSnackbar(_localizer.Get(TranslationKeys.ProjectOpenFailed));
+			return;
+		}
+
+		filePath = pathValidation.NormalizedPath;
+
 		if (!File.Exists(filePath))
 		{
 			_recentProjectsStore.RemoveMissing(filePath);
@@ -331,7 +342,7 @@ public partial class MainWindow
 			return;
 		}
 
-		var result = CvProjectService.Load(filePath);
+		var result = _projectLifecycle.LoadValidatedProject(filePath);
 		if (!result.Success || result.Import is null)
 		{
 			ShowProjectSnackbar(_localizer.Get(result.ErrorMessageKey ?? TranslationKeys.ProjectOpenFailed));
@@ -368,8 +379,7 @@ public partial class MainWindow
 			ApplySectionExpandState(settings.SectionExpandState, result.Import!);
 
 			_projectFilePath = recoveryPath ? null : filePath;
-			ClearProjectDirtyState();
-			CvProjectService.DeleteRecovery();
+			_projectLifecycle.OnProjectLoaded(recoveryPath);
 			UpdatePreview();
 			UpdateValidationState();
 			UpdateQualityHints();
@@ -426,13 +436,20 @@ public partial class MainWindow
 
 		try
 		{
+			var saveValidation = CvProjectPathValidator.ValidateSavePath(targetPath);
+			if (!saveValidation.IsValid || saveValidation.NormalizedPath is null)
+			{
+				ShowProjectSnackbar(_localizer.Get(TranslationKeys.ProjectSaveFailed));
+				return false;
+			}
+
+			targetPath = saveValidation.NormalizedPath;
 			var request = new CvProjectSaveRequest(
 				BuildExportSourceData(),
 				BuildProjectSettings());
-			CvProjectService.Save(targetPath!, request);
+			_projectLifecycle.SaveValidatedProject(targetPath, request);
 			_projectFilePath = targetPath;
-			ClearProjectDirtyState();
-			CvProjectService.DeleteRecovery();
+			_projectLifecycle.OnManualSaveSucceeded();
 			_recentProjectsStore.Add(targetPath!, BuildRecentDisplayNameFromForm());
 			RefreshIntroRecentProjects();
 			ShowProjectSnackbar(_localizer.Format(TranslationKeys.ProjectSaved, Path.GetFileName(targetPath)));
@@ -532,25 +549,10 @@ public partial class MainWindow
 
 	private void TryWriteAutosaveRecovery()
 	{
-		if (!HasUnsavedProjectChanges() || !HasCvFormData())
-		{
-			return;
-		}
-
-		var elapsed = DateTimeOffset.UtcNow - _lastAutosaveUtc;
-		if (elapsed.TotalSeconds < CvProjectConstants.AutosaveIntervalSeconds - 1)
-		{
-			return;
-		}
-
-		try
-		{
-			CvProjectService.WriteRecovery(new CvProjectSaveRequest(
-				BuildExportSourceData(),
-				BuildProjectSettings()));
-			_lastAutosaveUtc = DateTimeOffset.UtcNow;
-		}
-		catch
+		var result = _projectLifecycle.TryWriteAutosaveRecovery(
+			new CvProjectSaveRequest(BuildExportSourceData(), BuildProjectSettings()),
+			HasCvFormData());
+		if (result.Status == AutosaveWriteStatus.Failed)
 		{
 			// Recovery writes must never interrupt editing.
 		}
@@ -558,7 +560,7 @@ public partial class MainWindow
 
 	private void RefreshIntroRecoveryPanel()
 	{
-		IntroRecoveryPanel.IsVisible = CvProjectService.RecoveryExists();
+		IntroRecoveryPanel.IsVisible = _projectLifecycle.RecoveryExists();
 	}
 
 	private void RefreshIntroRecentProjects()

@@ -7,6 +7,29 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-05-21
+
+### Added
+
+- **Prompt 044 — refactoring & edge-case audit (full):**
+  - `CvProjectLifecycleService` with `IClock` / `IProjectAutosaveStore` — autosave debounce,
+    recovery evaluation, shutdown-safe writes; `CvProjectPathValidator` for open/save paths.
+  - Split `CvImportFieldExtractor` into `Import/Extraction/*` section modules + thin
+    orchestrator (~75 lines); seeded `ImportExtractionFuzzEdgeCaseTests`.
+  - `FirstLaunchAiWizardController` in Core; UI wizard wired to controller state.
+  - Ollama runtime abstractions (`IOllamaServeSupervisor`, `IOllamaProcessLauncher`) and
+    direct installer/startup/path edge-case suites.
+  - Export content depth tests (HTML escape, structured round-trip, DOCX photo, PDF smoke).
+  - Quality / validation UI glue tests; AI service edge cases; `FieldSchemaFactory` tests.
+  - Extended `ReVitaeLocalDataPaths` (tessdata, profile photos, import debug log, recent projects).
+  - `scripts/verify-test-count.sh` + `TestCountBaselineTests` drift guard (**1845** total,
+    +244 from 0.2.4).
+
+### Changed
+
+- **MainWindow.Projects** delegates dirty/autosave/recovery to `CvProjectLifecycleService`.
+- **README:** CI category map (`Projects`, `Ollama`, `ImportExtraction`), test-count guard docs.
+
 ## [0.2.4] - 2026-05-21
 
 ### Added

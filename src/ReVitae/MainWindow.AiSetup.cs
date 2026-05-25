@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using ReVitae.Core.AppPreferences;
 using ReVitae.Core.Ai;
 using ReVitae.Core.Ai.Download;
 using ReVitae.Core.Ai.Ollama;
@@ -89,7 +90,7 @@ public partial class MainWindow
 
 			UpdateAiDownloadUi();
 		}
-		else if (_wizardSuspendedForSubModal &&
+		else if (WizardSuspendedForSubModal &&
 				 _appPreferencesService.Current.FirstLaunchAiWizardStatus == FirstLaunchAiWizardStatus.NotStarted)
 		{
 			ResumeFirstLaunchAiWizardAfterSubModal(FirstLaunchAiWizardStep.OnlineSetup);
@@ -169,7 +170,7 @@ public partial class MainWindow
 		var token = _aiDetectionCts.Token;
 		_ = RunAiSetupDetectionAsync(
 			token,
-			() => FirstLaunchAiWizardOverlay.IsVisible && _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.LocalSetup,
+			() => FirstLaunchAiWizardOverlay.IsVisible && FirstLaunchWizardStep == FirstLaunchAiWizardStep.LocalSetup,
 			onStarted: null,
 			onSuccess: ApplyFirstLaunchAiWizardDetectionResult,
 			onFailed: ShowFirstLaunchAiWizardDetectionFailed);

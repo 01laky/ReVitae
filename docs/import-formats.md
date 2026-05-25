@@ -187,6 +187,20 @@ PDF re-import edge tests use trait `ImportPdfReimport` and run in a serial xUnit
 load. CI runs the matrix on Ubuntu plus a **3×** stress guard on ClassicSidebar variant **02**.
 See the **Test categories and CI** table in [`README.md`](../README.md#test-categories-and-ci).
 
+### Section-level import extractors (v0.2.11)
+
+Text pipeline parsing is split into focused extractors under
+`src/ReVitae.Core/Import/Extraction/` (personal, work, education, skills, …) with
+unit suites in `tests/ReVitae.Tests/Import/Extraction/` and seeded fuzz tests
+(`ImportExtractionFuzzEdgeCaseTests`, trait `ImportExtractionFuzz`). Run:
+
+```bash
+dotnet test --filter "Category=ImportExtraction"
+dotnet test --filter "Category=ImportExtractionFuzz"
+```
+
+The **51-variant matrix** remains the integration gate after extractor changes.
+
 ## Related docs
 
 - Export formats (including page images): [`export-formats.md`](export-formats.md)

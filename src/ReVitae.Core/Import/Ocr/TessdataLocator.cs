@@ -1,3 +1,5 @@
+using ReVitae.Core.Ai;
+
 namespace ReVitae.Core.Import.Ocr;
 
 internal static class TessdataLocator
@@ -42,11 +44,7 @@ internal static class TessdataLocator
 			candidates.Add(Path.Combine(baseDirectory, "tessdata"));
 		}
 
-		var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-		if (!string.IsNullOrWhiteSpace(localAppData))
-		{
-			candidates.Add(Path.Combine(localAppData, "ReVitae", "tessdata"));
-		}
+		candidates.Add(ReVitaeLocalDataPaths.GetTessdataDirectory());
 
 		var tessdataPrefix = Environment.GetEnvironmentVariable("TESSDATA_PREFIX");
 		if (!string.IsNullOrWhiteSpace(tessdataPrefix))

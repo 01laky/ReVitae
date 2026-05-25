@@ -4,6 +4,8 @@ using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
+using ReVitae.Core.Ai;
+
 namespace ReVitae.Core.Cv.ProfilePhoto;
 
 public sealed class ProfilePhotoStorage
@@ -109,13 +111,8 @@ public sealed class ProfilePhotoStorage
 		return !string.IsNullOrWhiteSpace(storedPath) && File.Exists(storedPath);
 	}
 
-	public static string GetDefaultStorageDirectory()
-	{
-		return Path.Combine(
-			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-			"ReVitae",
-			"profile-photos");
-	}
+	public static string GetDefaultStorageDirectory() =>
+		ReVitaeLocalDataPaths.GetProfilePhotosDirectory();
 
 	private ProfilePhotoSaveResult SaveNormalizedImage(Stream input, string extension, string? existingStoredPath)
 	{

@@ -39,85 +39,6 @@ public sealed class CvTextNormalizerEdgeCaseTests
 	}
 }
 
-public sealed class CvSectionSegmenterEdgeCaseTests
-{
-	[Fact]
-	public void Segment_DetectsSlovakHeaders()
-	{
-		const string text = """
-            Ján Novák
-            jan@example.com
-
-            Profil
-            Backend developer.
-
-            Pracovne skusenosti
-            Developer at Acme
-
-            Vzdelanie
-            STU Bratislava
-            """;
-
-		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
-
-		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Summary));
-		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.WorkExperience));
-		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Education));
-	}
-
-	[Fact]
-	public void Segment_DetectsContactSection()
-	{
-		const string text = """
-            Jane Doe
-
-            Contact
-            jane@example.com
-            +421 900 000 000
-            """;
-
-		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
-
-		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Contact));
-	}
-
-	[Fact]
-	public void Segment_MergesDuplicateSectionIds()
-	{
-		const string text = """
-            Jane Doe
-
-            Skills
-            C#, SQL
-
-            Technical Skills
-            React, TypeScript
-            """;
-
-		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
-
-		Assert.Single(result.SectionBodies, section => section.Key == CvImportSectionId.Skills);
-		Assert.Contains("C#, SQL", result.SectionBodies[CvImportSectionId.Skills], StringComparison.Ordinal);
-		Assert.Contains("React, TypeScript", result.SectionBodies[CvImportSectionId.Skills], StringComparison.Ordinal);
-	}
-
-	[Fact]
-	public void Segment_DoesNotTreatExperienceInsideSentenceAsHeader()
-	{
-		const string text = """
-            Jane Doe
-
-            Summary
-            Senior developer with 12 years of experience in web systems.
-            """;
-
-		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
-
-		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Summary));
-		Assert.False(result.SectionBodies.ContainsKey(CvImportSectionId.WorkExperience));
-	}
-}
-
 public sealed class DateRangeParserEdgeCaseTests
 {
 	[Theory]
@@ -621,37 +542,6 @@ public sealed class CvPdfImporterEdgeCaseTests
 		public PdfTextExtractionResult Extract(string filePath)
 		{
 			return new PdfTextExtractionResult(false, string.Empty, 0, errorKey);
-		}
-	}
-}
-
-public sealed class PdfPigTextExtractorEdgeCaseTests
-{
-	[Fact]
-	public void Extract_ReturnsFileNotFoundForMissingPath()
-	{
-		var result = new PdfPigTextExtractor().Extract(Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".pdf"));
-
-		Assert.False(result.Success);
-		Assert.Equal(TranslationKeys.ImportErrorFileNotFound, result.ErrorMessageKey);
-	}
-
-	[Fact]
-	public void Extract_ReturnsUnreadableForCorruptPdf()
-	{
-		var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".pdf");
-		File.WriteAllText(path, "not a valid pdf");
-
-		try
-		{
-			var result = new PdfPigTextExtractor().Extract(path);
-
-			Assert.False(result.Success);
-			Assert.Equal(TranslationKeys.ImportErrorUnreadablePdf, result.ErrorMessageKey);
-		}
-		finally
-		{
-			File.Delete(path);
 		}
 	}
 }

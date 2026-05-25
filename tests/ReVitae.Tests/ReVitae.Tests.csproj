@@ -22,6 +22,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\ReVitae.Core\ReVitae.Core.csproj" />
+		<ProjectReference Include="..\..\src\ReVitae\ReVitae.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

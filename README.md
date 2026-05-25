@@ -1,10 +1,10 @@
 # ReVitae
 
-[![App](https://img.shields.io/badge/app-0.2.4-blue)](https://github.com/01laky/ReVitae/releases)
+[![App](https://img.shields.io/badge/app-0.2.11-blue)](https://github.com/01laky/ReVitae/releases)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1601%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1845%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 [![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
@@ -324,6 +324,9 @@ CI runs the same lint and test pipeline on every push to `main` (see
 | `ImportPdfReimport` | yes | yes | no | flake guard (3× stress) |
 | `OcrIntegration` | yes | yes | no | no |
 | `ImportMatrix` (51 variants) | yes | no | no | yes |
+| `Projects` | yes | yes | yes | no |
+| `Ollama` | yes | yes | yes | no |
+| `ImportExtraction` / `ImportExtractionFuzz` | yes | yes | yes | no |
 
 Windows CI skips PDF re-import and OCR integration tests (PdfPig geometry and Tesseract
 differ on runners); Ubuntu covers them. `dotnet format` and markdown lint run on Ubuntu
@@ -334,11 +337,19 @@ Filter examples:
 ```bash
 dotnet test --filter "Category=ImportMatrix"
 dotnet test --filter "Category=ImportPdfReimport"
+dotnet test --filter "Category=Projects"
+dotnet test --filter "Category=Ollama"
+dotnet test --filter "Category=ImportExtraction"
 ```
+
+### Test-count drift guard
+
+After each release, `TestCountBaselineTests.MinimumTestCount` and the README badge must
+match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` on Ubuntu.
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **1600+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **1840+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash

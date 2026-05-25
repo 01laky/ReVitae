@@ -4,9 +4,9 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using ReVitae.Core.AppPreferences;
 using ReVitae.Core.Ai;
 using ReVitae.Core.Ai.Providers;
-using ReVitae.Core.AppPreferences;
 using ReVitae.Core.Localization;
 using ReVitae.Core.Projects;
 using ReVitae.Ui.Quality;
@@ -19,29 +19,20 @@ public partial class MainWindow
 {
 	private readonly AppPreferencesService _appPreferencesService = new();
 
-	private enum FirstLaunchAiWizardStep
-	{
-		Welcome,
-		ChoosePath,
-		LocalSetup,
-		OnlineSetup,
-		Complete,
-	}
+	private readonly FirstLaunchAiWizardController _firstLaunchAiWizardController = new();
 
-	private enum FirstLaunchAiWizardCompleteKind
-	{
-		RemindLater,
-		DeclinedOffline,
-		ActiveLocal,
-		ActiveOnline,
-		DownloadInProgress,
-	}
+	private FirstLaunchAiWizardStep FirstLaunchWizardStep => _firstLaunchAiWizardController.State.Step;
 
-	private FirstLaunchAiWizardStep _firstLaunchAiWizardStep = FirstLaunchAiWizardStep.Welcome;
-	private FirstLaunchAiWizardCompleteKind _firstLaunchAiWizardCompleteKind = FirstLaunchAiWizardCompleteKind.RemindLater;
-	private bool _wizardSuspendedForSubModal;
-	private bool _wizardReturnToWelcomeAfterSetup;
-	private bool _wizardManualRerun;
+	private FirstLaunchAiWizardCompleteKind FirstLaunchWizardCompleteKind =>
+		_firstLaunchAiWizardController.State.CompleteKind;
+
+	private bool WizardSuspendedForSubModal => _firstLaunchAiWizardController.State.IsSuspendedForSubModal;
+
+	private bool WizardManualRerun => _firstLaunchAiWizardController.State.ManualRerun;
+
+	private bool WizardReturnToWelcomeAfterSetup =>
+		_firstLaunchAiWizardController.State.ReturnToWelcomeAfterSetup;
+
 	private bool _isUpdatingWizardLanguageSelection;
 
 	private void InitializeFirstLaunchAiWizard()
@@ -57,7 +48,7 @@ public partial class MainWindow
 
 	internal void TryShowFirstLaunchAiWizardOnOpened()
 	{
-		if (_wizardManualRerun)
+		if (WizardManualRerun)
 		{
 			return;
 		}
@@ -78,10 +69,7 @@ public partial class MainWindow
 
 	private void OpenFirstLaunchAiWizard(bool manualRerun)
 	{
-		_wizardManualRerun = manualRerun;
-		_wizardSuspendedForSubModal = false;
-		_wizardReturnToWelcomeAfterSetup = false;
-		_firstLaunchAiWizardStep = FirstLaunchAiWizardStep.Welcome;
+		_firstLaunchAiWizardController.Open(manualRerun);
 		HideOtherContentModals(FirstLaunchAiWizardOverlay);
 		SetIntroModalVisible(false);
 		SetFirstLaunchAiWizardVisible(true);
@@ -106,9 +94,9 @@ public partial class MainWindow
 		UpdateModalSizes();
 		UpdateAiPromotionsUiVisibility();
 
-		if (!isVisible && !_wizardSuspendedForSubModal)
+		if (!isVisible && !WizardSuspendedForSubModal)
 		{
-			_wizardManualRerun = false;
+			_firstLaunchAiWizardController.Close();
 			if (!HasActiveCvSession() && !CvProjectService.RecoveryExists())
 			{
 				SetIntroModalVisible(true);
@@ -123,33 +111,22 @@ public partial class MainWindow
 
 	private void FinalizeFirstLaunchAiWizardAndClose()
 	{
-		_wizardSuspendedForSubModal = false;
 		SetFirstLaunchAiWizardVisible(false);
 	}
 
 	private void OnFirstLaunchAiWizardNextClicked(object? sender, RoutedEventArgs e)
 	{
-		if (_firstLaunchAiWizardStep == FirstLaunchAiWizardStep.Welcome)
+		if (FirstLaunchWizardStep == FirstLaunchAiWizardStep.Welcome)
 		{
-			NavigateFirstLaunchAiWizardTo(FirstLaunchAiWizardStep.ChoosePath);
+			_firstLaunchAiWizardController.HandleNext();
+			UpdateFirstLaunchAiWizardStepUi();
 		}
 	}
 
 	private void OnFirstLaunchAiWizardBackClicked(object? sender, RoutedEventArgs e)
 	{
-		switch (_firstLaunchAiWizardStep)
-		{
-			case FirstLaunchAiWizardStep.ChoosePath:
-				NavigateFirstLaunchAiWizardTo(FirstLaunchAiWizardStep.Welcome);
-				break;
-			case FirstLaunchAiWizardStep.LocalSetup:
-			case FirstLaunchAiWizardStep.OnlineSetup:
-				NavigateFirstLaunchAiWizardTo(FirstLaunchAiWizardStep.ChoosePath);
-				break;
-			case FirstLaunchAiWizardStep.Complete:
-				NavigateFirstLaunchAiWizardTo(FirstLaunchAiWizardStep.ChoosePath);
-				break;
-		}
+		_firstLaunchAiWizardController.HandleBack();
+		UpdateFirstLaunchAiWizardStepUi();
 	}
 
 	private void OnFirstLaunchAiWizardSkipFooterClicked(object? sender, RoutedEventArgs e) =>
@@ -157,7 +134,7 @@ public partial class MainWindow
 
 	private void OnFirstLaunchAiWizardGetStartedClicked(object? sender, RoutedEventArgs e)
 	{
-		if (_firstLaunchAiWizardCompleteKind is FirstLaunchAiWizardCompleteKind.ActiveLocal
+		if (FirstLaunchWizardCompleteKind is FirstLaunchAiWizardCompleteKind.ActiveLocal
 			or FirstLaunchAiWizardCompleteKind.ActiveOnline
 			or FirstLaunchAiWizardCompleteKind.DownloadInProgress)
 		{
@@ -199,7 +176,7 @@ public partial class MainWindow
 
 	private void OnFirstLaunchAiWizardMoreProvidersClicked(object? sender, RoutedEventArgs e)
 	{
-		_wizardSuspendedForSubModal = true;
+		_firstLaunchAiWizardController.SuspendForSubModal();
 		FirstLaunchAiWizardOverlay.IsVisible = false;
 		SetAiSetupModalVisible(true);
 		AiSetupOnlineProvidersExpander.IsExpanded = true;
@@ -208,8 +185,7 @@ public partial class MainWindow
 
 	private void OnFirstLaunchAiWizardChangeLanguageClicked(object? sender, RoutedEventArgs e)
 	{
-		_wizardSuspendedForSubModal = true;
-		_wizardReturnToWelcomeAfterSetup = true;
+		_firstLaunchAiWizardController.SuspendForSubModal(returnToWelcomeAfterSetup: true);
 		FirstLaunchAiWizardOverlay.IsVisible = false;
 		SetSetupModalVisible(true);
 	}
@@ -234,13 +210,12 @@ public partial class MainWindow
 
 	private void ResumeFirstLaunchAiWizardAfterSubModal(FirstLaunchAiWizardStep step)
 	{
-		if (!_wizardSuspendedForSubModal)
+		if (!WizardSuspendedForSubModal)
 		{
 			return;
 		}
 
-		_wizardSuspendedForSubModal = false;
-		_firstLaunchAiWizardStep = step;
+		_firstLaunchAiWizardController.ResumeAfterSubModal(step);
 		HideOtherContentModals(FirstLaunchAiWizardOverlay);
 		SetIntroModalVisible(false);
 		FirstLaunchAiWizardOverlay.IsVisible = true;
@@ -258,7 +233,7 @@ public partial class MainWindow
 
 	private void ConfirmAndSkipFirstLaunchAiWizard()
 	{
-		if (_firstLaunchAiWizardStep == FirstLaunchAiWizardStep.Complete)
+		if (FirstLaunchWizardStep == FirstLaunchAiWizardStep.Complete)
 		{
 			return;
 		}
@@ -269,21 +244,21 @@ public partial class MainWindow
 
 	private void NavigateFirstLaunchAiWizardTo(FirstLaunchAiWizardStep step)
 	{
-		_firstLaunchAiWizardStep = step;
+		_firstLaunchAiWizardController.NavigateTo(step);
 		UpdateFirstLaunchAiWizardStepUi();
 	}
 
 	private void ShowFirstLaunchAiWizardComplete(FirstLaunchAiWizardCompleteKind kind)
 	{
-		_firstLaunchAiWizardCompleteKind = kind;
-		NavigateFirstLaunchAiWizardTo(FirstLaunchAiWizardStep.Complete);
+		_firstLaunchAiWizardController.ShowComplete(kind);
+		UpdateFirstLaunchAiWizardStepUi();
 		UpdateFirstLaunchAiWizardCompleteSummary();
 	}
 
 	private void UpdateFirstLaunchAiWizardCompleteSummary()
 	{
 		var snapshot = ActiveBackendService.GetActiveSnapshot();
-		var summary = _firstLaunchAiWizardCompleteKind switch
+		var summary = FirstLaunchWizardCompleteKind switch
 		{
 			FirstLaunchAiWizardCompleteKind.ActiveLocal when snapshot.Kind == AiBackendKind.Local =>
 				_localizer.Format(
@@ -307,29 +282,21 @@ public partial class MainWindow
 
 	private void UpdateFirstLaunchAiWizardStepUi()
 	{
-		var stepNumber = _firstLaunchAiWizardStep switch
-		{
-			FirstLaunchAiWizardStep.Welcome => 1,
-			FirstLaunchAiWizardStep.ChoosePath => 2,
-			FirstLaunchAiWizardStep.LocalSetup => 3,
-			FirstLaunchAiWizardStep.OnlineSetup => 3,
-			FirstLaunchAiWizardStep.Complete => 4,
-			_ => 1,
-		};
+		var stepNumber = _firstLaunchAiWizardController.GetStepNumber();
 
 		FirstLaunchAiWizardStepIndicatorTextBlock.Text =
 			_localizer.Format(TranslationKeys.FirstLaunchAiWizardStepIndicator, stepNumber, 4);
 
-		FirstLaunchAiWizardWelcomePanel.IsVisible = _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.Welcome;
-		FirstLaunchAiWizardChoosePathPanel.IsVisible = _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.ChoosePath;
-		FirstLaunchAiWizardLocalPanel.IsVisible = _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.LocalSetup;
-		FirstLaunchAiWizardOnlinePanel.IsVisible = _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.OnlineSetup;
-		FirstLaunchAiWizardCompletePanel.IsVisible = _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.Complete;
+		FirstLaunchAiWizardWelcomePanel.IsVisible = FirstLaunchWizardStep == FirstLaunchAiWizardStep.Welcome;
+		FirstLaunchAiWizardChoosePathPanel.IsVisible = FirstLaunchWizardStep == FirstLaunchAiWizardStep.ChoosePath;
+		FirstLaunchAiWizardLocalPanel.IsVisible = FirstLaunchWizardStep == FirstLaunchAiWizardStep.LocalSetup;
+		FirstLaunchAiWizardOnlinePanel.IsVisible = FirstLaunchWizardStep == FirstLaunchAiWizardStep.OnlineSetup;
+		FirstLaunchAiWizardCompletePanel.IsVisible = FirstLaunchWizardStep == FirstLaunchAiWizardStep.Complete;
 
-		FirstLaunchAiWizardBackButton.IsVisible = _firstLaunchAiWizardStep is not FirstLaunchAiWizardStep.Welcome;
-		FirstLaunchAiWizardNextButton.IsVisible = _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.Welcome;
-		FirstLaunchAiWizardSkipFooterButton.IsVisible = _firstLaunchAiWizardStep != FirstLaunchAiWizardStep.Complete;
-		FirstLaunchAiWizardGetStartedButton.IsVisible = _firstLaunchAiWizardStep == FirstLaunchAiWizardStep.Complete;
+		FirstLaunchAiWizardBackButton.IsVisible = FirstLaunchWizardStep is not FirstLaunchAiWizardStep.Welcome;
+		FirstLaunchAiWizardNextButton.IsVisible = FirstLaunchWizardStep == FirstLaunchAiWizardStep.Welcome;
+		FirstLaunchAiWizardSkipFooterButton.IsVisible = FirstLaunchWizardStep != FirstLaunchAiWizardStep.Complete;
+		FirstLaunchAiWizardGetStartedButton.IsVisible = FirstLaunchWizardStep == FirstLaunchAiWizardStep.Complete;
 	}
 
 	private void ApplyFirstLaunchAiWizardDetectionResult(AiSystemDetectionResult detectionResult)
@@ -386,7 +353,7 @@ public partial class MainWindow
 
 	private void UpdateFirstLaunchAiWizardLocalDownloadButtonState()
 	{
-		if (_firstLaunchAiWizardStep != FirstLaunchAiWizardStep.LocalSetup || _aiDetectionResult is null)
+		if (FirstLaunchWizardStep != FirstLaunchAiWizardStep.LocalSetup || _aiDetectionResult is null)
 		{
 			FirstLaunchAiWizardLocalDownloadButton.IsEnabled = false;
 			return;
@@ -421,7 +388,7 @@ public partial class MainWindow
 		_appPreferencesService.ClearHideAiPromotionsOnBackendActivated();
 		UpdateAiPromotionsUiVisibility();
 
-		if (!FirstLaunchAiWizardOverlay.IsVisible && !_wizardSuspendedForSubModal)
+		if (!FirstLaunchAiWizardOverlay.IsVisible && !WizardSuspendedForSubModal)
 		{
 			return;
 		}
@@ -439,7 +406,7 @@ public partial class MainWindow
 
 	internal void OnFirstLaunchAiWizardDownloadStarted()
 	{
-		if (FirstLaunchAiWizardOverlay.IsVisible || _wizardSuspendedForSubModal)
+		if (FirstLaunchAiWizardOverlay.IsVisible || WizardSuspendedForSubModal)
 		{
 			ShowFirstLaunchAiWizardComplete(FirstLaunchAiWizardCompleteKind.DownloadInProgress);
 		}
@@ -499,7 +466,7 @@ public partial class MainWindow
 		AutomationProperties.SetName(FirstLaunchAiWizardPathOfflineButton,
 			$"{_localizer.Get(TranslationKeys.FirstLaunchAiWizardPathOfflineTitle)}. {_localizer.Get(TranslationKeys.FirstLaunchAiWizardPathOfflineSubtitle)}");
 
-		if (_firstLaunchAiWizardStep == FirstLaunchAiWizardStep.Complete)
+		if (FirstLaunchWizardStep == FirstLaunchAiWizardStep.Complete)
 		{
 			UpdateFirstLaunchAiWizardCompleteSummary();
 		}

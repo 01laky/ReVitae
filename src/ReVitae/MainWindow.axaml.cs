@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Media;
+using ReVitae.Core.AppPreferences;
 using ReVitae.Core;
 using ReVitae.Core.Cv;
 using ReVitae.Core.Cv.AdditionalInformation;
@@ -973,9 +974,8 @@ public partial class MainWindow : Window
 		{
 			HideOtherContentModals(SetupModalOverlay);
 		}
-		else if (_wizardReturnToWelcomeAfterSetup)
+		else if (WizardReturnToWelcomeAfterSetup)
 		{
-			_wizardReturnToWelcomeAfterSetup = false;
 			ResumeFirstLaunchAiWizardAfterSubModal(FirstLaunchAiWizardStep.Welcome);
 			return;
 		}
@@ -1535,7 +1535,7 @@ public partial class MainWindow : Window
 	{
 		if (!ReferenceEquals(FirstLaunchAiWizardOverlay, activeModal))
 		{
-			if (FirstLaunchAiWizardOverlay.IsVisible && !_wizardSuspendedForSubModal)
+			if (FirstLaunchAiWizardOverlay.IsVisible && !WizardSuspendedForSubModal)
 			{
 				CancelAiDetectionOnly();
 			}
