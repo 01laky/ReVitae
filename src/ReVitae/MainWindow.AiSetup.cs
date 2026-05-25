@@ -9,7 +9,6 @@ using ReVitae.Core.Ai;
 using ReVitae.Core.Ai.Download;
 using ReVitae.Core.Ai.Ollama;
 using ReVitae.Core.Ai.Providers;
-using ReVitae.Core.AppPreferences;
 using ReVitae.Core.Localization;
 using System;
 using System.Collections.Generic;

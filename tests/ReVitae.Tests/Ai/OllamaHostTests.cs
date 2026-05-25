@@ -30,6 +30,9 @@ public sealed class OllamaStartupHelperTests
 	[Fact]
 	public async Task EnsureReachableAsync_ReturnsErrorKeyWhenUnreachable()
 	{
+		var expectedErrorKey = OllamaPaths.IsManagedInstallPresent()
+			? TranslationKeys.AiSetupOllamaNotRunning
+			: TranslationKeys.AiSetupOllamaInstallFailed;
 		var probe = new AlwaysUnreachableProbe();
 		var installer = new NoOpOllamaInstaller(shouldSucceed: false);
 		var result = await OllamaStartupHelper.EnsureReachableAsync(
@@ -39,11 +42,7 @@ public sealed class OllamaStartupHelperTests
 			allowInstall: true);
 
 		Assert.False(result.Status.IsReachable);
-		Assert.Equal(
-			OllamaPaths.IsManagedInstallPresent()
-				? TranslationKeys.AiSetupOllamaNotRunning
-				: TranslationKeys.AiSetupOllamaInstallFailed,
-			result.ErrorMessageKey);
+		Assert.Equal(expectedErrorKey, result.ErrorMessageKey);
 	}
 
 	private sealed class NoOpOllamaInstaller(bool shouldSucceed) : IOllamaInstaller

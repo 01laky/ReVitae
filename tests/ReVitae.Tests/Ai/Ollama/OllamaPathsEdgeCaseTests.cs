@@ -8,12 +8,14 @@ public sealed class OllamaPathsEdgeCaseTests : IDisposable
 {
 	private readonly string? _originalLocalAppData;
 	private readonly string _tempRoot;
+	private readonly bool _hadManagedInstallBefore;
 
 	public OllamaPathsEdgeCaseTests()
 	{
 		_tempRoot = Path.Combine(Path.GetTempPath(), "revitae-ollama-paths", Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(_tempRoot);
 		_originalLocalAppData = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+		_hadManagedInstallBefore = OllamaPaths.IsManagedInstallPresent();
 		Environment.SetEnvironmentVariable("LOCALAPPDATA", _tempRoot);
 	}
 
@@ -120,6 +122,11 @@ public sealed class OllamaPathsEdgeCaseTests : IDisposable
 		Environment.SetEnvironmentVariable("LOCALAPPDATA", _originalLocalAppData);
 		try
 		{
+			if (!_hadManagedInstallBefore && OllamaPaths.IsManagedInstallPresent())
+			{
+				Directory.Delete(OllamaPaths.GetManagedInstallDirectory(), recursive: true);
+			}
+
 			if (Directory.Exists(_tempRoot))
 			{
 				Directory.Delete(_tempRoot, recursive: true);

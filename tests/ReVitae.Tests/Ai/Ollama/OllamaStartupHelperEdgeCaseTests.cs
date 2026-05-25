@@ -166,6 +166,9 @@ public sealed class OllamaStartupHelperEdgeCaseTests
 		private readonly string? _originalLocalAppData;
 		private readonly string? _originalPath;
 		private readonly string _tempRoot;
+		private readonly bool _hadManagedInstallBefore;
+		private bool _createdManagedStub;
+		private bool _removedManagedInstall;
 
 		public OllamaEnvironmentScope(bool clearPath, bool hideManagedInstall)
 		{
@@ -173,15 +176,17 @@ public sealed class OllamaStartupHelperEdgeCaseTests
 			Directory.CreateDirectory(_tempRoot);
 			_originalLocalAppData = Environment.GetEnvironmentVariable("LOCALAPPDATA");
 			_originalPath = Environment.GetEnvironmentVariable("PATH");
+			_hadManagedInstallBefore = OllamaPaths.IsManagedInstallPresent();
 			Environment.SetEnvironmentVariable("LOCALAPPDATA", _tempRoot);
 			if (clearPath)
 			{
 				Environment.SetEnvironmentVariable("PATH", string.Empty);
 			}
 
-			if (hideManagedInstall)
+			if (hideManagedInstall && _hadManagedInstallBefore)
 			{
-				// Leave managed install absent.
+				RemoveManagedInstallDirectory();
+				_removedManagedInstall = true;
 			}
 		}
 
@@ -196,6 +201,7 @@ public sealed class OllamaStartupHelperEdgeCaseTests
 
 		public void CreateManagedInstallStub()
 		{
+			_createdManagedStub = true;
 			if (OperatingSystem.IsMacOS())
 			{
 				Directory.CreateDirectory(OllamaPaths.GetManagedMacAppBundlePath());
@@ -218,6 +224,15 @@ public sealed class OllamaStartupHelperEdgeCaseTests
 			Environment.SetEnvironmentVariable("PATH", _originalPath);
 			try
 			{
+				if (_createdManagedStub && !_hadManagedInstallBefore)
+				{
+					RemoveManagedInstallDirectory();
+				}
+				else if (_removedManagedInstall && _hadManagedInstallBefore)
+				{
+					CreateManagedInstallStub();
+				}
+
 				if (Directory.Exists(_tempRoot))
 				{
 					Directory.Delete(_tempRoot, recursive: true);

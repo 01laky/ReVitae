@@ -498,6 +498,7 @@ public sealed class AiModelDownloadCoordinatorTests
 	[Fact]
 	public async Task Coordinator_StartupRecover_BackoffExhausted_SetsFailed()
 	{
+		var expectedFailureKey = ExpectedUnreachableFailureKey();
 		var harness = CreateHarness();
 		harness.OllamaProbe.AlwaysUnreachable = true;
 		harness.OllamaInstaller.ShouldSucceed = false;
@@ -523,7 +524,7 @@ public sealed class AiModelDownloadCoordinatorTests
 
 		Assert.Equal(AiDownloadJobState.Failed, harness.Coordinator.CurrentSnapshot.State);
 		Assert.Equal(
-			ExpectedUnreachableFailureKey(),
+			expectedFailureKey,
 			harness.Coordinator.CurrentSnapshot.ErrorMessageKey);
 	}
 
@@ -539,6 +540,8 @@ public sealed class AiModelDownloadCoordinatorTests
 	[Fact]
 	public async Task Coordinator_TryStart_OllamaUnreachable_SetsFailedWithReachabilityKey()
 	{
+		var expectedFailureKey = ExpectedUnreachableFailureKey();
+		var expectedInstallCalls = OllamaPaths.IsManagedInstallPresent() ? 0 : 1;
 		var harness = CreateHarness();
 		harness.OllamaProbe.AlwaysUnreachable = true;
 		harness.OllamaInstaller.ShouldSucceed = false;
@@ -547,11 +550,9 @@ public sealed class AiModelDownloadCoordinatorTests
 
 		Assert.Equal(AiDownloadJobState.Failed, harness.Coordinator.CurrentSnapshot.State);
 		Assert.Equal(
-			ExpectedUnreachableFailureKey(),
+			expectedFailureKey,
 			harness.Coordinator.CurrentSnapshot.ErrorMessageKey);
-		Assert.Equal(
-			OllamaPaths.IsManagedInstallPresent() ? 0 : 1,
-			harness.OllamaInstaller.InstallCallCount);
+		Assert.Equal(expectedInstallCalls, harness.OllamaInstaller.InstallCallCount);
 	}
 
 	[Fact]
