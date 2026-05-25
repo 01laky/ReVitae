@@ -14,6 +14,7 @@ public static class JohnDoeVariantGenerator
         return spec.Kind switch
         {
             JohnDoeVariantKind.PdfTemplate => GeneratePdf(spec, document),
+            JohnDoeVariantKind.DeferredSidebarPdf => GenerateDeferredSidebarPdf(spec),
             JohnDoeVariantKind.PlainTextProfile => GeneratePlainText(spec, document),
             JohnDoeVariantKind.MarkdownExport => GenerateExported(spec, document, CvExportFormat.Markdown),
             JohnDoeVariantKind.HtmlExport => GenerateExported(spec, document, CvExportFormat.Html),
@@ -25,6 +26,12 @@ public static class JohnDoeVariantGenerator
     private static GeneratedJohnDoeVariantFile GeneratePdf(JohnDoeVariantSpec spec, CvExportDocument document)
     {
         var bytes = new QuestPdfCvExporter().Export(document);
+        return GeneratedJohnDoeVariantFile.Write(spec, bytes);
+    }
+
+    private static GeneratedJohnDoeVariantFile GenerateDeferredSidebarPdf(JohnDoeVariantSpec spec)
+    {
+        var bytes = SidebarLayoutPdfWriter.Create(SidebarLayoutPdfWriter.CreateDeferredSidebarStressLayout());
         return GeneratedJohnDoeVariantFile.Write(spec, bytes);
     }
 

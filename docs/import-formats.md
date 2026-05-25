@@ -91,7 +91,7 @@ rather than network or file disclosure.
   multi-column layout — prefer `*.revitae.json` for round-trip.
 - **Raster images:** JPEG, PNG, WebP, TIFF, and BMP import via OCR when Tesseract
   is available; otherwise `ImportErrorOcrUnavailable`. CV **page images exported**
-  from ReVitae (prompt **031**) re-enter through this OCR path — not structured import.
+  from ReVitae re-enter through this OCR path — not structured import.
 - **Password-protected Office/PDF:** rejected where libraries surface encryption.
 - **Perfect fidelity:** imports are **draft data**. Complex layouts (multi-column,
   text boxes, drawings) may collapse ordering or lose sidebar context.
@@ -105,31 +105,69 @@ rather than network or file disclosure.
 ## AI-assisted fallback
 
 When deterministic text import **fails** or returns a **thin / low-confidence**
-draft, ReVitae can offer optional **batched AI extraction** (prompt **040**).
+draft, ReVitae can offer optional **batched AI extraction**.
 This applies only to **text routes** — structured mapper success with enough
 sections skips AI automatically.
 
 - Input to the model is **normalized plain text** only (no PDF/image bytes in v1).
 - User must **review and Apply** — the form is not changed silently.
 - Profile photos are **not** extracted from documents; see [`ai-import.md`](ai-import.md).
+- A successful **ReVitae PDF round-trip** usually yields enough populated sections
+  that the AI banner does not appear.
+
+## ReVitae PDF round-trip
+
+Deterministic re-import of **PDFs exported from ReVitae** (QuestPDF templates with a
+text layer) — without OCR or AI when the text layer is usable.
+
+### Export fingerprint
+
+Each QuestPDF export writes PDF Info metadata readable by PdfPig:
+
+| Key        | Example                  |
+| ---------- | ------------------------ |
+| `Producer` | `ReVitae`                |
+| `Creator`  | `ReVitae/0.2.0`          |
+| `Keywords` | `template:ModernSidebar` |
+
+Import uses metadata first, then layout heuristics (`ReVitaePdfExportHints`,
+`ReVitaePdfLayoutProfile` per `CvExportTemplateId`).
+
+### Supported templates (matrix)
+
+Regression covers **12** QuestPDF layouts in the John Doe matrix (**01–10**, **49–50**)
+plus variant **51** (deferred-sidebar synthetic PDF). Tier **A** (`PdfFull`): variant
+**01** (Modern Sidebar stress). Tier **B** (`PdfSidebarCounts`): **02**, **07**, **49**.
+Other matrix PDFs use relaxed `PdfTemplateLayout` floors (≥ 20 items, no skill dump).
+
+### Preferred round-trip
+
+**`*.revitae.json`** remains the power-user interchange. PDF re-import targets
+**export PDF → edit elsewhere → re-import PDF**.
+
+### Committed stress fixture
+
+`tests/ReVitae.Tests/Import/Fixtures/JohnDoeStressCv.pdf` — regenerate when export
+layout or `JohnDoeStressCvDataset` changes:
+
+```bash
+dotnet run --project scripts/GenerateJohnDoeStressPdf/GenerateJohnDoeStressPdf.csproj
+```
 
 ## Regression testing
 
 The **John Doe import matrix** (`tests/ReVitae.Tests/Import/JohnDoeImportRegressionMatrixTests`,
-trait `ImportMatrix`) generates **50** fully populated CV files at runtime from
-`JohnDoeStressCvDataset` and asserts:
+trait `ImportMatrix`) generates **51** fully populated CV files at runtime from
+`JohnDoeStressCvDataset` (and synthetic PDF variant **51**) and asserts:
 
 - successful import per variant,
 - canonical section counts and spot checks,
 - **zero post-import form validation errors** (same validators as the UI).
 
-Filter locally: `dotnet test --filter Category=ImportMatrix`. See
-[`../prompts/035-john-doe-import-regression-matrix.md`](../prompts/035-john-doe-import-regression-matrix.md).
+Filter locally: `dotnet test --filter Category=ImportMatrix`.
 
 ## Related docs
 
 - Export formats (including page images): [`export-formats.md`](export-formats.md)
 - AI-assisted import fallback: [`ai-import.md`](ai-import.md)
 - Native interchange schema: [`revitae-project-json.md`](revitae-project-json.md)
-- Product prompt and rationale: [`../prompts/021-multi-format-cv-import.md`](../prompts/021-multi-format-cv-import.md)
-- Profile photo upload and template integration: [`../prompts/023-profile-picture-upload.md`](../prompts/023-profile-picture-upload.md)

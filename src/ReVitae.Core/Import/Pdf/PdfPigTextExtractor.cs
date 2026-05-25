@@ -1,4 +1,5 @@
 using ReVitae.Core.Import;
+using ReVitae.Core.Import.Extraction;
 using ReVitae.Core.Localization;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
@@ -22,6 +23,11 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
             using var document = PdfDocument.Open(filePath);
             CvImportDiagnosticsLogger.LogStep("pdfpig", $"Opened PDF: {document.NumberOfPages} page(s)");
 
+            var (metadataTemplateId, metadataIsReVitae) = ReVitaePdfMetadataReader.Read(document);
+            var layoutProfile = metadataTemplateId is { } templateId
+                ? ReVitaePdfLayoutProfiles.Get(templateId)
+                : ReVitaePdfLayoutProfiles.DefaultTwoColumn;
+
             var mainChunks = new List<string>();
             string? deferredSidebar = null;
             var hyperlinkUrls = new List<string>();
@@ -30,7 +36,7 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
             foreach (var page in document.GetPages())
             {
                 pageIndex++;
-                var (mainText, sidebarText) = ExtractPageColumns(page, pageIndex);
+                var (mainText, sidebarText) = ExtractPageColumns(page, pageIndex, layoutProfile);
                 if (!string.IsNullOrWhiteSpace(mainText))
                 {
                     mainChunks.Add(mainText);
@@ -59,6 +65,7 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
                 }
             }
 
+            var usesDeferredSidebar = !string.IsNullOrWhiteSpace(deferredSidebar) && mainChunks.Count > 1;
             var chunks = new List<string>(mainChunks);
             if (!string.IsNullOrWhiteSpace(deferredSidebar))
             {
@@ -75,12 +82,31 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
                 return new PdfTextExtractionResult(false, string.Empty, document.NumberOfPages, TranslationKeys.ImportErrorEmptyPdf);
             }
 
+            var hints = ReVitaePdfExportHintsBuilder.Build(
+                metadataTemplateId,
+                metadataIsReVitae,
+                text,
+                usesDeferredSidebar);
+
+            if (hints.TemplateId is { } resolvedTemplateId)
+            {
+                layoutProfile = ReVitaePdfLayoutProfiles.Get(resolvedTemplateId);
+            }
+
             CvImportDiagnosticsLogger.LogStep(
                 "pdfpig",
                 $"Success: {text.Length} chars, {text.Count(c => !char.IsWhiteSpace(c))} non-whitespace, " +
-                $"mainChunks={mainChunks.Count}, hyperlinks={hyperlinkUrls.Count}");
+                $"mainChunks={mainChunks.Count}, hyperlinks={hyperlinkUrls.Count}, " +
+                $"reVitae={hints.IsLikelyReVitaeExport}, template={hints.TemplateId?.ToString() ?? "none"}, " +
+                $"split={layoutProfile.SidebarWidthRatio?.ToString("F2") ?? "single-column"}");
 
-            return new PdfTextExtractionResult(true, text, document.NumberOfPages, null, hyperlinkUrls);
+            return new PdfTextExtractionResult(
+                true,
+                text,
+                document.NumberOfPages,
+                null,
+                hyperlinkUrls,
+                hints);
         }
         catch (UglyToad.PdfPig.Exceptions.PdfDocumentEncryptedException)
         {
@@ -94,7 +120,10 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
         }
     }
 
-    private static (string MainText, string? SidebarText) ExtractPageColumns(Page page, int pageIndex)
+    private static (string MainText, string? SidebarText) ExtractPageColumns(
+        Page page,
+        int pageIndex,
+        ReVitaePdfLayoutProfile layoutProfile)
     {
         var words = page.GetWords().ToArray();
         if (words.Length == 0)
@@ -106,7 +135,16 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
             return (fallback, null);
         }
 
-        var columns = SplitIntoColumns(page, words);
+        if (layoutProfile.ColumnKind is ReVitaePdfColumnKind.SingleColumn)
+        {
+            var single = ExtractColumnText(words);
+            CvImportDiagnosticsLogger.LogStep(
+                "pdfpig",
+                $"Page {pageIndex}: single-column profile, {words.Length} words → {single.Length} chars");
+            return (single, null);
+        }
+
+        var columns = SplitIntoColumns(page, words, layoutProfile);
         if (columns.Count != 2)
         {
             var single = ExtractColumnText(columns[0]);
@@ -119,17 +157,21 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
         var ordered = columns.OrderByDescending(ColumnWidth).ToArray();
         var main = ExtractColumnText(ordered[0]);
         var sidebar = ExtractColumnText(ordered[1]);
+        var splitRatio = layoutProfile.SidebarWidthRatio ?? ReVitaePdfLayoutProfiles.DefaultSidebarRatio;
         CvImportDiagnosticsLogger.LogStep(
             "pdfpig",
             $"Page {pageIndex}: two columns — main={main.Length} chars, sidebar={sidebar.Length} chars " +
-            $"(splitX={page.Width * 0.34:F0})");
+            $"(splitX={page.Width * splitRatio:F0}, kind={layoutProfile.ColumnKind})");
         return (main, sidebar);
     }
 
     private static double ColumnWidth(IReadOnlyList<Word> words) =>
         words.Max(word => word.BoundingBox.Right) - words.Min(word => word.BoundingBox.Left);
 
-    private static IReadOnlyList<IReadOnlyList<Word>> SplitIntoColumns(Page page, IReadOnlyList<Word> words)
+    private static IReadOnlyList<IReadOnlyList<Word>> SplitIntoColumns(
+        Page page,
+        IReadOnlyList<Word> words,
+        ReVitaePdfLayoutProfile layoutProfile)
     {
         var pageWidth = page.Width;
         if (pageWidth < 80)
@@ -137,9 +179,8 @@ public sealed class PdfPigTextExtractor : IPdfTextExtractor
             return [words];
         }
 
-        // ModernSidebar and similar templates use a ~34% left sidebar. Page-width split
-        // with word center keeps section headers like "Work Experience" on one line.
-        var splitX = pageWidth * 0.34;
+        var splitRatio = layoutProfile.SidebarWidthRatio ?? ReVitaePdfLayoutProfiles.DefaultSidebarRatio;
+        var splitX = pageWidth * splitRatio;
         var left = words.Where(word => WordCenterX(word) <= splitX).ToArray();
         var right = words.Where(word => WordCenterX(word) > splitX).ToArray();
 

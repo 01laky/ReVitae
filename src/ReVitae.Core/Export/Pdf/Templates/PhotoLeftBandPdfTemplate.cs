@@ -7,7 +7,7 @@ internal static class PhotoLeftBandPdfTemplate
 {
     public static byte[] Render(CvExportDocument document)
     {
-        return Document.Create(container =>
+        return CvPdfRenderHelper.Generate(document, container =>
         {
             container.Page(page =>
             {
@@ -44,6 +44,6 @@ internal static class PhotoLeftBandPdfTemplate
                     });
                 });
             });
-        }).GeneratePdf();
+        });
     }
 }

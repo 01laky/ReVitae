@@ -29,6 +29,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Import\Fixtures\Pdf\%(Filename)%(Extension)</Link>
     </None>
+    <None Include="Import\Fixtures\JohnDoeStressCv.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Import\Fixtures\JohnDoeStressCv.pdf</Link>
+    </None>
     <None Include="Import\Fixtures\ReVitaeExportedSidebarCv.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Import\Fixtures\ReVitaeExportedSidebarCv.pdf</Link>

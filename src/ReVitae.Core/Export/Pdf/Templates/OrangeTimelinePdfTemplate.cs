@@ -9,7 +9,7 @@ internal static class OrangeTimelinePdfTemplate
 
     public static byte[] Render(CvExportDocument document)
     {
-        return Document.Create(container =>
+        return CvPdfRenderHelper.Generate(document, container =>
         {
             container.Page(page =>
             {
@@ -51,7 +51,7 @@ internal static class OrangeTimelinePdfTemplate
                     });
                 });
             });
-        }).GeneratePdf();
+        });
     }
 
     private static void ComposeTimelineSection(ColumnDescriptor column, string title, string content)

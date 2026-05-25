@@ -60,7 +60,7 @@ Image ZIP names use `SuggestImageZipFilename` → `{First}_{Last}_CV_images.zip`
 JSON/XML variants disambiguate via extension or suffix (see catalog in
 `CvExportFormatCatalog`).
 
-## Page image export (prompt 031)
+## Page image export
 
 | Option       | Values                      | Default |
 | ------------ | --------------------------- | ------- |

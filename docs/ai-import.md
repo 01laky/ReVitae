@@ -3,14 +3,13 @@
 ReVitae uses a **deterministic-first** import pipeline (PdfPig, OCR, heuristics,
 structured mappers). When that path fails or produces a thin draft, you can
 optionally run **batched AI extraction** through the same active backend as
-**Improve with AI** (prompt **039**).
+**Improve with AI**.
 
 AI import is **never silent**: you always review a section summary diff before
 anything is applied to the form.
 
 See also: [`import-formats.md`](import-formats.md) (format routing),
-[`ai-setup.md`](ai-setup.md) (backend configuration),
-[`../prompts/040-ai-assisted-cv-import.md`](../prompts/040-ai-assisted-cv-import.md) (full spec).
+[`ai-setup.md`](ai-setup.md) (backend configuration).
 
 ## Overview
 
@@ -36,6 +35,11 @@ flowchart LR
 
 Structured imports (`.revitae.json`, JSON Resume, Europass, CSV with mapper success,
 **≥ 5 populated sections**) skip the AI path.
+
+**ReVitae-owned PDF exports:** when PdfPig + ReVitae-aware heuristics
+recover a rich draft (typically **> 2** populated sections), the **Enhance with AI**
+banner usually does not appear. AI remains available for scanned PDFs, third-party
+layouts, and thin parses.
 
 ## When AI import is offered
 

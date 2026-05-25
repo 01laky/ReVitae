@@ -141,7 +141,7 @@ Empty shells fail with `TranslationKeys.ImportErrorNoStructuredData`.
 Prefer **`your-name.revitae.json`** so detectors classify the file without
 reading multi‑megabyte payloads twice.
 
-## Project save/load (prompt 041)
+## Project save/load
 
 The desktop app saves editable CV **projects** to the same native JSON interchange
 format. **Save** / **Save As** / **Open** use `CvProjectSerializer` in

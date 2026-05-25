@@ -1,3 +1,5 @@
+using ReVitae.Core.Import.Pdf;
+
 namespace ReVitae.Core.Import.Extraction;
 
 /// <summary>Unified text extraction envelope for Category A imports (replacing PDF-only results).</summary>
@@ -10,4 +12,5 @@ public sealed record CvTextExtractionResult(
     int? PageCount = null,
     CvTextAcquisitionStrategy? Strategy = null,
     string? OcrEngineName = null,
-    string? OcrLanguages = null);
+    string? OcrLanguages = null,
+    ReVitaePdfExportHints? ReVitaeHints = null);

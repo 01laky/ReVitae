@@ -11,7 +11,7 @@ internal static class CleanTopHeaderPdfTemplate
     {
         var hasPhoto = ProfilePhotoStorage.FileExists(document.PhotoPath);
 
-        return Document.Create(container =>
+        return CvPdfRenderHelper.Generate(document, container =>
         {
             container.Page(page =>
             {
@@ -55,6 +55,6 @@ internal static class CleanTopHeaderPdfTemplate
                     });
                 });
             });
-        }).GeneratePdf();
+        });
     }
 }

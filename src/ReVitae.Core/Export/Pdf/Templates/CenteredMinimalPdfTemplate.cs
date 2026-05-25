@@ -8,7 +8,7 @@ internal static class CenteredMinimalPdfTemplate
 {
     public static byte[] Render(CvExportDocument document)
     {
-        return Document.Create(container =>
+        return CvPdfRenderHelper.Generate(document, container =>
         {
             container.Page(page =>
             {
@@ -29,7 +29,7 @@ internal static class CenteredMinimalPdfTemplate
                         CvExportPreviewContentBuilder.BuildEducationPreviewContent(document));
                 });
             });
-        }).GeneratePdf();
+        });
     }
 
     private static string BuildContactInline(CvExportDocument document)

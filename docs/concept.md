@@ -119,19 +119,16 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - Import confidence hints on uncertain parsed fields.
 - **Static CV quality hints** — deterministic rules in Core (`CvQualityAnalyzer`),
   section badges with a **large in-window modal**, session dismiss, import-aware
-  review hints, export-area summary; optional **Improve with AI** on supported hints
-  (prompt **039**) — see
-  [`prompts/034-cv-quality-hints.md`](../prompts/034-cv-quality-hints.md).
-- **Page image export** (prompt **031**): PNG/JPEG/WebP via `CvImageExporter`; ZIP or
+  review hints, export-area summary; optional **Improve with AI** on supported hints.
+- **Page image export**: PNG/JPEG/WebP via `CvImageExporter`; ZIP or
   folder delivery; page range; size estimate; export progress; opaque white background.
-- **John Doe import regression matrix** — 50 generated stress CVs assert parser
-  fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`,
-  prompt **035**).
-- **Local CV project save/load** (prompt **041**): Save / Save As / Open toolbar
+- **John Doe import regression matrix** — **51** generated stress CVs assert parser
+  fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`).
+- **Local CV project save/load**: Save / Save As / Open toolbar
   actions; `CvProjectSerializer` + optional `projectSettings`; recent projects;
   dirty title indicator; unsaved-changes guard; autosave recovery — see
   [`docs/revitae-project-json.md`](revitae-project-json.md).
-- **AI setup (prompts 036–038):** resumable background Ollama model download with
+- **AI setup:** resumable background Ollama model download with
   dock, pause/resume/stop, startup recovery, managed engine install, model
   lifecycle (remove / clean stale), monotonic progress, and **online provider
   list with configure / test / activate** (single active backend, encrypted API
@@ -149,7 +146,7 @@ Still open for later phases:
 
 - installers or packaged binaries for each supported platform.
 
-**Implemented (prompt 040):** optional [AI-assisted CV import](ai-import.md) —
+**Implemented:** optional [AI-assisted CV import](ai-import.md) —
 batched extraction fallback when deterministic import fails or is incomplete;
 review-before-apply; model-aware batch profiles for compact local models.
 
@@ -161,7 +158,7 @@ This phase focuses on importing existing CVs, extracting structured information,
 
 ### First Launch AI Setup
 
-**Implemented (prompts 036–038):** the header **AI icon** opens an on-demand setup
+**Implemented:** the header **AI icon** opens an on-demand setup
 modal with **online provider configuration** (OpenAI, Anthropic, Gemini, Groq,
 Azure OpenAI, Mistral, DeepSeek, OpenRouter, Custom), a single active backend
 (local model or one online provider), local hardware detection, a recommended
@@ -171,12 +168,11 @@ recovery), and **model lifecycle** actions (remove installed models, clean stale
 partial downloads). See [`docs/ai-setup.md`](ai-setup.md). A dedicated
 first-launch gate remains planned.
 
-**Implemented (prompt 039):** universal **CV completion** layer — whichever active
+**Implemented:** universal **CV completion** layer — whichever active
 backend the user chose powers **Improve with AI** on selected quality hints.
 Suggestions appear in a review modal; the user **Accepts**, **Edits**, or **Dismisses**
 — ReVitae never auto-applies AI text. Online sends require a one-time session
-confirm; local Ollama stays on-device. See
-[`prompts/039-universal-ai-cv-completion.md`](../prompts/039-universal-ai-cv-completion.md).
+confirm; local Ollama stays on-device. See [`docs/ai-setup.md`](ai-setup.md).
 
 On first launch (full vision), the application should detect the user's operating system and relevant hardware capabilities.
 

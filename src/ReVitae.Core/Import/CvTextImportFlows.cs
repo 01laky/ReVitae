@@ -51,7 +51,11 @@ internal static class CvTextImportFlows
 
         var normalized = CvTextNormalizer.Normalize(extraction.Text);
         var segmentation = CvSectionSegmenter.Segment(normalized);
-        var deterministic = CvTextImportPipeline.Import(extraction.Text, extraction.HyperlinkUrls, extraction.Warnings);
+        var deterministic = CvTextImportPipeline.Import(
+            extraction.Text,
+            extraction.HyperlinkUrls,
+            extraction.Warnings,
+            extraction.ReVitaeHints);
 
         var storedText = Ai.Import.AiImportLimits.TruncateSourceText(normalized);
         return new CvTextImportAttempt(format, extraction, storedText, segmentation, deterministic);
@@ -90,7 +94,11 @@ internal static class CvTextImportFlows
             $"Extraction OK — strategy={extraction.Strategy?.ToString() ?? "legacy"}, " +
             $"entering text pipeline ({extraction.Text.Length} chars)");
         CvImportDiagnosticsLogger.LogExtraction(extraction);
-        return CvTextImportPipeline.Import(extraction.Text, extraction.HyperlinkUrls, extraction.Warnings);
+        return CvTextImportPipeline.Import(
+            extraction.Text,
+            extraction.HyperlinkUrls,
+            extraction.Warnings,
+            extraction.ReVitaeHints);
     }
 
     private static CvSegmentationResult EmptySegmentation() =>

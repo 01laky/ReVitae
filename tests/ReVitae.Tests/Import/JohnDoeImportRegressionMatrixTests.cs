@@ -40,7 +40,7 @@ public sealed class JohnDoeImportRegressionMatrixTests : IDisposable
     }
 
     [Fact]
-    public void Catalog_ContainsFiftyUniqueVariants() => Assert.Equal(50, JohnDoeVariantCatalog.All.Count);
+    public void Catalog_ContainsFiftyOneUniqueVariants() => Assert.Equal(51, JohnDoeVariantCatalog.All.Count);
 
     public void Dispose() => JohnDoeMatrixTempDirectory.CleanupStaleRoots(TimeSpan.FromHours(1));
 }

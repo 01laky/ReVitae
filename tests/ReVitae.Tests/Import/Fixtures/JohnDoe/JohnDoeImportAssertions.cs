@@ -10,10 +10,17 @@ public static class JohnDoeImportAssertions
     {
         Assert.True(result.Success, $"[{spec.Id}] import failed: {result.ErrorMessageKey}");
 
-        if (spec.ExpectationMode == JohnDoeExpectationMode.PdfTemplateLayout)
+        switch (spec.ExpectationMode)
         {
-            AssertPdfTemplateLayout(result, spec);
-            return;
+            case JohnDoeExpectationMode.PdfTemplateLayout:
+                AssertPdfTemplateLayout(result, spec);
+                return;
+            case JohnDoeExpectationMode.DeferredSidebarPdf:
+                AssertDeferredSidebarPdf(result, spec);
+                return;
+            case JohnDoeExpectationMode.PdfSidebarCounts:
+                AssertPdfSidebarCounts(result, spec);
+                return;
         }
 
         var counts = JohnDoeCanonicalExpectations.Counts;
@@ -43,11 +50,26 @@ public static class JohnDoeImportAssertions
 
         if (JohnDoeExpectationModes.RequiresZeroValidationErrors(spec.ExpectationMode))
         {
-            var validation = JohnDoePostImportValidator.Validate(result);
-            Assert.True(
-                validation.IsValid,
-                $"[{spec.Id}] expected zero post-import validation errors.{Environment.NewLine}{JohnDoePostImportValidator.FormatErrors(validation, max: 20)}");
+            AssertZeroValidationErrors(result, spec);
         }
+    }
+
+    private static void AssertPdfSidebarCounts(CvImportResult result, JohnDoeVariantSpec spec)
+    {
+        Assert.True(result.WorkExperienceEntries.Count >= 18, $"[{spec.Id}] work count {result.WorkExperienceEntries.Count}");
+        Assert.True(result.EducationEntries.Count >= 10, $"[{spec.Id}] education count {result.EducationEntries.Count}");
+        Assert.True(result.SkillsGroups.Count >= 8, $"[{spec.Id}] skill groups {result.SkillsGroups.Count}");
+        Assert.Equal(JohnDoeCanonicalExpectations.Email, result.Personal.Email);
+        Assert.Contains("john.doe", result.Personal.Email, StringComparison.OrdinalIgnoreCase);
+        AssertNoSkillDump(result, spec);
+        AssertZeroValidationErrors(result, spec);
+    }
+
+    private static void AssertDeferredSidebarPdf(CvImportResult result, JohnDoeVariantSpec spec)
+    {
+        Assert.Contains("jane.sidebar@example.com", result.Personal.Email, StringComparison.OrdinalIgnoreCase);
+        Assert.True(result.WorkExperienceEntries.Count >= 1, $"[{spec.Id}] expected work entries");
+        Assert.Contains("Senior Developer", result.WorkExperienceEntries[0].JobTitle, StringComparison.Ordinal);
     }
 
     private static void AssertPdfTemplateLayout(CvImportResult result, JohnDoeVariantSpec spec)
@@ -67,6 +89,25 @@ public static class JohnDoeImportAssertions
         {
             Assert.Contains("john.doe", result.Personal.Email, StringComparison.OrdinalIgnoreCase);
         }
+
+        AssertNoSkillDump(result, spec);
+    }
+
+    private static void AssertNoSkillDump(CvImportResult result, JohnDoeVariantSpec spec)
+    {
+        foreach (var skill in result.SkillsGroups.SelectMany(group => group.Skills))
+        {
+            Assert.DoesNotContain("reviewed", skill.Name, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("Implemented", skill.Name, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static void AssertZeroValidationErrors(CvImportResult result, JohnDoeVariantSpec spec)
+    {
+        var validation = JohnDoePostImportValidator.Validate(result);
+        Assert.True(
+            validation.IsValid,
+            $"[{spec.Id}] expected zero post-import validation errors.{Environment.NewLine}{JohnDoePostImportValidator.FormatErrors(validation, max: 20)}");
     }
 
     private static void AssertExactPersonalIdentity(CvImportResult result)

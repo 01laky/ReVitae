@@ -12,7 +12,8 @@ public static class CvTextImportPipeline
     public static CvImportResult Import(
         string rawText,
         IReadOnlyList<string>? hyperlinkUrls = null,
-        IReadOnlyList<CvImportWarning>? extractionWarnings = null)
+        IReadOnlyList<CvImportWarning>? extractionWarnings = null,
+        Pdf.ReVitaePdfExportHints? reVitaeHints = null)
     {
         var normalized = CvTextNormalizer.Normalize(rawText);
         CvImportDiagnosticsLogger.LogStep(
@@ -30,7 +31,7 @@ public static class CvTextImportPipeline
             "text-pipeline",
             $"Segmented: {segmentation.SectionBodies.Count} section(s), " +
             $"header={segmentation.HeaderBlock.Length} chars, warnings={segmentation.Warnings.Count}");
-        var result = CvImportFieldExtractor.Extract(segmentation, hyperlinkUrls);
+        var result = CvImportFieldExtractor.Extract(segmentation, hyperlinkUrls, reVitaeHints);
         CvImportDiagnosticsLogger.LogStep(
             "text-pipeline",
             $"Extract: success={result.Success}, work={result.WorkExperienceEntries.Count}, " +

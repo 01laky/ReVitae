@@ -9,39 +9,46 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
-- **AI-assisted CV import** (prompt **040**): `CvTextImportCoordinator` retains
+- **ReVitae PDF round-trip import**: QuestPDF export metadata
+  fingerprint (`Producer`, `Creator`, `Keywords: template:*`); `ReVitaePdfLayoutProfile`
+  and template-aware PdfPig column split; `ReVitaePdfExportHints` threaded through
+  extraction → `CvImportFieldExtractor`; John Doe matrix expanded to **51** variants
+  (tier **B** for PDF **02**, **07**, **49**; deferred-sidebar **51**); committed
+  `JohnDoeStressCv.pdf` fixture; **40+** new/tightened tests in
+  `tests/ReVitae.Tests/Import/Pdf/`, `ReVitaePdfReimportEdgeCaseTests`, and export
+  metadata suites (**1417** total).
+- **AI-assisted CV import**: `CvTextImportCoordinator` retains
   normalized text on deterministic failure; `AiCvImportService` with model-aware
   batch profiles (Compact → ExtraLarge), sequential phased extraction, review
-  summary diff, Try AI / Enhance with AI UI, online session confirm reuse from
-  **039**; EN + SK localization; **`docs/ai-import.md`**; **71** new tests in
+  summary diff, Try AI / Enhance with AI UI, online session confirm reuse; EN + SK localization; **`docs/ai-import.md`**; **71** new tests in
   `tests/ReVitae.Tests/Ai/Import/` (**1376** total).
-- **Local CV project save/load** (prompt **041**): header **Save**, **Save As**, and
+- **Local CV project save/load**: header **Save**, **Save As**, and
   **Open** for `*.revitae.json` projects; dirty-state window title; unsaved-changes
   confirm (Save / Don't save / Cancel) before New CV, Open, import replace, and
   window close; intro **Open saved project** + **Recent projects** list; optional
   autosave recovery file; `projectSettings` block (template, dismissed quality hints,
   section expand state) via `CvProjectSerializer`; **32** new project tests
   (**1305** total).
-- **CV image export** (prompt **031**): **Page images** card in the Export modal
+- **CV image export**: **Page images** card in the Export modal
   (PNG / JPEG / WebP); delivery as **ZIP archive** or **separate files**; page
   range (all or From–To); scale 1× / 2×; quality slider for JPEG/WebP; live size
   estimate; export progress status; opaque white background via
   `CvImageBackgroundCompositor`; `CvImageExporter` pipeline (QuestPDF → Docnet →
   ImageSharp); **81+** new image export tests (**1273** total).
-- **Universal AI CV completion** (prompt **039**): backend-agnostic
+- **Universal AI CV completion**: backend-agnostic
   `AiCvCompletionService`; Ollama `POST /api/chat`; extended online chat clients
   (system + user messages); task registry and prompt templates; **Improve with AI**
   on supported quality hints with suggestion modal (Accept / Edit / Cancel); online
   session privacy confirm; EN + SK localization; **37** new AI/CV tests (**1190**
   total).
-- **AI provider list and configuration** (prompt **038**): online provider catalog
+- **AI provider list and configuration**: online provider catalog
   (OpenAI, Anthropic, Gemini, Groq, Azure OpenAI, Mistral, DeepSeek, OpenRouter,
   Custom); inline configure / Save / Test forms; single active backend (local **or**
   online); switch and untested-activation confirmations; encrypted `ai-secrets.enc`;
   settings schema v2 with legacy migration; active-backend strip; header badges for
   local (green) and online (blue) active backends; **60+** provider / settings /
   connection tests.
-- **Resumable AI model download** (prompt **037**): background Ollama pull via
+- **Resumable AI model download**: background Ollama pull via
   `AiModelDownloadCoordinator`; bottom-left progress dock; modal download banner
   with Pause / Resume / Stop; startup auto-resume with exponential backoff;
   atomic `ai-download-job.json`; header robot badge during active download;
@@ -53,14 +60,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - **AI model lifecycle**: per-card installation status (downloaded / downloading /
   stale); **Remove model** and **Clean up failed download** via
   `AiModelLifecycleService` and Ollama `DELETE /api/delete`.
-- **AI setup modal** (prompt **036**): header robot icon opens in-window setup
+- **AI setup modal**: header robot icon opens in-window setup
   with loader on every open; local OS/CPU/RAM/disk/Ollama detection; privacy
   banner; **11** curated Ollama instruct models; RAM-tier recommendations;
   optional **one-tier-up** download with warning; disk-space gate before pull;
   Ollama `POST /api/pull` progress; `ai-settings.json` persistence under
   `%LocalAppData%/ReVitae/`.
 - Documentation: [`docs/ai-setup.md`](docs/ai-setup.md).
-- **John Doe import regression matrix** (prompt **035**): **50** runtime-generated
+- **John Doe import regression matrix**: **51** runtime-generated
   stress CV variants (PDF templates, TXT/MD/HTML/DOCX profiles) imported via
   `CvDocumentImporter`; shared `JohnDoeStressCvDataset` in Core; matrix asserts
   extraction fidelity **and** zero post-import form validation errors
@@ -79,7 +86,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   template catalog, profile photo bytes, import error normalization, format detection,
   RTF/LaTeX/ODT/DOC/ABW/Pages text extractors, HR-XML export round-trip,
   `MonthYearSelection`, `CvExportDocumentMapper`.
-- **Optional profile photo** (prompt **023**): upload JPEG/PNG/WebP (max **15 MB**)
+- **Optional profile photo**: upload JPEG/PNG/WebP (max **15 MB**)
   from Personal information; EXIF auto-orient on save; click-to-replace; local
   storage under `%LocalAppData%/ReVitae/profile-photos/`; template preview +
   PDF/HTML/DOCX embedding; sidebar **initials fallback** when no photo.
@@ -87,7 +94,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   `profilePhotoContentType` round-trip (v1 unchanged; absolute paths never exported).
 - Profile photo test suites (`ProfilePhotoStorageTests`, `ProfilePhotoInitialsTests`,
   structured/export extensions) — **859 tests** total.
-- **Multi-format CV export** (prompt **022**): **Export** toolbar button opens an
+- **Multi-format CV export**: **Export** toolbar button opens an
   in-window format modal with 15 formats (PDF, DOCX, ODT, RTF, HTML, Markdown,
   TXT, LaTeX, ReVitae JSON, JSON Resume, YAML, Europass XML, HR-XML, CSV, TSV).
 - `CvDocumentExporter` facade, `CvExportFormatCatalog`, visual/structured writers,
@@ -95,7 +102,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   and SVG format icons under `src/ReVitae/Assets/ExportFormats/`.
 - Export test suites under `tests/ReVitae.Tests/Export/` (783 tests total).
 - Documentation: [`docs/export-formats.md`](docs/export-formats.md).
-- Unified **multi-format CV import** via `CvDocumentImporter` (prompt **021**): PDF;
+- Unified **multi-format CV import** via `CvDocumentImporter`: PDF;
   TXT/Markdown/HTML; DOC/DOCX; ODT/RTF; AbiWord, Pages, WPS, LaTeX; Json Resume;
   native `.revitae.json`; YAML; CSV/TSV; Europass / HR‑XML-style XML when detected.
 - **25 MB** import size guard (`CvImportLimits`) and **XXE-safe XML** parsing

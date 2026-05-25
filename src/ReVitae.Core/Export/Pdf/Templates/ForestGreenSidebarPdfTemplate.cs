@@ -10,7 +10,7 @@ internal static class ForestGreenSidebarPdfTemplate
 
     public static byte[] Render(CvExportDocument document)
     {
-        return Document.Create(container =>
+        return CvPdfRenderHelper.Generate(document, container =>
         {
             container.Page(page =>
             {
@@ -38,6 +38,6 @@ internal static class ForestGreenSidebarPdfTemplate
                     });
                 });
             });
-        }).GeneratePdf();
+        });
     }
 }

@@ -1,6 +1,6 @@
 namespace ReVitae.Core.Import;
 
-/// <summary>Detected import dialect (prompt 021). Used for routing to <see cref="ICvFormatImporter"/>.</summary>
+/// <summary>Detected import dialect. Used for routing to <see cref="ICvFormatImporter"/>.</summary>
 public enum CvImportFormat
 {
     Unknown = 0,

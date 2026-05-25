@@ -9,7 +9,8 @@ internal static class SidebarLayoutPdfWriter
     private const double PageWidth = 595;
     private const double PageHeight = 842;
     private const double SidebarX = 48;
-    private const double MainX = 250;
+    public const double MainColumnX = 250;
+    private const double MainX = MainColumnX;
     private const double LineHeight = 14;
     private const double TopY = 760;
 
@@ -17,11 +18,19 @@ internal static class SidebarLayoutPdfWriter
 
     public sealed record PageLayout(IReadOnlyList<PlacedLine> SidebarLines, IReadOnlyList<PlacedLine> MainLines);
 
-    public static byte[] Create(IReadOnlyList<PageLayout> pages)
+    public sealed record HyperlinkAnnotation(double X, double Y, string Uri);
+
+    public static byte[] Create(IReadOnlyList<PageLayout> pages) =>
+        CreateWithHyperlinks(pages, []);
+
+    public static byte[] CreateWithHyperlinks(
+        IReadOnlyList<PageLayout> pages,
+        IReadOnlyList<HyperlinkAnnotation> hyperlinks)
     {
         var pageCount = pages.Count;
         var fontObjectNumber = 3 + pageCount;
         var firstContentObjectNumber = fontObjectNumber + 1;
+        var firstLinkObjectNumber = firstContentObjectNumber + pageCount;
 
         var objects = new List<string>
         {
@@ -32,9 +41,12 @@ internal static class SidebarLayoutPdfWriter
         for (var pageIndex = 0; pageIndex < pageCount; pageIndex++)
         {
             var contentObjectNumber = firstContentObjectNumber + pageIndex;
+            var annots = hyperlinks.Count == 0
+                ? string.Empty
+                : $" /Annots [{string.Join(' ', Enumerable.Range(0, hyperlinks.Count).Select(index => $"{firstLinkObjectNumber + index} 0 R"))}]";
             objects.Add(
                 $"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {ToPdfNumber(PageWidth)} {ToPdfNumber(PageHeight)}] " +
-                $"/Resources << /Font << /F1 {fontObjectNumber} 0 R >> >> /Contents {contentObjectNumber} 0 R >>");
+                $"/Resources << /Font << /F1 {fontObjectNumber} 0 R >> >> /Contents {contentObjectNumber} 0 R{annots} >>");
         }
 
         objects.Add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
@@ -43,6 +55,13 @@ internal static class SidebarLayoutPdfWriter
         {
             var stream = BuildContentStream(layout);
             objects.Add($"<< /Length {Encoding.ASCII.GetByteCount(stream)} >>\nstream\n{stream}endstream");
+        }
+
+        foreach (var link in hyperlinks)
+        {
+            objects.Add(
+                $"<< /Type /Annot /Subtype /Link /Rect [{ToPdfNumber(link.X)} {ToPdfNumber(link.Y)} {ToPdfNumber(link.X + 120)} {ToPdfNumber(link.Y + 14)}] " +
+                $"/Border [0 0 0] /A << /S /URI /URI ({EscapePdfText(link.Uri)}) >> >>");
         }
 
         return BuildPdf(objects);

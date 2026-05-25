@@ -64,12 +64,13 @@ public static class JohnDoeVariantCatalog
             Text("47", "txt-work-contract-employment-type", JohnDoeTextFormattingProfile.WorkContractEmploymentType, JohnDoeExpectationMode.StandardEntryCounts),
             Text("48", "txt-mixed-colon-headers", JohnDoeTextFormattingProfile.MixedColonHeaders, JohnDoeExpectationMode.StandardEntryCounts),
             Pdf("49", "pdf-forest-green-sidebar", CvExportTemplateId.ForestGreenSidebar),
-            Pdf("50", "pdf-blue-accent-summary", CvExportTemplateId.BlueAccentSummary)
+            Pdf("50", "pdf-blue-accent-summary", CvExportTemplateId.BlueAccentSummary),
+            new("51", "pdf-deferred-sidebar-contact", JohnDoeVariantKind.DeferredSidebarPdf, null, null, JohnDoeExpectationMode.DeferredSidebarPdf, ".pdf")
         };
 
-        if (specs.Count != 50)
+        if (specs.Count != 51)
         {
-            throw new InvalidOperationException($"Expected 50 John Doe variants, found {specs.Count}.");
+            throw new InvalidOperationException($"Expected 51 John Doe variants, found {specs.Count}.");
         }
 
         var duplicateIds = specs.GroupBy(spec => spec.Id).Where(group => group.Count() > 1).Select(group => group.Key).ToArray();
@@ -83,9 +84,12 @@ public static class JohnDoeVariantCatalog
 
     private static JohnDoeVariantSpec Pdf(string id, string name, CvExportTemplateId template)
     {
-        var mode = id == "01"
-            ? JohnDoeExpectationMode.PdfFull
-            : JohnDoeExpectationMode.PdfTemplateLayout;
+        var mode = id switch
+        {
+            "01" => JohnDoeExpectationMode.PdfFull,
+            "02" or "07" or "49" => JohnDoeExpectationMode.PdfSidebarCounts,
+            _ => JohnDoeExpectationMode.PdfTemplateLayout
+        };
         return new(id, name, JohnDoeVariantKind.PdfTemplate, template, null, mode, ".pdf");
     }
 

@@ -159,9 +159,14 @@ handles institution-first education blocks and inline certificate headers.
 fully populated John Doe CV variants at test time (PDF, TXT, MD, HTML, DOCX),
 imports each file, and asserts extraction counts, spot checks, and **zero
 post-import form validation errors** — the same rules the UI uses before export.
-See [`prompts/035-john-doe-import-regression-matrix.md`](prompts/035-john-doe-import-regression-matrix.md).
+The matrix includes **51** variants (PDF templates **01–10**, **49–50**, deferred-sidebar **51**, plus text/export fixtures). Filter locally: `dotnet test --filter Category=ImportMatrix`.
 
-**AI-assisted import (040):** when deterministic parsing fails or returns a thin
+**ReVitae PDF round-trip:** PdfPig reads export metadata (`Producer`, `template:`),
+applies per-template column profiles, and threads `ReVitaePdfExportHints` into the parser.
+Committed stress fixture: `tests/ReVitae.Tests/Import/Fixtures/JohnDoeStressCv.pdf`.
+See [`docs/import-formats.md`](docs/import-formats.md#revitae-pdf-round-trip).
+
+**AI-assisted import:** when deterministic parsing fails or returns a thin
 draft, ReVitae offers optional **batched AI extraction** through the active backend
 (Try AI import / Enhance with AI → review summary → Apply). Compact models such as
 Gemma 2 2B use small sequential slices (~1 200 chars/call). See
@@ -223,16 +228,16 @@ control:
 ## Product Status
 
 ReVitae is an active early-stage desktop app. The structured CV form, inline
-validation UI, template preview, **optional profile photo** (prompt **023**),
-**multi-format export** (16 formats via `CvDocumentExporter` and `CvImageExporter`), and
-**multi-format CV import** (prompt **021**) through `CvDocumentImporter` are in
-place. Intro / replace flows cover PDF plus the additional structured and
-text-native formats listed above. **AI setup** (prompts **036**–**039**) adds local Ollama model detection, managed
-engine install, **resumable background download** with dock and startup recovery,
-model lifecycle management (remove / clean stale), monotonic progress display, and
-**online provider configuration** with a single active backend (local or cloud);
-CV AI features remain planned. Next major themes remain **local persistence** and
-AI-assisted import / recommendations.
+validation UI, template preview, **optional profile photo**, **multi-format export**
+(16 formats via `CvDocumentExporter` and `CvImageExporter`), and **multi-format CV import**
+through `CvDocumentImporter` are in place. Intro / replace flows cover PDF plus
+structured and text-native formats listed above. **AI setup** adds local Ollama model
+detection, managed engine install, **resumable background download** with dock and
+startup recovery, model lifecycle management (remove / clean stale), monotonic progress
+display, and **online provider configuration** with a single active backend (local or
+cloud). **AI-assisted import**, **Improve with AI** quality hints, **local project
+save/load**, and **ReVitae PDF round-trip** import are implemented. Next major themes
+include installers and broader template coverage beyond the regression matrix.
 
 ### Versioning
 
@@ -253,14 +258,15 @@ badge, then run `./scripts/verify-version.sh` before tagging.
 
 Planned areas:
 
-- ReVitae-exported PDF re-import (template-aware parsing — largely implemented; see prompt **033**)
 - Installer/package builds for supported platforms
+- Additional QuestPDF templates beyond the current John Doe regression matrix
+- Optional first-launch AI setup wizard
 
-**AI-assisted import** (prompt **040**) is implemented — batched fallback when
-deterministic parsing fails or is thin; see [`docs/ai-import.md`](docs/ai-import.md).
+Implemented recently (see [`CHANGELOG.md`](CHANGELOG.md)):
 
-Native `.revitae.json` **save/load** is implemented — see
-[`docs/revitae-project-json.md`](docs/revitae-project-json.md) and prompt **041**.
+- ReVitae-exported PDF re-import — [`docs/import-formats.md`](docs/import-formats.md#revitae-pdf-round-trip)
+- AI-assisted import — [`docs/ai-import.md`](docs/ai-import.md)
+- Native `.revitae.json` save/load — [`docs/revitae-project-json.md`](docs/revitae-project-json.md)
 
 ## Tech Stack
 
@@ -328,12 +334,8 @@ src/
 tests/
   ReVitae.Tests/    Unit, import, and UI validation tests
 
-prompts/
-  Implementation prompts and product increments (001–038)
-
 docs/
-  Product concept, export/import matrices (`export-formats.md`,
-  `import-formats.md`, `revitae-project-json.md`, `ai-setup.md`), planning notes
+  Product concept, export/import matrices, AI setup, native project JSON
 ```
 
 ## Design Principles

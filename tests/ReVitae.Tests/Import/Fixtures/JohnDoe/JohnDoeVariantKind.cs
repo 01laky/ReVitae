@@ -6,5 +6,6 @@ public enum JohnDoeVariantKind
     PlainTextProfile,
     MarkdownExport,
     HtmlExport,
-    DocxExport
+    DocxExport,
+    DeferredSidebarPdf
 }

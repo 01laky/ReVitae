@@ -5,4 +5,5 @@ public sealed record PdfTextExtractionResult(
     string Text,
     int PageCount,
     string? ErrorMessageKey,
-    IReadOnlyList<string>? HyperlinkUrls = null);
+    IReadOnlyList<string>? HyperlinkUrls = null,
+    ReVitaePdfExportHints? ReVitaeHints = null);

@@ -9,6 +9,7 @@ using ReVitae.Core.Cv.Projects;
 using ReVitae.Core.Cv.Skills;
 using ReVitae.Core.Cv.WorkExperience;
 using ReVitae.Core.Import.Patterns;
+using ReVitae.Core.Import.Pdf;
 using ReVitae.Core.Localization;
 
 namespace ReVitae.Core.Import;
@@ -29,10 +30,11 @@ public static class CvImportFieldExtractor
 {
     public static CvImportResult Extract(
         CvSegmentationResult segmentation,
-        IReadOnlyList<string>? hyperlinkUrls = null)
+        IReadOnlyList<string>? hyperlinkUrls = null,
+        ReVitaePdfExportHints? reVitaeHints = null)
     {
         var context = new CvImportBuildContext();
-        var personal = ExtractPersonalInformation(segmentation, context, hyperlinkUrls);
+        var personal = ExtractPersonalInformation(segmentation, context, hyperlinkUrls, reVitaeHints);
         var sidebarSkillTokens = CollectSidebarSkillTokens(GetBody(segmentation, CvImportSectionId.Skills));
         var orphanWorkDateFragments = CollectOrphanWorkDateFragments(segmentation.HeaderBlock);
         var workExperience = ExtractWorkExperience(
@@ -82,7 +84,8 @@ public static class CvImportFieldExtractor
     private static PersonalInformationImport ExtractPersonalInformation(
         CvSegmentationResult segmentation,
         CvImportBuildContext context,
-        IReadOnlyList<string>? hyperlinkUrls = null)
+        IReadOnlyList<string>? hyperlinkUrls = null,
+        ReVitaePdfExportHints? reVitaeHints = null)
     {
         var contactBody = GetBody(segmentation, CvImportSectionId.Contact);
         var supplementalContact = CollectSupplementalPersonalContactText(segmentation);
@@ -135,6 +138,11 @@ public static class CvImportFieldExtractor
                 assignedUrls.Add(url);
                 context.AddConfidence(MainPersonalInformationFieldKeys.PortfolioUrl, CvImportConfidence.Medium);
             }
+        }
+
+        if (reVitaeHints?.IsLikelyReVitaeExport == true)
+        {
+            ApplyReVitaeExportHyperlinks(personal, hyperlinkUrls, assignedUrls, context);
         }
 
         foreach (var line in headerLines)
@@ -219,6 +227,12 @@ public static class CvImportFieldExtractor
 
         if (string.IsNullOrWhiteSpace(personal.FirstName))
         {
+            var allPersonalLines = personalSource.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            TryAssignSplitPersonNameFromLines(allPersonalLines, personal, context, CvImportConfidence.Medium);
+        }
+
+        if (string.IsNullOrWhiteSpace(personal.FirstName))
+        {
             foreach (var line in nameHeaderLines)
             {
                 if (IsLikelyNameToken(line)
@@ -236,6 +250,13 @@ public static class CvImportFieldExtractor
         if (string.IsNullOrWhiteSpace(personal.FirstName))
         {
             TryAssignNameFromOtherSections(segmentation, personal, context);
+        }
+
+        if (string.IsNullOrWhiteSpace(personal.FirstName))
+        {
+            var segmentedLines = CollectSegmentedPersonalLines(segmentation);
+            TryAssignReVitaeSidebarNameBeforeEmail(segmentedLines, personal, context);
+            TryAssignSplitPersonNameFromLines(segmentedLines, personal, context, CvImportConfidence.Medium);
         }
 
         if (nameHeaderLines.Length > 1 && string.IsNullOrWhiteSpace(personal.ProfessionalTitle))
@@ -360,6 +381,20 @@ public static class CvImportFieldExtractor
                 TryApplyPresentWorkDatesFromHeaderLines(lines, entry, ref dateRange);
             }
 
+            if (entry.StartYear.HasValue && !entry.EndYear.HasValue && !entry.IsCurrentlyWorking)
+            {
+                foreach (var line in lines)
+                {
+                    if (!CvImportPatterns.IsPresentToken(line) && !line.Contains("Present", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    entry.IsCurrentlyWorking = true;
+                    break;
+                }
+            }
+
             var descriptionLines = new List<string>();
             var achievementLines = new List<string>();
             for (; lineIndex < lines.Length; lineIndex++)
@@ -400,6 +435,7 @@ public static class CvImportFieldExtractor
 
             entry.Description = string.Join('\n', descriptionLines).Trim();
             entry.Achievements = string.Join('\n', achievementLines).Trim();
+            NormalizeWorkExperienceDates(entry);
 
             if (entry.HasUserInput())
             {
@@ -837,6 +873,7 @@ public static class CvImportFieldExtractor
         }
 
         var entries = new List<LanguageEntry>();
+        var seenLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var line in body.Split('\n', StringSplitOptions.TrimEntries))
         {
             if (string.IsNullOrWhiteSpace(line) || IsLanguageProficiencySubline(line))
@@ -862,10 +899,18 @@ public static class CvImportFieldExtractor
                 context.AddConfidence($"languages.{entry.Id}.language", CvImportConfidence.Medium);
             }
 
-            if (entry.HasUserInput())
+            if (!entry.HasUserInput())
             {
-                entries.Add(entry);
+                continue;
             }
+
+            var languageKey = entry.Language.Trim();
+            if (!seenLanguages.Add(languageKey))
+            {
+                continue;
+            }
+
+            entries.Add(entry);
         }
 
         return entries;
@@ -1356,6 +1401,30 @@ public static class CvImportFieldExtractor
     private static string GetBody(CvSegmentationResult segmentation, CvImportSectionId sectionId)
     {
         return segmentation.SectionBodies.TryGetValue(sectionId, out var body) ? body : string.Empty;
+    }
+
+    private static void NormalizeWorkExperienceDates(WorkExperienceEntry entry)
+    {
+        if (entry.IsCurrentlyWorking)
+        {
+            entry.EndMonth = null;
+            entry.EndYear = null;
+            return;
+        }
+
+        if (entry.EndYear.HasValue && !entry.EndMonth.HasValue)
+        {
+            entry.EndMonth = entry.StartMonth ?? 12;
+        }
+
+        if (entry.StartYear.HasValue
+            && !entry.EndYear.HasValue
+            && entry.StartMonth.HasValue
+            && !entry.IsCurrentlyWorking)
+        {
+            entry.EndYear = entry.StartYear;
+            entry.EndMonth = entry.StartMonth;
+        }
     }
 
     private static void TryApplyPresentWorkDatesFromHeaderLines(
@@ -2578,7 +2647,129 @@ public static class CvImportFieldExtractor
             return true;
         }
 
+        if (IsReVitaeUrlLabelLine(current)
+            && !trimmedNext.Contains(':', StringComparison.Ordinal))
+        {
+            return trimmedNext.All(static character => !char.IsWhiteSpace(character));
+        }
+
         return false;
+    }
+
+    private static bool IsReVitaeUrlLabelLine(string line) =>
+        line.Contains("LinkedIn URL:", StringComparison.OrdinalIgnoreCase)
+        || line.Contains("GitHub URL:", StringComparison.OrdinalIgnoreCase)
+        || line.Contains("Portfolio URL:", StringComparison.OrdinalIgnoreCase);
+
+    private static string[] CollectSegmentedPersonalLines(CvSegmentationResult segmentation)
+    {
+        var builder = new List<string>();
+        if (!string.IsNullOrWhiteSpace(segmentation.HeaderBlock))
+        {
+            builder.Add(segmentation.HeaderBlock);
+        }
+
+        foreach (var body in segmentation.SectionBodies.Values)
+        {
+            if (!string.IsNullOrWhiteSpace(body))
+            {
+                builder.Add(body);
+            }
+        }
+
+        return string.Join('\n', builder)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    private static bool TryAssignReVitaeSidebarNameBeforeEmail(
+        IReadOnlyList<string> lines,
+        PersonalInformationImport personal,
+        CvImportBuildContext context)
+    {
+        for (var index = 0; index < lines.Count; index++)
+        {
+            if (!CvImportPatterns.Email.IsMatch(lines[index]))
+            {
+                continue;
+            }
+
+            var nameParts = new List<string>();
+            for (var scan = index - 1; scan >= 0 && nameParts.Count < 2; scan--)
+            {
+                var line = lines[scan].Trim();
+                if (string.IsNullOrWhiteSpace(line)
+                    || line.Contains(':', StringComparison.Ordinal)
+                    || IsPersonalContactLabel(line))
+                {
+                    continue;
+                }
+
+                if (!IsLikelyNamePart(line))
+                {
+                    continue;
+                }
+
+                nameParts.Insert(0, line);
+            }
+
+            if (nameParts.Count < 2)
+            {
+                continue;
+            }
+
+            personal.FirstName = nameParts[^2];
+            personal.LastName = nameParts[^1];
+            context.AddConfidence(MainPersonalInformationFieldKeys.FirstName, CvImportConfidence.High);
+            context.AddConfidence(MainPersonalInformationFieldKeys.LastName, CvImportConfidence.High);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void ApplyReVitaeExportHyperlinks(
+        PersonalInformationImport personal,
+        IReadOnlyList<string>? hyperlinkUrls,
+        HashSet<string> assignedUrls,
+        CvImportBuildContext context)
+    {
+        if (hyperlinkUrls is not { Count: > 0 })
+        {
+            return;
+        }
+
+        foreach (var url in hyperlinkUrls)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                continue;
+            }
+
+            var normalized = NormalizeImportedUrl(url.Trim());
+            if (normalized.Contains("linkedin.com", StringComparison.OrdinalIgnoreCase)
+                && string.IsNullOrWhiteSpace(personal.LinkedInUrl))
+            {
+                personal.LinkedInUrl = normalized;
+                assignedUrls.Add(normalized);
+                context.AddConfidence(MainPersonalInformationFieldKeys.LinkedInUrl, CvImportConfidence.High);
+            }
+            else if (normalized.Contains("github.com", StringComparison.OrdinalIgnoreCase)
+                     && string.IsNullOrWhiteSpace(personal.GitHubUrl))
+            {
+                personal.GitHubUrl = normalized;
+                assignedUrls.Add(normalized);
+                context.AddConfidence(MainPersonalInformationFieldKeys.GitHubUrl, CvImportConfidence.High);
+            }
+            else if (string.IsNullOrWhiteSpace(personal.PortfolioUrl)
+                     && !assignedUrls.Contains(normalized)
+                     && !normalized.Contains("linkedin.com", StringComparison.OrdinalIgnoreCase)
+                     && !normalized.Contains("github.com", StringComparison.OrdinalIgnoreCase))
+            {
+                personal.PortfolioUrl = normalized;
+                assignedUrls.Add(normalized);
+                context.AddConfidence(MainPersonalInformationFieldKeys.PortfolioUrl, CvImportConfidence.Medium);
+            }
+        }
     }
 
     private static bool ContainsPartialUrl(string line)

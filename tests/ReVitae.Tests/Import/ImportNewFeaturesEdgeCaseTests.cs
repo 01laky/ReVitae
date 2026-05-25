@@ -377,13 +377,10 @@ public sealed class CvImportDiagnosticsLoggerEdgeCaseTests
 public sealed class JohnDoeStressPdfImportEdgeCaseTests
 {
     [Fact]
-    public void Import_JohnDoeStressPdf_ParsesCoreCountsWhenFixturePresent()
+    public void Import_JohnDoeStressPdf_ParsesCoreCounts()
     {
         var path = ResolveJohnDoeStressPdfPath();
-        if (path is null)
-        {
-            return;
-        }
+        Assert.True(File.Exists(path), $"Missing committed stress PDF fixture at {path}");
 
         var result = CvDocumentImporter.Import(path);
 
@@ -406,13 +403,10 @@ public sealed class JohnDoeStressPdfImportEdgeCaseTests
     }
 
     [Fact]
-    public void Extract_JohnDoeStressPdf_DeferredSidebarKeepsWorkSectionIntactWhenFixturePresent()
+    public void Extract_JohnDoeStressPdf_DeferredSidebarKeepsWorkSectionIntact()
     {
         var path = ResolveJohnDoeStressPdfPath();
-        if (path is null)
-        {
-            return;
-        }
+        Assert.True(File.Exists(path), $"Missing committed stress PDF fixture at {path}");
 
         var text = new PdfPigTextExtractor().Extract(path).Text;
         var segmentation = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
@@ -427,16 +421,8 @@ public sealed class JohnDoeStressPdfImportEdgeCaseTests
         Assert.DoesNotContain("Staff Full Stack Developer", contactBody, StringComparison.Ordinal);
     }
 
-    private static string? ResolveJohnDoeStressPdfPath()
-    {
-        var candidates = new[]
-        {
-            Path.Combine(AppContext.BaseDirectory, "Import", "Fixtures", "JohnDoeStressCv.pdf"),
-            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "John Doe.pdf"))
-        };
-
-        return candidates.FirstOrDefault(File.Exists);
-    }
+    private static string ResolveJohnDoeStressPdfPath() =>
+        Path.Combine(AppContext.BaseDirectory, "Import", "Fixtures", "JohnDoeStressCv.pdf");
 }
 
 internal static class ImportTestHelpers
