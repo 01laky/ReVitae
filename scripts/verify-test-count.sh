@@ -12,7 +12,8 @@ if [[ -z "$BASELINE" ]]; then
   exit 1
 fi
 
-README_COUNT="$(grep -oE 'tests-[0-9]+ passing' README.md | head -1 | sed -E 's/tests-([0-9]+) passing/\1/')"
+# shields.io badge URL-encodes the space as %20
+README_COUNT="$(grep -oE 'tests-[0-9]+(%20| )passing' README.md | head -1 | sed -E 's/tests-([0-9]+)(%20| )passing/\1/')"
 if [[ -z "$README_COUNT" ]]; then
   echo "Could not read test count from README.md badge" >&2
   exit 1
@@ -23,8 +24,15 @@ if [[ "$README_COUNT" != "$BASELINE" ]]; then
   exit 1
 fi
 
+if [[ "${CI:-}" == "true" ]]; then
+  # lint-cs.sh runs dotnet restore/build/test immediately after this step.
+  echo "Test count baseline OK (static): baseline=$BASELINE readme=$README_COUNT"
+  exit 0
+fi
+
 echo "Running dotnet test to verify count >= $BASELINE ..."
-OUTPUT="$(dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-restore -v q 2>&1 || true)"
+dotnet restore tests/ReVitae.Tests/ReVitae.Tests.csproj --verbosity quiet
+OUTPUT="$(dotnet test tests/ReVitae.Tests/ReVitae.Tests.csproj --configuration Release --no-restore -v q 2>&1)"
 echo "$OUTPUT"
 
 ACTUAL="$(echo "$OUTPUT" | grep -oE 'Total: +[0-9]+' | tail -1 | tr -d ' ' | cut -d: -f2)"

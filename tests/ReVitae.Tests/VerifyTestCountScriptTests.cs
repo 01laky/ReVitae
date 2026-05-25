@@ -15,6 +15,7 @@ public sealed class VerifyTestCountScriptTests
 		Assert.Contains("MinimumTestCount", content, StringComparison.Ordinal);
 		Assert.Contains("README.md", content, StringComparison.Ordinal);
 		Assert.Contains("dotnet test", content, StringComparison.Ordinal);
+		Assert.Contains("%20", content, StringComparison.Ordinal);
 	}
 
 	[Fact]
