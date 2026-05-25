@@ -2,11 +2,11 @@ namespace ReVitae.Core.Export.Images;
 
 public enum ImageExportProgressPhase
 {
-    Rendering,
-    Writing
+	Rendering,
+	Writing
 }
 
 public interface IImageExportProgress
 {
-    void Report(ImageExportProgressPhase phase, int currentPage, int totalPages);
+	void Report(ImageExportProgressPhase phase, int currentPage, int totalPages);
 }

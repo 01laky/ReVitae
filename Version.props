@@ -1,11 +1,18 @@
 <Project>
-  <PropertyGroup>
-    <VersionPrefix>0.2.1</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
-    <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
-    <AssemblyVersion>0.2.1.0</AssemblyVersion>
-    <FileVersion>0.2.1.0</FileVersion>
-    <InformationalVersion>$(Version)</InformationalVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<VersionPrefix>0.2.2</VersionPrefix>
+		<VersionSuffix></VersionSuffix>
+		<Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
+		<Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
+		<AssemblyVersion>0.2.2.0</AssemblyVersion>
+		<FileVersion>0.2.2.0</FileVersion>
+		<InformationalVersion>$(Version)</InformationalVersion>
+		<Authors>Ladislav Kostolny</Authors>
+		<AuthorEmail>01laky@gmail.com</AuthorEmail>
+		<Company>Ladislav Kostolny</Company>
+		<Product>ReVitae</Product>
+		<Copyright>Copyright © Ladislav Kostolny</Copyright>
+		<PackageProjectUrl>https://github.com/01laky/ReVitae</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/01laky/ReVitae.git</RepositoryUrl>
+	</PropertyGroup>
 </Project>

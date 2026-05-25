@@ -19,6 +19,21 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - **GitHub Actions CI:** lint + full test suite on Ubuntu, macOS, and Windows;
   separate John Doe import matrix job on Ubuntu.
 
+## [0.2.2] - 2026-05-21
+
+### Added
+
+- **Author metadata:** Ladislav Kostolny and contact email in the About dialog,
+  `Version.props`, npm `package.json`, README, and assembly metadata
+  (`AppVersion.Author` / `AuthorEmail`).
+
+### Changed
+
+- **Tab indentation:** C#, AXAML, MSBuild, and shell scripts use tabs project-wide;
+  `.editorconfig` documents the convention for future edits.
+- **CI format check:** `lint-cs.sh` verifies `dotnet format` on the UI project
+  (`ReVitae.csproj`) in addition to Core and Tests.
+
 ## [0.2.1] - 2026-05-25
 
 ### Added
@@ -211,7 +226,8 @@ First formally versioned ReVitae release baseline.
 - Improved two-column PDF import parsing for contact details, education dates,
   sidebar skill bleed filtering, and work-experience technology detection.
 
-[Unreleased]: https://github.com/01laky/ReVitae/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/01laky/ReVitae/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/01laky/ReVitae/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/01laky/ReVitae/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/01laky/ReVitae/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/ReVitae/releases/tag/v0.1.0

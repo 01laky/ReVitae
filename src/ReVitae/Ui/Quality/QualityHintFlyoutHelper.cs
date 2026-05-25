@@ -9,31 +9,31 @@ namespace ReVitae.Ui.Quality;
 /// </summary>
 public static class QualityHintFlyoutHelper
 {
-    private static QualityHintModalPresenter? _presenter;
+	private static QualityHintModalPresenter? _presenter;
 
-    public static QualityHintAiOptions? AiOptions { get; set; }
+	public static QualityHintAiOptions? AiOptions { get; set; }
 
-    public static void RegisterPresenter(QualityHintModalPresenter presenter) =>
-        _presenter = presenter;
+	public static void RegisterPresenter(QualityHintModalPresenter presenter) =>
+		_presenter = presenter;
 
-    public static void Show(
-        Control anchor,
-        Core.Localization.AppLocalizer localizer,
-        string sectionTitle,
-        IReadOnlyList<Core.Quality.CvQualityHint> hints,
-        Func<Core.Quality.CvQualityHint, bool>? navigateToHint = null,
-        Action<Core.Quality.CvQualityHint>? dismissHint = null,
-        Action? flyoutOpened = null,
-        QualityHintAiOptions? aiOptions = null)
-    {
-        if (_presenter is null)
-        {
-            return;
-        }
+	public static void Show(
+		Control anchor,
+		Core.Localization.AppLocalizer localizer,
+		string sectionTitle,
+		IReadOnlyList<Core.Quality.CvQualityHint> hints,
+		Func<Core.Quality.CvQualityHint, bool>? navigateToHint = null,
+		Action<Core.Quality.CvQualityHint>? dismissHint = null,
+		Action? flyoutOpened = null,
+		QualityHintAiOptions? aiOptions = null)
+	{
+		if (_presenter is null)
+		{
+			return;
+		}
 
-        _presenter.Show(localizer, sectionTitle, hints, navigateToHint, dismissHint, aiOptions);
-        flyoutOpened?.Invoke();
-    }
+		_presenter.Show(localizer, sectionTitle, hints, navigateToHint, dismissHint, aiOptions);
+		flyoutOpened?.Invoke();
+	}
 
-    public static void HideActive() => _presenter?.Hide();
+	public static void HideActive() => _presenter?.Hide();
 }

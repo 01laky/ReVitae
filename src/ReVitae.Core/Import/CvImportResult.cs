@@ -10,41 +10,41 @@ namespace ReVitae.Core.Import;
 
 public sealed class CvImportResult
 {
-    public static CvImportResult Failed(string errorMessageKey)
-    {
-        return new CvImportResult
-        {
-            Success = false,
-            ErrorMessageKey = errorMessageKey
-        };
-    }
+	public static CvImportResult Failed(string errorMessageKey)
+	{
+		return new CvImportResult
+		{
+			Success = false,
+			ErrorMessageKey = errorMessageKey
+		};
+	}
 
-    public bool Success { get; init; }
+	public bool Success { get; init; }
 
-    public string? ErrorMessageKey { get; init; }
+	public string? ErrorMessageKey { get; init; }
 
-    public PersonalInformationImport Personal { get; init; } = new();
+	public PersonalInformationImport Personal { get; init; } = new();
 
-    public IReadOnlyList<WorkExperienceEntry> WorkExperienceEntries { get; init; } = [];
+	public IReadOnlyList<WorkExperienceEntry> WorkExperienceEntries { get; init; } = [];
 
-    public IReadOnlyList<EducationEntry> EducationEntries { get; init; } = [];
+	public IReadOnlyList<EducationEntry> EducationEntries { get; init; } = [];
 
-    public IReadOnlyList<SkillsGroupEntry> SkillsGroups { get; init; } = [];
+	public IReadOnlyList<SkillsGroupEntry> SkillsGroups { get; init; } = [];
 
-    public IReadOnlyList<LanguageEntry> LanguageEntries { get; init; } = [];
+	public IReadOnlyList<LanguageEntry> LanguageEntries { get; init; } = [];
 
-    public IReadOnlyList<CertificateEntry> CertificateEntries { get; init; } = [];
+	public IReadOnlyList<CertificateEntry> CertificateEntries { get; init; } = [];
 
-    public IReadOnlyList<ProjectEntry> ProjectEntries { get; init; } = [];
+	public IReadOnlyList<ProjectEntry> ProjectEntries { get; init; } = [];
 
-    public IReadOnlyList<LinkEntry> LinkEntries { get; init; } = [];
+	public IReadOnlyList<LinkEntry> LinkEntries { get; init; } = [];
 
-    public string AdditionalInformationContent { get; init; } = string.Empty;
+	public string AdditionalInformationContent { get; init; } = string.Empty;
 
-    public IReadOnlyDictionary<CvImportSectionId, bool> SectionHasData { get; init; }
-        = new Dictionary<CvImportSectionId, bool>();
+	public IReadOnlyDictionary<CvImportSectionId, bool> SectionHasData { get; init; }
+		= new Dictionary<CvImportSectionId, bool>();
 
-    public IReadOnlyList<CvImportWarning> Warnings { get; init; } = [];
+	public IReadOnlyList<CvImportWarning> Warnings { get; init; } = [];
 
-    public IReadOnlyList<ImportedFieldConfidence> FieldConfidences { get; init; } = [];
+	public IReadOnlyList<ImportedFieldConfidence> FieldConfidences { get; init; } = [];
 }

@@ -2,7 +2,7 @@ namespace ReVitae.Core.Import;
 
 public interface ICvFormatImporter
 {
-    CvImportFormat Format { get; }
+	CvImportFormat Format { get; }
 
-    CvImportResult Import(string filePath);
+	CvImportResult Import(string filePath);
 }

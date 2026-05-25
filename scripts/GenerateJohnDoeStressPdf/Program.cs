@@ -5,12 +5,12 @@ using ReVitae.Core.Import.Pdf;
 
 var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
 var fixturePath = Path.Combine(
-    repoRoot,
-    "tests",
-    "ReVitae.Tests",
-    "Import",
-    "Fixtures",
-    "JohnDoeStressCv.pdf");
+	repoRoot,
+	"tests",
+	"ReVitae.Tests",
+	"Import",
+	"Fixtures",
+	"JohnDoeStressCv.pdf");
 var localPath = Path.Combine(repoRoot, "John Doe.pdf");
 
 var document = JohnDoeStressCvDataset.CreateDocument();

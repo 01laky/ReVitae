@@ -5,12 +5,12 @@ namespace ReVitae.Tests.Import;
 
 public sealed class EducationImportEdgeCaseTests
 {
-    [Fact]
-    public void Extract_MergesPdfWrappedInstitutionNameIntoSingleEntry()
-    {
-        // Reproduces Ladislav_Kostolny_CV.pdf sidebar layout where institution name
-        // is broken across blank lines: "High School of Electrical" / "and Training" / "Engineering".
-        const string text = """
+	[Fact]
+	public void Extract_MergesPdfWrappedInstitutionNameIntoSingleEntry()
+	{
+		// Reproduces Ladislav_Kostolny_CV.pdf sidebar layout where institution name
+		// is broken across blank lines: "High School of Electrical" / "and Training" / "Engineering".
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -23,23 +23,23 @@ public sealed class EducationImportEdgeCaseTests
             Engineering
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Equal("High School", education.Degree);
-        Assert.Equal("High School of Electrical and Training Engineering", education.Institution);
-        Assert.Equal("Nizna, Slovakia", education.Location);
-        Assert.Equal(DegreeType.HighSchool, education.DegreeType);
-        Assert.Equal(6, education.EndMonth);
-        Assert.Equal(2006, education.EndYear);
-        Assert.Equal(9, education.StartMonth);
-        Assert.Equal(2002, education.StartYear);
-    }
+		Assert.Equal("High School", education.Degree);
+		Assert.Equal("High School of Electrical and Training Engineering", education.Institution);
+		Assert.Equal("Nizna, Slovakia", education.Location);
+		Assert.Equal(DegreeType.HighSchool, education.DegreeType);
+		Assert.Equal(6, education.EndMonth);
+		Assert.Equal(2006, education.EndYear);
+		Assert.Equal(9, education.StartMonth);
+		Assert.Equal(2002, education.StartYear);
+	}
 
-    [Fact]
-    public void Extract_MergesInstitutionContinuationStartingWithAnd()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_MergesInstitutionContinuationStartingWithAnd()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -51,16 +51,16 @@ public sealed class EducationImportEdgeCaseTests
             and Business
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Contains("Informatics and Business", education.Institution, StringComparison.Ordinal);
-    }
+		Assert.Contains("Informatics and Business", education.Institution, StringComparison.Ordinal);
+	}
 
-    [Fact]
-    public void Extract_KeepsTwoDistinctEducationEntriesSeparatedByBlankLineAndDate()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_KeepsTwoDistinctEducationEntriesSeparatedByBlankLineAndDate()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -75,23 +75,23 @@ public sealed class EducationImportEdgeCaseTests
             Technical University
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.EducationEntries.Count);
+		Assert.Equal(2, result.EducationEntries.Count);
 
-        Assert.Equal("High School", result.EducationEntries[0].Degree);
-        Assert.Contains("Electrical Engineering", result.EducationEntries[0].Institution, StringComparison.Ordinal);
+		Assert.Equal("High School", result.EducationEntries[0].Degree);
+		Assert.Contains("Electrical Engineering", result.EducationEntries[0].Institution, StringComparison.Ordinal);
 
-        Assert.Equal("BSc Computer Science", result.EducationEntries[1].Degree);
-        Assert.Equal("Technical University", result.EducationEntries[1].Institution);
-        Assert.Equal(9, result.EducationEntries[1].StartMonth);
-        Assert.Equal(2016, result.EducationEntries[1].StartYear);
-    }
+		Assert.Equal("BSc Computer Science", result.EducationEntries[1].Degree);
+		Assert.Equal("Technical University", result.EducationEntries[1].Institution);
+		Assert.Equal(9, result.EducationEntries[1].StartMonth);
+		Assert.Equal(2016, result.EducationEntries[1].StartYear);
+	}
 
-    [Fact]
-    public void Extract_ParsesDegreeFieldOfStudyAndInstitutionWhenThreeHeaderLinesPrecedeDate()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesDegreeFieldOfStudyAndInstitutionWhenThreeHeaderLinesPrecedeDate()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -102,18 +102,18 @@ public sealed class EducationImportEdgeCaseTests
             09/2018 - 06/2020
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Equal("Master of Science", education.Degree);
-        Assert.Equal("Artificial Intelligence", education.FieldOfStudy);
-        Assert.Equal("Stanford University", education.Institution);
-    }
+		Assert.Equal("Master of Science", education.Degree);
+		Assert.Equal("Artificial Intelligence", education.FieldOfStudy);
+		Assert.Equal("Stanford University", education.Institution);
+	}
 
-    [Fact]
-    public void Extract_DoesNotCreateGarbageEntryFromOrphanEngineeringFragment()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotCreateGarbageEntryFromOrphanEngineeringFragment()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -124,17 +124,17 @@ public sealed class EducationImportEdgeCaseTests
             Engineering
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Single(result.EducationEntries);
-        Assert.Contains("Electrical", result.EducationEntries[0].Institution, StringComparison.Ordinal);
-        Assert.Contains("Engineering", result.EducationEntries[0].Institution, StringComparison.Ordinal);
-    }
+		Assert.Single(result.EducationEntries);
+		Assert.Contains("Electrical", result.EducationEntries[0].Institution, StringComparison.Ordinal);
+		Assert.Contains("Engineering", result.EducationEntries[0].Institution, StringComparison.Ordinal);
+	}
 
-    [Fact]
-    public void Extract_JoinsMultilineInstitutionWithoutBlankLineSeparators()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_JoinsMultilineInstitutionWithoutBlankLineSeparators()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -146,16 +146,16 @@ public sealed class EducationImportEdgeCaseTests
             Engineering
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Equal("High School of Electrical and Training Engineering", education.Institution);
-    }
+		Assert.Equal("High School of Electrical and Training Engineering", education.Institution);
+	}
 
-    [Fact]
-    public void Extract_PreservesEducationDescriptionAfterInstitutionBlock()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_PreservesEducationDescriptionAfterInstitutionBlock()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -166,16 +166,16 @@ public sealed class EducationImportEdgeCaseTests
             Graduated with honors and specialization in distributed systems.
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Equal("Graduated with honors and specialization in distributed systems.", education.Description);
-    }
+		Assert.Equal("Graduated with honors and specialization in distributed systems.", education.Description);
+	}
 
-    [Fact]
-    public void Extract_DetectsIncompleteInstitutionEndingWithOf()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DetectsIncompleteInstitutionEndingWithOf()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -187,20 +187,20 @@ public sealed class EducationImportEdgeCaseTests
             Information Technology
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Equal("Faculty of Information Technology", education.Institution);
-    }
+		Assert.Equal("Faculty of Information Technology", education.Institution);
+	}
 
-    [Theory]
-    [InlineData("University of")]
-    [InlineData("High School of Electrical")]
-    [InlineData("College of Applied")]
-    public void Extract_TreatsLinesEndingMidPhraseAsIncompleteInstitution(string incompleteLine)
-    {
-        const string continuation = "and Training\nEngineering";
-        var text = $"""
+	[Theory]
+	[InlineData("University of")]
+	[InlineData("High School of Electrical")]
+	[InlineData("College of Applied")]
+	public void Extract_TreatsLinesEndingMidPhraseAsIncompleteInstitution(string incompleteLine)
+	{
+		const string continuation = "and Training\nEngineering";
+		var text = $"""
             Jane Doe
             jane@example.com
 
@@ -212,16 +212,16 @@ public sealed class EducationImportEdgeCaseTests
             {continuation}
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Single(result.EducationEntries);
-        Assert.Contains("Training", result.EducationEntries[0].Institution, StringComparison.Ordinal);
-    }
+		Assert.Single(result.EducationEntries);
+		Assert.Contains("Training", result.EducationEntries[0].Institution, StringComparison.Ordinal);
+	}
 
-    [Fact]
-    public void Extract_DoesNotMergeSecondEntryStartingWithExplicitDegree()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotMergeSecondEntryStartingWithExplicitDegree()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -234,17 +234,17 @@ public sealed class EducationImportEdgeCaseTests
             09/2016 - 06/2020
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.EducationEntries.Count);
-        Assert.Equal("High School", result.EducationEntries[0].Degree);
-        Assert.Equal("BSc Computer Science", result.EducationEntries[1].Degree);
-    }
+		Assert.Equal(2, result.EducationEntries.Count);
+		Assert.Equal("High School", result.EducationEntries[0].Degree);
+		Assert.Equal("BSc Computer Science", result.EducationEntries[1].Degree);
+	}
 
-    [Fact]
-    public void Extract_DoesNotMergeSecondEntryStartingWithDate()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotMergeSecondEntryStartingWithDate()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -257,15 +257,15 @@ public sealed class EducationImportEdgeCaseTests
             BSc Computer Science
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.EducationEntries.Count);
-    }
+		Assert.Equal(2, result.EducationEntries.Count);
+	}
 
-    [Fact]
-    public void Extract_SingleLineInstitutionStillWorks()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_SingleLineInstitutionStillWorks()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -275,17 +275,17 @@ public sealed class EducationImportEdgeCaseTests
             High School of Electrical Engineering
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Equal("High School", education.Degree);
-        Assert.Equal("High School of Electrical Engineering", education.Institution);
-    }
+		Assert.Equal("High School", education.Degree);
+		Assert.Equal("High School of Electrical Engineering", education.Institution);
+	}
 
-    [Fact]
-    public void Extract_ClassicDegreeInstitutionDateLayoutUnchanged()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ClassicDegreeInstitutionDateLayoutUnchanged()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -296,21 +296,21 @@ public sealed class EducationImportEdgeCaseTests
             Graduated with honors.
             """;
 
-        var result = Extract(text);
-        var education = Assert.Single(result.EducationEntries);
+		var result = Extract(text);
+		var education = Assert.Single(result.EducationEntries);
 
-        Assert.Equal("BSc Computer Science", education.Degree);
-        Assert.Equal("Technical University", education.Institution);
-        Assert.Equal(9, education.StartMonth);
-        Assert.Equal(2016, education.StartYear);
-        Assert.Equal(6, education.EndMonth);
-        Assert.Equal(2020, education.EndYear);
-    }
+		Assert.Equal("BSc Computer Science", education.Degree);
+		Assert.Equal("Technical University", education.Institution);
+		Assert.Equal(9, education.StartMonth);
+		Assert.Equal(2016, education.StartYear);
+		Assert.Equal(6, education.EndMonth);
+		Assert.Equal(2020, education.EndYear);
+	}
 
-    [Fact]
-    public void Extract_SectionHasDataTrueForSingleMergedEducationEntry()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_SectionHasDataTrueForSingleMergedEducationEntry()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -323,15 +323,15 @@ public sealed class EducationImportEdgeCaseTests
             Engineering
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.True(result.SectionHasData[CvImportSectionId.Education]);
-    }
+		Assert.True(result.SectionHasData[CvImportSectionId.Education]);
+	}
 
-    [Fact]
-    public void Extract_ParsesInstitutionFirstReVitaeEducationBlocks()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesInstitutionFirstReVitaeEducationBlocks()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -345,18 +345,18 @@ public sealed class EducationImportEdgeCaseTests
             Palo Alto, CA · Full-time · 09 / 2006 – 06 / 2010
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.EducationEntries.Count);
-        Assert.Equal("Massachusetts Institute of Technology", result.EducationEntries[0].Institution);
-        Assert.Equal("MSc Computer Science", result.EducationEntries[0].Degree);
-        Assert.Equal("Cambridge, MA", result.EducationEntries[0].Location);
-        Assert.Equal("Stanford University", result.EducationEntries[1].Institution);
-        Assert.Equal("BSc Software Engineering", result.EducationEntries[1].Degree);
-    }
+		Assert.Equal(2, result.EducationEntries.Count);
+		Assert.Equal("Massachusetts Institute of Technology", result.EducationEntries[0].Institution);
+		Assert.Equal("MSc Computer Science", result.EducationEntries[0].Degree);
+		Assert.Equal("Cambridge, MA", result.EducationEntries[0].Location);
+		Assert.Equal("Stanford University", result.EducationEntries[1].Institution);
+		Assert.Equal("BSc Software Engineering", result.EducationEntries[1].Degree);
+	}
 
-    private static CvImportResult Extract(string text)
-    {
-        return CvImportFieldExtractor.Extract(CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text)));
-    }
+	private static CvImportResult Extract(string text)
+	{
+		return CvImportFieldExtractor.Extract(CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text)));
+	}
 }

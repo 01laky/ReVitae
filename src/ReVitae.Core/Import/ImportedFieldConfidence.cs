@@ -1,5 +1,5 @@
 namespace ReVitae.Core.Import;
 
 public sealed record ImportedFieldConfidence(
-    string FieldKey,
-    CvImportConfidence Confidence);
+	string FieldKey,
+	CvImportConfidence Confidence);

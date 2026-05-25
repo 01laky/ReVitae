@@ -4,5 +4,5 @@ namespace ReVitae.Core.Import.Ocr;
 
 public interface IPdfPageRenderer
 {
-    IReadOnlyList<Image> RenderPages(string filePath, int dpi);
+	IReadOnlyList<Image> RenderPages(string filePath, int dpi);
 }

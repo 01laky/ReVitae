@@ -10,22 +10,22 @@ var txtPath = Path.Combine(repoRoot, $"{baseName}.txt");
 
 var document = JohnDoeMinimalArchitectCvDataset.CreateDocument();
 var emptySource = CvExportSourceDataFactory.Create(
-    new PersonalInformationImport(),
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    null);
+	new PersonalInformationImport(),
+	[],
+	[],
+	[],
+	[],
+	[],
+	[],
+	[],
+	null);
 
 var pdfBytes = new QuestPdfCvExporter().Export(document);
 await File.WriteAllBytesAsync(pdfPath, pdfBytes);
 
 await using (var txtStream = File.Create(txtPath))
 {
-    CvDocumentExporter.Export(document, emptySource, CvExportFormat.Txt, txtStream);
+	CvDocumentExporter.Export(document, emptySource, CvExportFormat.Txt, txtStream);
 }
 
 Console.WriteLine($"Generated: {pdfPath}");

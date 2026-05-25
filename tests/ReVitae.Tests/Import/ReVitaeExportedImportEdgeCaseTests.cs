@@ -5,10 +5,10 @@ namespace ReVitae.Tests.Import;
 
 public sealed class ReVitaeExportedImportEdgeCaseTests
 {
-    [Fact]
-    public void Extract_PrefersNameFromSkillsWhenHeaderIsSummaryProse()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_PrefersNameFromSkillsWhenHeaderIsSummaryProse()
+	{
+		const string text = """
             Full Stack Developer with 12+ years of experience building web and backend systems.
             Strong in React, TypeScript, Node.js, NestJS, Go, .NET, PostgreSQL, and Redis.
             01laky@gmail.com
@@ -20,17 +20,17 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             NestJS · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal("Ladislav", result.Personal.FirstName);
-        Assert.Equal("Kostolný", result.Personal.LastName);
-        Assert.Equal("01laky@gmail.com", result.Personal.Email);
-    }
+		Assert.Equal("Ladislav", result.Personal.FirstName);
+		Assert.Equal("Kostolný", result.Personal.LastName);
+		Assert.Equal("01laky@gmail.com", result.Personal.Email);
+	}
 
-    [Fact]
-    public void Extract_ParsesSplitPersonNameFromSkillsSection()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesSplitPersonNameFromSkillsSection()
+	{
+		const string text = """
             Senior developer with 12+ years of experience across fintech and SaaS products.
             jane@example.com
 
@@ -41,16 +41,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Docker · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal("Ladislav", result.Personal.FirstName);
-        Assert.Equal("Kostolný", result.Personal.LastName);
-    }
+		Assert.Equal("Ladislav", result.Personal.FirstName);
+		Assert.Equal("Kostolný", result.Personal.LastName);
+	}
 
-    [Fact]
-    public void Extract_DoesNotTreatTechnologyTokensAsPersonNameFromSummaryHeader()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotTreatTechnologyTokensAsPersonNameFromSummaryHeader()
+	{
+		const string text = """
             Full Stack Developer with 12+ years of experience building scalable systems.
             Strong in React, TypeScript, Node.js, NestJS, Go, .NET, PostgreSQL, and Redis.
             TypeScript,
@@ -62,18 +62,18 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Docker · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.DoesNotContain("TypeScript", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Redis", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("TypeScript", result.Personal.LastName, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Redis", result.Personal.LastName, StringComparison.OrdinalIgnoreCase);
-    }
+		Assert.DoesNotContain("TypeScript", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+		Assert.DoesNotContain("Redis", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+		Assert.DoesNotContain("TypeScript", result.Personal.LastName, StringComparison.OrdinalIgnoreCase);
+		Assert.DoesNotContain("Redis", result.Personal.LastName, StringComparison.OrdinalIgnoreCase);
+	}
 
-    [Fact]
-    public void Extract_DoesNotUseReactCommaTypeScriptLineAsPersonName()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotUseReactCommaTypeScriptLineAsPersonName()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -83,16 +83,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Docker · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal("Jane", result.Personal.FirstName);
-        Assert.Equal("Doe", result.Personal.LastName);
-    }
+		Assert.Equal("Jane", result.Personal.FirstName);
+		Assert.Equal("Doe", result.Personal.LastName);
+	}
 
-    [Fact]
-    public void Extract_StillParsesClassicNameFromHeaderFirstLine()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_StillParsesClassicNameFromHeaderFirstLine()
+	{
+		const string text = """
             Peter Novák
             peter@example.com
 
@@ -101,16 +101,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             C# · Advanced
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal("Peter", result.Personal.FirstName);
-        Assert.Equal("Novák", result.Personal.LastName);
-    }
+		Assert.Equal("Peter", result.Personal.FirstName);
+		Assert.Equal("Novák", result.Personal.LastName);
+	}
 
-    [Fact]
-    public void Extract_ParsesReVitaeSkillPreviewLinesWithIntermediateProficiency()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesReVitaeSkillPreviewLinesWithIntermediateProficiency()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -122,19 +122,19 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             SAML 2.0 · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var group = Assert.Single(result.SkillsGroups);
-        Assert.Equal("General", group.Category);
-        Assert.Equal(
-            ["Node.js", "NestJS", "OAuth", "SAML 2.0"],
-            group.Skills.Select(skill => skill.Name).ToArray());
-    }
+		var group = Assert.Single(result.SkillsGroups);
+		Assert.Equal("General", group.Category);
+		Assert.Equal(
+			["Node.js", "NestJS", "OAuth", "SAML 2.0"],
+			group.Skills.Select(skill => skill.Name).ToArray());
+	}
 
-    [Fact]
-    public void Extract_ParsesReVitaeSkillPreviewLineWithYears()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesReVitaeSkillPreviewLineWithYears()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -144,16 +144,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Redis · Intermediate · 3 years
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["PostgreSQL", "Redis"], skills);
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["PostgreSQL", "Redis"], skills);
+	}
 
-    [Fact]
-    public void Extract_TrimsGarbagePrefixBeforeGeneralSkillBlock()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_TrimsGarbagePrefixBeforeGeneralSkillBlock()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -169,22 +169,22 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Microservices · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var group = Assert.Single(result.SkillsGroups);
-        Assert.Equal(
-            ["Go", "PHP", "Microservices"],
-            group.Skills.Select(skill => skill.Name).ToArray());
-        Assert.DoesNotContain(result.SkillsGroups.SelectMany(group => group.Skills), skill =>
-            skill.Name.Contains("Developed", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(result.SkillsGroups.SelectMany(group => group.Skills), skill =>
-            skill.Name.Contains("Contributed", StringComparison.OrdinalIgnoreCase));
-    }
+		var group = Assert.Single(result.SkillsGroups);
+		Assert.Equal(
+			["Go", "PHP", "Microservices"],
+			group.Skills.Select(skill => skill.Name).ToArray());
+		Assert.DoesNotContain(result.SkillsGroups.SelectMany(group => group.Skills), skill =>
+			skill.Name.Contains("Developed", StringComparison.OrdinalIgnoreCase));
+		Assert.DoesNotContain(result.SkillsGroups.SelectMany(group => group.Skills), skill =>
+			skill.Name.Contains("Contributed", StringComparison.OrdinalIgnoreCase));
+	}
 
-    [Fact]
-    public void Extract_IgnoresStandaloneTokensWhenReVitaeDotFormatPresent()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_IgnoresStandaloneTokensWhenReVitaeDotFormatPresent()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -196,16 +196,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Cursor · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["Cursor"], skills);
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["Cursor"], skills);
+	}
 
-    [Fact]
-    public void Extract_StillParsesCommaSeparatedSkillsWithoutReVitaeDotFormat()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_StillParsesCommaSeparatedSkillsWithoutReVitaeDotFormat()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -213,16 +213,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             PostgreSQL, Redis, React
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["PostgreSQL", "Redis", "React"], skills);
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["PostgreSQL", "Redis", "React"], skills);
+	}
 
-    [Fact]
-    public void Extract_StillParsesColonCategorySkillsWithoutReVitaeDotFormat()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_StillParsesColonCategorySkillsWithoutReVitaeDotFormat()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -231,17 +231,17 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Frontend: React, TypeScript
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.SkillsGroups.Count);
-        Assert.Equal(["PostgreSQL", "Redis"], result.SkillsGroups[0].Skills.Select(skill => skill.Name).ToArray());
-        Assert.Equal(["React", "TypeScript"], result.SkillsGroups[1].Skills.Select(skill => skill.Name).ToArray());
-    }
+		Assert.Equal(2, result.SkillsGroups.Count);
+		Assert.Equal(["PostgreSQL", "Redis"], result.SkillsGroups[0].Skills.Select(skill => skill.Name).ToArray());
+		Assert.Equal(["React", "TypeScript"], result.SkillsGroups[1].Skills.Select(skill => skill.Name).ToArray());
+	}
 
-    [Fact]
-    public void Extract_DoesNotParseWorkBleedLineAsSkill()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotParseWorkBleedLineAsSkill()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -251,16 +251,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Go · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["Go"], skills);
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["Go"], skills);
+	}
 
-    [Fact]
-    public void Extract_IgnoresExportSubheadingLinesInSkills()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_IgnoresExportSubheadingLinesInSkills()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -271,20 +271,20 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Docker · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["Docker"], skills);
-        Assert.DoesNotContain(result.SkillsGroups, group =>
-            group.Category.Equals("Technologies", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(result.SkillsGroups, group =>
-            group.Category.Equals("Achievements", StringComparison.OrdinalIgnoreCase));
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["Docker"], skills);
+		Assert.DoesNotContain(result.SkillsGroups, group =>
+			group.Category.Equals("Technologies", StringComparison.OrdinalIgnoreCase));
+		Assert.DoesNotContain(result.SkillsGroups, group =>
+			group.Category.Equals("Achievements", StringComparison.OrdinalIgnoreCase));
+	}
 
-    [Fact]
-    public void Extract_DoesNotTreatSingleCommaSkillLineAsSkillList()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotTreatSingleCommaSkillLineAsSkillList()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -294,17 +294,17 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Go · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["Go"], skills);
-        Assert.DoesNotContain(skills, skill => skill.Contains("TypeScript", StringComparison.OrdinalIgnoreCase));
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["Go"], skills);
+		Assert.DoesNotContain(skills, skill => skill.Contains("TypeScript", StringComparison.OrdinalIgnoreCase));
+	}
 
-    [Fact]
-    public void Extract_PutsBulletSkillsInSeparateGeneralGroupFromColonCategory()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_PutsBulletSkillsInSeparateGeneralGroupFromColonCategory()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -314,20 +314,20 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             - Docker
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.SkillsGroups.Count);
-        Assert.Equal("Programming", result.SkillsGroups[0].Category);
-        Assert.Equal(["C#", "Go"], result.SkillsGroups[0].Skills.Select(skill => skill.Name).ToArray());
+		Assert.Equal(2, result.SkillsGroups.Count);
+		Assert.Equal("Programming", result.SkillsGroups[0].Category);
+		Assert.Equal(["C#", "Go"], result.SkillsGroups[0].Skills.Select(skill => skill.Name).ToArray());
 
-        var general = Assert.Single(result.SkillsGroups, group => group.Category == "General");
-        Assert.Equal(["Git", "Docker"], general.Skills.Select(skill => skill.Name).ToArray());
-    }
+		var general = Assert.Single(result.SkillsGroups, group => group.Category == "General");
+		Assert.Equal(["Git", "Docker"], general.Skills.Select(skill => skill.Name).ToArray());
+	}
 
-    [Fact]
-    public void Extract_ParsesSidebarFirstTwoColumnExportTextLayout()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesSidebarFirstTwoColumnExportTextLayout()
+	{
+		const string text = """
             Full Stack Developer with 12+ years of experience building web systems.
             Strong in React, TypeScript, Node.js, NestJS, Go, .NET, PostgreSQL, and Redis.
 
@@ -355,41 +355,41 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Go · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal("Ladislav", result.Personal.FirstName);
-        Assert.Equal("Kostolný", result.Personal.LastName);
-        Assert.Equal("01laky@gmail.com", result.Personal.Email);
-        Assert.Equal(2, result.WorkExperienceEntries.Count);
-        Assert.True(result.SkillsGroups.Sum(group => group.Skills.Count) <= 10);
-        Assert.Contains(result.SkillsGroups.SelectMany(group => group.Skills), skill =>
-            skill.Name.Equals("Node.js", StringComparison.OrdinalIgnoreCase));
-    }
+		Assert.Equal("Ladislav", result.Personal.FirstName);
+		Assert.Equal("Kostolný", result.Personal.LastName);
+		Assert.Equal("01laky@gmail.com", result.Personal.Email);
+		Assert.Equal(2, result.WorkExperienceEntries.Count);
+		Assert.True(result.SkillsGroups.Sum(group => group.Skills.Count) <= 10);
+		Assert.Contains(result.SkillsGroups.SelectMany(group => group.Skills), skill =>
+			skill.Name.Equals("Node.js", StringComparison.OrdinalIgnoreCase));
+	}
 
-    [Fact]
-    public void Import_ReVitaeExportedSidebarPdf_DoesNotDumpWorkDescriptionsIntoSkills()
-    {
-        var path = Path.Combine(AppContext.BaseDirectory, "Import", "Fixtures", "ReVitaeExportedSidebarCv.pdf");
-        if (!File.Exists(path))
-        {
-            return;
-        }
+	[Fact]
+	public void Import_ReVitaeExportedSidebarPdf_DoesNotDumpWorkDescriptionsIntoSkills()
+	{
+		var path = Path.Combine(AppContext.BaseDirectory, "Import", "Fixtures", "ReVitaeExportedSidebarCv.pdf");
+		if (!File.Exists(path))
+		{
+			return;
+		}
 
-        var result = CvDocumentImporter.Import(path);
+		var result = CvDocumentImporter.Import(path);
 
-        Assert.True(result.Success, result.ErrorMessageKey);
-        foreach (var skill in result.SkillsGroups.SelectMany(group => group.Skills))
-        {
-            Assert.DoesNotContain("architecture decisions", skill.Name, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("reviewed AI outputs", skill.Name, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("software architecture", skill.Name, StringComparison.OrdinalIgnoreCase);
-        }
-    }
+		Assert.True(result.Success, result.ErrorMessageKey);
+		foreach (var skill in result.SkillsGroups.SelectMany(group => group.Skills))
+		{
+			Assert.DoesNotContain("architecture decisions", skill.Name, StringComparison.OrdinalIgnoreCase);
+			Assert.DoesNotContain("reviewed AI outputs", skill.Name, StringComparison.OrdinalIgnoreCase);
+			Assert.DoesNotContain("software architecture", skill.Name, StringComparison.OrdinalIgnoreCase);
+		}
+	}
 
-    [Fact]
-    public void Extract_PrefersBestPersonNameOverFragmentedPdfHeaderNoise()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_PrefersBestPersonNameOverFragmentedPdfHeaderNoise()
+	{
+		const string text = """
             Email: 01laky@gmail.com
             Phone: (+421) 944159982
             Location: Turček, Slovakia 03848
@@ -414,18 +414,18 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Go · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal("Ladislav", result.Personal.FirstName);
-        Assert.Equal("Kostolný", result.Personal.LastName);
-        Assert.DoesNotContain("AI-assisted", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("integrating", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
-    }
+		Assert.Equal("Ladislav", result.Personal.FirstName);
+		Assert.Equal("Kostolný", result.Personal.LastName);
+		Assert.DoesNotContain("AI-assisted", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+		Assert.DoesNotContain("integrating", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+	}
 
-    [Fact]
-    public void Extract_DoesNotUseContactSectionJobTextAsPersonName()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_DoesNotUseContactSectionJobTextAsPersonName()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -441,17 +441,17 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Docker · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal("Jane", result.Personal.FirstName);
-        Assert.Equal("Doe", result.Personal.LastName);
-        Assert.DoesNotContain("invoice", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
-    }
+		Assert.Equal("Jane", result.Personal.FirstName);
+		Assert.Equal("Doe", result.Personal.LastName);
+		Assert.DoesNotContain("invoice", result.Personal.FirstName, StringComparison.OrdinalIgnoreCase);
+	}
 
-    [Fact]
-    public void Extract_MergesSplitSkillProficiencyLinesFromPdfFragmentation()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_MergesSplitSkillProficiencyLinesFromPdfFragmentation()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -467,16 +467,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["Node.js", "NestJS", "Microservices", "Cybersecurity", "Management"], skills);
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["Node.js", "NestJS", "Microservices", "Cybersecurity", "Management"], skills);
+	}
 
-    [Fact]
-    public void Extract_AssignsOrphanProficiencyToBareSkillNameLines()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_AssignsOrphanProficiencyToBareSkillNameLines()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -486,16 +486,16 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["Secure API Design"], skills);
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["Secure API Design"], skills);
+	}
 
-    [Fact]
-    public void Extract_ParsesMultipleWorkEntriesWithOrphanHeaderDateFragments()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesMultipleWorkEntriesWithOrphanHeaderDateFragments()
+	{
+		const string text = """
             Email: jane@example.com
             / 2024 - 05 / 2026
             / 2023 - 01 / 2024
@@ -513,31 +513,31 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Worked on web application development.
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.WorkExperienceEntries.Count);
+		Assert.Equal(2, result.WorkExperienceEntries.Count);
 
-        var excalibur = result.WorkExperienceEntries[0];
-        Assert.Equal("full stack developer", excalibur.JobTitle);
-        Assert.Equal("Excalibur s.r.o.", excalibur.Company);
-        Assert.Equal("Kosice, Slovakia", excalibur.Location);
-        Assert.Equal(1, excalibur.StartMonth);
-        Assert.Equal(2024, excalibur.StartYear);
-        Assert.Equal(5, excalibur.EndMonth);
-        Assert.Equal(2026, excalibur.EndYear);
+		var excalibur = result.WorkExperienceEntries[0];
+		Assert.Equal("full stack developer", excalibur.JobTitle);
+		Assert.Equal("Excalibur s.r.o.", excalibur.Company);
+		Assert.Equal("Kosice, Slovakia", excalibur.Location);
+		Assert.Equal(1, excalibur.StartMonth);
+		Assert.Equal(2024, excalibur.StartYear);
+		Assert.Equal(5, excalibur.EndMonth);
+		Assert.Equal(2026, excalibur.EndYear);
 
-        var devcity = result.WorkExperienceEntries[1];
-        Assert.Equal("Devcity s.r.o.", devcity.Company);
-        Assert.Equal(3, devcity.StartMonth);
-        Assert.Equal(2023, devcity.StartYear);
-        Assert.Equal(1, devcity.EndMonth);
-        Assert.Equal(2024, devcity.EndYear);
-    }
+		var devcity = result.WorkExperienceEntries[1];
+		Assert.Equal("Devcity s.r.o.", devcity.Company);
+		Assert.Equal(3, devcity.StartMonth);
+		Assert.Equal(2023, devcity.StartYear);
+		Assert.Equal(1, devcity.EndMonth);
+		Assert.Equal(2024, devcity.EndYear);
+	}
 
-    [Fact]
-    public void Extract_ParsesTruncatedWorkMetaWithoutOrphanDatesAsSeparateEntries()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesTruncatedWorkMetaWithoutOrphanDatesAsSeparateEntries()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -551,19 +551,19 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             Delivered frontend modules.
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        Assert.Equal(2, result.WorkExperienceEntries.Count);
-        Assert.Equal("Excalibur s.r.o.", result.WorkExperienceEntries[0].Company);
-        Assert.Equal("Devcity s.r.o.", result.WorkExperienceEntries[1].Company);
-        Assert.Equal(2024, result.WorkExperienceEntries[0].StartYear);
-        Assert.Equal(2023, result.WorkExperienceEntries[1].StartYear);
-    }
+		Assert.Equal(2, result.WorkExperienceEntries.Count);
+		Assert.Equal("Excalibur s.r.o.", result.WorkExperienceEntries[0].Company);
+		Assert.Equal("Devcity s.r.o.", result.WorkExperienceEntries[1].Company);
+		Assert.Equal(2024, result.WorkExperienceEntries[0].StartYear);
+		Assert.Equal(2023, result.WorkExperienceEntries[1].StartYear);
+	}
 
-    [Fact]
-    public void Extract_MergesDotPrefixedProficiencyFragments()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_MergesDotPrefixedProficiencyFragments()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -574,24 +574,24 @@ public sealed class ReVitaeExportedImportEdgeCaseTests
             · Intermediate
             """;
 
-        var result = Extract(text);
+		var result = Extract(text);
 
-        var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
-        Assert.Equal(["OAuth", "RBAC"], skills);
-    }
+		var skills = result.SkillsGroups.SelectMany(group => group.Skills).Select(skill => skill.Name).ToArray();
+		Assert.Equal(["OAuth", "RBAC"], skills);
+	}
 
-    private static CvImportResult Extract(string text)
-    {
-        return CvImportFieldExtractor.Extract(CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text)));
-    }
+	private static CvImportResult Extract(string text)
+	{
+		return CvImportFieldExtractor.Extract(CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text)));
+	}
 }
 
 public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
 {
-    [Fact]
-    public void Segment_DoesNotTreatExportSubheadingsAsSectionHeaders()
-    {
-        const string text = """
+	[Fact]
+	public void Segment_DoesNotTreatExportSubheadingsAsSectionHeaders()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -609,23 +609,23 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
             Go · Intermediate
             """;
 
-        var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
+		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
 
-        Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.WorkExperience));
-        var workBody = result.SectionBodies[CvImportSectionId.WorkExperience];
-        Assert.Contains("Built platform APIs.", workBody, StringComparison.Ordinal);
-        Assert.Contains("Technologies", workBody, StringComparison.Ordinal);
-        Assert.Contains("Achievements", workBody, StringComparison.Ordinal);
-        Assert.Contains("Shipped release on time.", workBody, StringComparison.Ordinal);
-        Assert.Contains("Company URL", workBody, StringComparison.Ordinal);
-        Assert.Contains("Institution URL", workBody, StringComparison.Ordinal);
-        Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Skills));
-    }
+		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.WorkExperience));
+		var workBody = result.SectionBodies[CvImportSectionId.WorkExperience];
+		Assert.Contains("Built platform APIs.", workBody, StringComparison.Ordinal);
+		Assert.Contains("Technologies", workBody, StringComparison.Ordinal);
+		Assert.Contains("Achievements", workBody, StringComparison.Ordinal);
+		Assert.Contains("Shipped release on time.", workBody, StringComparison.Ordinal);
+		Assert.Contains("Company URL", workBody, StringComparison.Ordinal);
+		Assert.Contains("Institution URL", workBody, StringComparison.Ordinal);
+		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Skills));
+	}
 
-    [Fact]
-    public void Segment_DoesNotTreatStandaloneTechnologiesLabelAsSkillsSection()
-    {
-        const string text = """
+	[Fact]
+	public void Segment_DoesNotTreatStandaloneTechnologiesLabelAsSkillsSection()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -635,18 +635,18 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
             C#, SQL
             """;
 
-        var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
+		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
 
-        Assert.False(result.SectionBodies.ContainsKey(CvImportSectionId.Skills));
-        var workBody = result.SectionBodies[CvImportSectionId.WorkExperience];
-        Assert.Contains("Technologies", workBody, StringComparison.Ordinal);
-        Assert.Contains("C#, SQL", workBody, StringComparison.Ordinal);
-    }
+		Assert.False(result.SectionBodies.ContainsKey(CvImportSectionId.Skills));
+		var workBody = result.SectionBodies[CvImportSectionId.WorkExperience];
+		Assert.Contains("Technologies", workBody, StringComparison.Ordinal);
+		Assert.Contains("C#, SQL", workBody, StringComparison.Ordinal);
+	}
 
-    [Fact]
-    public void Segment_StillDetectsTechnicalSkillsHeader()
-    {
-        const string text = """
+	[Fact]
+	public void Segment_StillDetectsTechnicalSkillsHeader()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -654,16 +654,16 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
             C#, Go
             """;
 
-        var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
+		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
 
-        Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Skills));
-        Assert.Contains("C#, Go", result.SectionBodies[CvImportSectionId.Skills], StringComparison.Ordinal);
-    }
+		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Skills));
+		Assert.Contains("C#, Go", result.SectionBodies[CvImportSectionId.Skills], StringComparison.Ordinal);
+	}
 
-    [Fact]
-    public void Extract_MergesSplitLinkedInUrlLinesFromContactSection()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_MergesSplitLinkedInUrlLinesFromContactSection()
+	{
+		const string text = """
             Jane Doe
             Contact
             LinkedIn URL: https://
@@ -671,15 +671,15 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
             doe
             """;
 
-        var result = ImportTestHelpers.Extract(text);
+		var result = ImportTestHelpers.Extract(text);
 
-        Assert.Equal("https://www.linkedin.com/in/jane-doe", result.Personal.LinkedInUrl);
-    }
+		Assert.Equal("https://www.linkedin.com/in/jane-doe", result.Personal.LinkedInUrl);
+	}
 
-    [Fact]
-    public void Extract_ParsesReVitaeSkillCategoryHeadersWithDotFormat()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesReVitaeSkillCategoryHeadersWithDotFormat()
+	{
+		const string text = """
             Jane Doe
             Skills
             Backend & Runtimes
@@ -688,17 +688,17 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
             React · Advanced · 8 yrs
             """;
 
-        var result = ImportTestHelpers.Extract(text);
+		var result = ImportTestHelpers.Extract(text);
 
-        Assert.Equal(2, result.SkillsGroups.Count);
-        Assert.Equal("Backend & Runtimes", result.SkillsGroups[0].Category);
-        Assert.Equal("Frontend", result.SkillsGroups[1].Category);
-    }
+		Assert.Equal(2, result.SkillsGroups.Count);
+		Assert.Equal("Backend & Runtimes", result.SkillsGroups[0].Category);
+		Assert.Equal("Frontend", result.SkillsGroups[1].Category);
+	}
 
-    [Fact]
-    public void Extract_SplitsReVitaeCertificateAndProjectEntriesOnSingleNewlines()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_SplitsReVitaeCertificateAndProjectEntriesOnSingleNewlines()
+	{
+		const string text = """
             Jane Doe
             Certificates
             Professional Certification #01 - Cloud
@@ -717,17 +717,17 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
             Date range: 02 / 2019 – 01 / 2020
             """;
 
-        var result = ImportTestHelpers.Extract(text);
+		var result = ImportTestHelpers.Extract(text);
 
-        Assert.Equal(2, result.CertificateEntries.Count);
-        Assert.Equal(2, result.ProjectEntries.Count);
-        Assert.Equal(2021, result.ProjectEntries[0].EndYear);
-    }
+		Assert.Equal(2, result.CertificateEntries.Count);
+		Assert.Equal(2, result.ProjectEntries.Count);
+		Assert.Equal(2021, result.ProjectEntries[0].EndYear);
+	}
 
-    [Fact]
-    public void Extract_MergesSplitEducationMetaLineBeforeParsingEntries()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_MergesSplitEducationMetaLineBeforeParsingEntries()
+	{
+		const string text = """
             Jane Doe
             Education
             MSc Computer Science
@@ -739,12 +739,12 @@ public sealed class ReVitaeExportSubheadingSegmenterEdgeCaseTests
             2004
             """;
 
-        var result = ImportTestHelpers.Extract(text);
+		var result = ImportTestHelpers.Extract(text);
 
-        Assert.Equal(2, result.EducationEntries.Count);
-        Assert.Equal("Massachusetts Institute of Technology", result.EducationEntries[0].Institution);
-        Assert.Equal(2002, result.EducationEntries[0].EndYear);
-        Assert.Equal("Stanford University", result.EducationEntries[1].Institution);
-        Assert.Equal(2004, result.EducationEntries[1].EndYear);
-    }
+		Assert.Equal(2, result.EducationEntries.Count);
+		Assert.Equal("Massachusetts Institute of Technology", result.EducationEntries[0].Institution);
+		Assert.Equal(2002, result.EducationEntries[0].EndYear);
+		Assert.Equal("Stanford University", result.EducationEntries[1].Institution);
+		Assert.Equal(2004, result.EducationEntries[1].EndYear);
+	}
 }

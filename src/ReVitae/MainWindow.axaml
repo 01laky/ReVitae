@@ -1,1909 +1,1915 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:loc="clr-namespace:ReVitae.Core.Localization;assembly=ReVitae.Core"
-        xmlns:controls="clr-namespace:ReVitae.Controls"
-        xmlns:workExperience="clr-namespace:ReVitae.WorkExperience"
-        xmlns:education="clr-namespace:ReVitae.Education"
-        xmlns:skills="clr-namespace:ReVitae.Skills"
-        xmlns:languages="clr-namespace:ReVitae.Languages"
-        xmlns:certificates="clr-namespace:ReVitae.Certificates"
-        xmlns:projects="clr-namespace:ReVitae.Projects"
-        xmlns:links="clr-namespace:ReVitae.Links"
-        xmlns:additionalInformation="clr-namespace:ReVitae.AdditionalInformation"
-        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-        x:Class="ReVitae.MainWindow"
-        mc:Ignorable="d"
-        d:DesignWidth="900"
-        d:DesignHeight="600"
-        Width="900"
-        Height="720"
-        MinWidth="720"
-        MinHeight="480"
-        Title="ReVitae"
-        KeyDown="OnWindowKeyDown"
-        Closing="OnWindowClosing"
-        SizeChanged="OnWindowSizeChanged">
-    <Grid x:Name="RootGrid"
-          RowDefinitions="Auto,*"
-          Margin="24">
-        <Grid Grid.Row="0"
-              ColumnDefinitions="*,Auto"
-              ColumnSpacing="16">
-            <StackPanel Grid.Column="0"
-                        Classes="re-vitae-page">
-                <TextBlock Text="ReVitae"
-                           Classes="re-vitae-app-title" />
-                <TextBlock x:Name="HeaderSubtitleTextBlock"
-                           Classes="re-vitae-subtitle"
-                           Text="Create a simple CV preview and export a plain PDF." />
-            </StackPanel>
-
-            <StackPanel Grid.Column="1"
-                        Orientation="Horizontal"
-                        Spacing="8"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center">
-                <Button x:Name="OpenCreateNewCvButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnOpenCreateNewCvClicked"
-                        ToolTip.Tip="Create new CV"
-                        AutomationProperties.Name="Create new CV">
-                    <materialIcons:MaterialIcon Kind="FileDocumentPlusOutline"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-
-                <Button x:Name="SaveProjectButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnSaveProjectClicked"
-                        ToolTip.Tip="Save"
-                        AutomationProperties.Name="Save">
-                    <materialIcons:MaterialIcon Kind="ContentSave"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-
-                <Button x:Name="SaveProjectAsButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnSaveProjectAsClicked"
-                        ToolTip.Tip="Save As"
-                        AutomationProperties.Name="Save As">
-                    <materialIcons:MaterialIcon Kind="ContentSaveOutline"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-
-                <Button x:Name="OpenProjectButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnOpenProjectClicked"
-                        ToolTip.Tip="Open"
-                        AutomationProperties.Name="Open">
-                    <materialIcons:MaterialIcon Kind="FolderOpenOutline"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-
-                <Button x:Name="UploadCvButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnUploadCvClicked"
-                        ToolTip.Tip="Upload another CV"
-                        AutomationProperties.Name="Upload another CV">
-                    <materialIcons:MaterialIcon Kind="FileUpload"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-
-                <Button x:Name="OpenAiSetupButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnOpenAiSetupClicked"
-                        ToolTip.Tip="Open AI setup"
-                        AutomationProperties.Name="Open AI setup">
-                    <Panel Width="24"
-                           Height="24">
-                        <materialIcons:MaterialIcon Kind="Robot"
-                                                    Width="24"
-                                                    Height="24" />
-                        <Ellipse x:Name="AiDownloadHeaderBadge"
-                                 Width="8"
-                                 Height="8"
-                                 Fill="#2563EB"
-                                 HorizontalAlignment="Right"
-                                 VerticalAlignment="Top"
-                                 Margin="0,-2,-2,0"
-                                 IsVisible="False" />
-                        <Ellipse x:Name="AiOnlineActiveHeaderBadge"
-                                 Width="8"
-                                 Height="8"
-                                 Fill="#2563EB"
-                                 HorizontalAlignment="Left"
-                                 VerticalAlignment="Top"
-                                 Margin="-2,-2,0,0"
-                                 IsVisible="False" />
-                        <Ellipse x:Name="AiLocalActiveHeaderBadge"
-                                 Width="8"
-                                 Height="8"
-                                 Fill="#16A34A"
-                                 HorizontalAlignment="Left"
-                                 VerticalAlignment="Bottom"
-                                 Margin="-2,0,0,-2"
-                                 IsVisible="False" />
-                    </Panel>
-                </Button>
-
-                <Button x:Name="OpenSetupButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnOpenSetupClicked"
-                        ToolTip.Tip="Open setup"
-                        AutomationProperties.Name="Open setup">
-                    <materialIcons:MaterialIcon Kind="Cog"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-
-                <Button x:Name="OpenTemplatesButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnOpenTemplatesClicked"
-                        ToolTip.Tip="Open templates"
-                        AutomationProperties.Name="Open templates">
-                    <materialIcons:MaterialIcon Kind="Palette"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-
-                <Button x:Name="OpenAboutButton"
-                        Classes="re-vitae-icon-button"
-                        Click="OnOpenAboutClicked"
-                        ToolTip.Tip="About"
-                        AutomationProperties.Name="About">
-                    <materialIcons:MaterialIcon Kind="InformationOutline"
-                                                Width="24"
-                                                Height="24" />
-                </Button>
-            </StackPanel>
-        </Grid>
-
-        <Grid Grid.Row="1"
-              Margin="0,24,0,0"
-              ColumnDefinitions="*,*"
-              ColumnSpacing="24">
-            <ScrollViewer x:Name="FormScrollViewer" Grid.Column="0">
-                <Border Classes="re-vitae-app-card">
-                    <StackPanel Classes="re-vitae-section-body">
-                        <controls:ExpandableSection x:Name="PersonalInformationSection"
-                                                    IsExpanded="True">
-                            <controls:ExpandableSection.SectionContent>
-                                <StackPanel Classes="re-vitae-section-body">
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="ProfilePhotoLabelTextBlock" Text="Profile photo" />
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
-                                <Button x:Name="ProfilePhotoUploadButton"
-                                        Classes="re-vitae-icon-button"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Padding="0"
-                                        Click="OnProfilePhotoUploadClicked">
-                                    <Border x:Name="ProfilePhotoPreviewHost"
-                                            Width="112"
-                                            Height="112"
-                                            CornerRadius="56"
-                                            ClipToBounds="True"
-                                            Background="#E8E8E8" />
-                                </Button>
-                                <StackPanel Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Spacing="8">
-                                    <TextBlock x:Name="ProfilePhotoHintTextBlock"
-                                               Text="Click to upload a photo"
-                                               TextWrapping="Wrap" />
-                                    <Button x:Name="ProfilePhotoRemoveButton"
-                                            Classes="re-vitae-text-button"
-                                            IsVisible="False"
-                                            Click="OnProfilePhotoRemoveClicked"
-                                            Content="Remove photo" />
-                                </StackPanel>
-                            </Grid>
-                            <TextBlock x:Name="ProfilePhotoErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="FirstNameLabelTextBlock" Text="First name" />
-                            <TextBox x:Name="FirstNameTextBox"
-                                     PlaceholderText="John"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="FirstNameErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="LastNameLabelTextBlock" Text="Last name" />
-                            <TextBox x:Name="LastNameTextBox"
-                                     PlaceholderText="Doe"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="LastNameErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="ProfessionalTitleLabelTextBlock" Text="Professional title" />
-                            <TextBox x:Name="ProfessionalTitleTextBox"
-                                     PlaceholderText="Frontend Developer"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="ProfessionalTitleErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="EmailLabelTextBlock" Text="Email" />
-                            <TextBox x:Name="EmailTextBox"
-                                     PlaceholderText="john.doe@example.com"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="EmailErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="PhoneLabelTextBlock" Text="Phone" />
-                            <TextBox x:Name="PhoneTextBox"
-                                     PlaceholderText="+421 900 000 000"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="PhoneErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="LocationLabelTextBlock" Text="Location" />
-                            <TextBox x:Name="LocationTextBox"
-                                     PlaceholderText="Bratislava, Slovakia"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="LocationErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="LinkedInUrlLabelTextBlock" Text="LinkedIn URL" />
-                            <TextBox x:Name="LinkedInUrlTextBox"
-                                     PlaceholderText="https://www.linkedin.com/in/johndoe"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="LinkedInUrlErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="PortfolioUrlLabelTextBlock" Text="Portfolio / website URL" />
-                            <TextBox x:Name="PortfolioUrlTextBox"
-                                     PlaceholderText="https://johndoe.dev"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="PortfolioUrlErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="GitHubUrlLabelTextBlock" Text="GitHub URL" />
-                            <TextBox x:Name="GitHubUrlTextBox"
-                                     PlaceholderText="https://github.com/johndoe"
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="GitHubUrlErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="ShortSummaryLabelTextBlock" Text="Short summary" />
-                            <TextBox x:Name="ShortSummaryTextBox"
-                                     Classes="re-vitae-multiline"
-                                     PlaceholderText="Write two to four sentences about your professional profile."
-                                     TextChanged="OnFormTextChanged" />
-                            <TextBlock x:Name="ShortSummaryErrorTextBlock"
-                                       Classes="re-vitae-error" />
-                        </StackPanel>
-                                </StackPanel>
-                            </controls:ExpandableSection.SectionContent>
-                        </controls:ExpandableSection>
-
-                        <workExperience:WorkExperienceSectionView x:Name="WorkExperienceSection" />
-
-                        <education:EducationSectionView x:Name="EducationSection" />
-
-                        <skills:SkillsSectionView x:Name="SkillsSection" />
-
-                        <languages:LanguagesSectionView x:Name="LanguagesSection" />
-
-                        <certificates:CertificatesSectionView x:Name="CertificatesSection" />
-
-                        <projects:ProjectsSectionView x:Name="ProjectsSection" />
-
-                        <links:LinksSectionView x:Name="LinksSection" />
-
-                        <additionalInformation:AdditionalInformationSectionView x:Name="AdditionalInformationSection" />
-
-                        <StackPanel x:Name="QualityHintExportSummaryPanel"
-                                    Orientation="Horizontal"
-                                    Spacing="8"
-                                    IsVisible="False">
-                            <TextBlock x:Name="QualityHintExportSummaryTextBlock"
-                                       Classes="re-vitae-secondary"
-                                       VerticalAlignment="Center" />
-                            <Button x:Name="QualityHintExportReviewButton"
-                                    Classes="re-vitae-secondary"
-                                    Content="Review"
-                                    Click="OnQualityHintExportReviewClicked" />
-                        </StackPanel>
-
-                        <Button x:Name="ExportPdfButton"
-                                Classes="re-vitae-primary"
-                                Content="Export"
-                                Click="OnExportPdfClicked" />
-
-                        <TextBlock x:Name="ExportStatusTextBlock"
-                                   Classes="re-vitae-secondary" />
-
-                        <StackPanel x:Name="ImportAiEnhancePanel"
-                                    Orientation="Horizontal"
-                                    Spacing="12"
-                                    IsVisible="False">
-                            <TextBlock x:Name="ImportAiEnhanceBannerTextBlock"
-                                       Classes="re-vitae-secondary"
-                                       VerticalAlignment="Center" />
-                            <Button x:Name="ImportAiEnhanceButton"
-                                    Classes="re-vitae-secondary"
-                                    Content="Enhance with AI"
-                                    Click="OnImportAiEnhanceClicked" />
-                        </StackPanel>
-
-                        <StackPanel x:Name="ExportPostActionPanel"
-                                    Orientation="Horizontal"
-                                    Spacing="12"
-                                    IsVisible="False">
-                            <Button x:Name="ExportOpenFileButton"
-                                    Classes="re-vitae-secondary"
-                                    Content="Open file"
-                                    Click="OnExportOpenFileClicked" />
-                            <Button x:Name="ExportShowInFolderButton"
-                                    Classes="re-vitae-secondary"
-                                    Content="Show in folder"
-                                    Click="OnExportShowInFolderClicked" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </ScrollViewer>
-
-            <Border Grid.Column="1"
-                    Classes="re-vitae-app-card">
-                <Grid RowDefinitions="Auto,*"
-                      RowSpacing="14">
-                    <Grid Grid.Row="0"
-                          Classes="re-vitae-section-header"
-                          ColumnDefinitions="Auto,*,Auto">
-                        <Border Grid.Column="0"
-                                Classes="re-vitae-section-header-spacer" />
-                        <TextBlock x:Name="PreviewTitleTextBlock"
-                                   Grid.Column="1"
-                                   Classes="re-vitae-section-title"
-                                   VerticalAlignment="Center"
-                                   Text="Preview" />
-                        <Button x:Name="OpenPreviewExpandButton"
-                                Grid.Column="2"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnOpenPreviewExpandClicked"
-                                ToolTip.Tip="Expand preview"
-                                AutomationProperties.Name="Expand preview">
-                            <materialIcons:MaterialIcon Kind="ArrowExpand"
-                                                        Width="22"
-                                                        Height="22" />
-                        </Button>
-                    </Grid>
-                    <Border Grid.Row="1"
-                            Classes="re-vitae-preview-surface">
-                        <ScrollViewer Classes="re-vitae-preview-scroll"
-                                      HorizontalScrollBarVisibility="Auto"
-                                      VerticalScrollBarVisibility="Auto">
-                            <ContentControl x:Name="PreviewContentControl" />
-                        </ScrollViewer>
-                    </Border>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="IntroModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="True">
-            <Border x:Name="IntroModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="560"
-                    MinWidth="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="16"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="IntroTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="24"
-                               Text="Welcome to ReVitae" />
-                    <TextBlock x:Name="IntroSubtitleTextBlock"
-                               Classes="re-vitae-secondary"
-                               TextWrapping="Wrap"
-                               Text="Create a new CV from scratch or import an existing file to get started faster." />
-                    <TextBlock x:Name="IntroHelperTextBlock"
-                               Classes="re-vitae-secondary"
-                               TextWrapping="Wrap"
-                               Text="Works with PDF, Word, OpenDocument, RTF, text, Markdown, HTML, JSON, XML, and other common CV files. Scanned or image-only PDFs are not supported." />
-
-                    <StackPanel x:Name="IntroActionsPanel"
-                                Spacing="10">
-                        <Button x:Name="CreateNewCvButton"
-                                Classes="re-vitae-primary"
-                                HorizontalAlignment="Stretch"
-                                Click="OnCreateNewCvClicked"
-                                AutomationProperties.Name="Create new CV">
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="10"
-                                        HorizontalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FilePlus"
-                                                            Width="20"
-                                                            Height="20" />
-                                <TextBlock x:Name="CreateNewCvButtonTextBlock"
-                                           Text="Create new CV"
-                                           VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="ImportCvButton"
-                                Classes="re-vitae-secondary"
-                                HorizontalAlignment="Stretch"
-                                Click="OnImportCvClicked"
-                                AutomationProperties.Name="Import existing CV">
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="10"
-                                        HorizontalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FileUpload"
-                                                            Width="20"
-                                                            Height="20" />
-                                <TextBlock x:Name="ImportCvButtonTextBlock"
-                                           Text="Import existing CV"
-                                           VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="IntroOpenProjectButton"
-                                Classes="re-vitae-secondary"
-                                HorizontalAlignment="Stretch"
-                                Click="OnIntroOpenProjectClicked"
-                                AutomationProperties.Name="Open saved project">
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="10"
-                                        HorizontalAlignment="Center">
-                                <materialIcons:MaterialIcon Kind="FolderOpenOutline"
-                                                            Width="20"
-                                                            Height="20" />
-                                <TextBlock x:Name="IntroOpenProjectButtonTextBlock"
-                                           Text="Open saved project"
-                                           VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <Border x:Name="IntroRecoveryPanel"
-                            Classes="re-vitae-app-card"
-                            Padding="12"
-                            IsVisible="False">
-                        <StackPanel Spacing="8">
-                            <TextBlock x:Name="IntroRecoveryTitleTextBlock"
-                                       Classes="re-vitae-app-title"
-                                       FontSize="16"
-                                       Text="Recover unsaved work?" />
-                            <TextBlock x:Name="IntroRecoveryMessageTextBlock"
-                                       Classes="re-vitae-secondary"
-                                       TextWrapping="Wrap"
-                                       Text="ReVitae found an autosaved CV from an unexpected exit." />
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="10">
-                                <Button x:Name="IntroRecoveryRestoreButton"
-                                        Classes="re-vitae-primary"
-                                        Content="Recover"
-                                        Click="OnIntroRecoveryRestoreClicked" />
-                                <Button x:Name="IntroRecoveryDiscardButton"
-                                        Classes="re-vitae-secondary"
-                                        Content="Discard"
-                                        Click="OnIntroRecoveryDiscardClicked" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <TextBlock x:Name="IntroRecentTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="16"
-                               Text="Recent projects"
-                               IsVisible="False" />
-
-                    <StackPanel x:Name="IntroRecentProjectsPanel"
-                                Spacing="8"
-                                IsVisible="False" />
-
-                    <Button x:Name="IntroClearRecentProjectsButton"
-                            Classes="re-vitae-secondary"
-                            Content="Clear list"
-                            HorizontalAlignment="Left"
-                            IsVisible="False"
-                            Click="OnIntroClearRecentProjectsClicked" />
-
-                    <StackPanel x:Name="IntroProgressPanel"
-                                Spacing="8"
-                                IsVisible="False">
-                        <TextBlock x:Name="IntroProgressTextBlock"
-                                   Classes="re-vitae-secondary"
-                                   Text="Reading document…" />
-                        <ProgressBar IsIndeterminate="True"
-                                     Height="4" />
-                    </StackPanel>
-
-                    <TextBlock x:Name="IntroErrorTextBlock"
-                               Classes="re-vitae-error"
-                               TextWrapping="Wrap"
-                               IsVisible="False" />
-
-                    <Button x:Name="IntroRetryImportButton"
-                            Classes="re-vitae-secondary"
-                            Content="Try import again"
-                            HorizontalAlignment="Left"
-                            IsVisible="False"
-                            Click="OnIntroRetryImportClicked" />
-
-                    <Button x:Name="IntroImportForceOcrButton"
-                            Classes="re-vitae-secondary"
-                            Content="Import as scan (OCR)"
-                            HorizontalAlignment="Left"
-                            IsVisible="False"
-                            Click="OnIntroForceOcrImportClicked" />
-
-                    <Button x:Name="IntroImportTryAiButton"
-                            Classes="re-vitae-primary"
-                            Content="Try AI import"
-                            HorizontalAlignment="Left"
-                            IsVisible="False"
-                            Click="OnIntroImportTryAiClicked" />
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="AiSetupModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="AiSetupModalPanel"
-                    Classes="re-vitae-modal-panel re-vitae-ai-setup-modal"
-                    MaxWidth="960"
-                    MaxHeight="720"
-                    MinWidth="360"
-                    MinHeight="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <TextBlock x:Name="AiSetupTitleTextBlock"
-                                   Classes="re-vitae-app-title"
-                                   FontSize="24"
-                                   Text="AI setup"
-                                   VerticalAlignment="Center" />
-                        <Button x:Name="AiSetupTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnCloseAiSetupClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="20"
-                                                        Height="20" />
-                        </Button>
-                    </Grid>
-
-                    <Grid Grid.Row="1"
-                          Margin="0,14,0,0"
-                          RowDefinitions="Auto,*">
-                        <Border x:Name="AiSetupDownloadJobBanner"
-                                Grid.Row="0"
-                                Classes="re-vitae-app-card"
-                                Padding="16"
-                                Margin="0,0,0,12"
-                                IsVisible="False">
-                            <StackPanel Spacing="10">
-                                <TextBlock x:Name="AiSetupDownloadBannerTitleTextBlock"
-                                           Classes="re-vitae-app-title"
-                                           FontSize="16" />
-                                <Grid ColumnDefinitions="*,Auto"
-                                      ColumnSpacing="8">
-                                    <ProgressBar x:Name="AiSetupDownloadBannerProgressBar"
-                                                 Grid.Column="0"
-                                                 Height="6" />
-                                    <TextBlock x:Name="AiSetupDownloadBannerPercentTextBlock"
-                                               Grid.Column="1"
-                                               Classes="re-vitae-secondary"
-                                               VerticalAlignment="Center" />
-                                </Grid>
-                                <TextBlock x:Name="AiSetupDownloadBannerStatusTextBlock"
-                                           Classes="re-vitae-secondary"
-                                           FontSize="12"
-                                           TextTrimming="CharacterEllipsis" />
-                                <TextBlock x:Name="AiSetupDownloadBannerErrorTextBlock"
-                                           Classes="re-vitae-error"
-                                           IsVisible="False"
-                                           TextWrapping="Wrap" />
-                                <StackPanel x:Name="AiSetupDownloadBannerActionsPanel"
-                                            Orientation="Horizontal"
-                                            Spacing="10">
-                                    <Button x:Name="AiSetupDownloadPauseButton"
-                                            Classes="re-vitae-secondary"
-                                            Content="Pause"
-                                            Click="OnAiDownloadPauseClicked" />
-                                    <Button x:Name="AiSetupDownloadResumeButton"
-                                            Classes="re-vitae-primary"
-                                            Content="Resume"
-                                            IsVisible="False"
-                                            Click="OnAiDownloadResumeClicked" />
-                                    <Button x:Name="AiSetupDownloadStopButton"
-                                            Classes="re-vitae-secondary"
-                                            Content="Stop download"
-                                            Click="OnAiDownloadStopClicked" />
-                                </StackPanel>
-                                <StackPanel x:Name="AiSetupDownloadStopConfirmPanel"
-                                            Spacing="10"
-                                            IsVisible="False">
-                                    <TextBlock x:Name="AiSetupDownloadStopConfirmTextBlock"
-                                               TextWrapping="Wrap" />
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="10"
-                                                HorizontalAlignment="Right">
-                                        <Button x:Name="AiSetupDownloadStopConfirmCancelButton"
-                                                Classes="re-vitae-secondary"
-                                                Content="Cancel"
-                                                Click="OnAiDownloadStopConfirmCancelClicked" />
-                                        <Button x:Name="AiSetupDownloadStopConfirmOkButton"
-                                                Classes="re-vitae-primary"
-                                                Content="OK"
-                                                Click="OnAiDownloadStopConfirmOkClicked" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <Button x:Name="AiSetupDownloadRefreshSystemButton"
-                                        Classes="re-vitae-secondary"
-                                        Content="Refresh system info"
-                                        IsVisible="False"
-                                        Click="OnAiSetupDownloadRefreshSystemClicked" />
-                            </StackPanel>
-                        </Border>
-
-                        <Grid Grid.Row="1">
-                        <StackPanel x:Name="AiSetupDetectionProgressPanel"
-                                    Spacing="12"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center">
-                            <ProgressBar IsIndeterminate="True"
-                                         MinWidth="240"
-                                         Height="6" />
-                            <TextBlock x:Name="AiSetupDetectingTextBlock"
-                                       Classes="re-vitae-secondary"
-                                       HorizontalAlignment="Center"
-                                       Text="Detecting your system…" />
-                        </StackPanel>
-
-                        <StackPanel x:Name="AiSetupDetectionFailedPanel"
-                                    Spacing="12"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center"
-                                    IsVisible="False">
-                            <TextBlock x:Name="AiSetupDetectionFailedTextBlock"
-                                       Classes="re-vitae-error"
-                                       TextWrapping="Wrap"
-                                       TextAlignment="Center"
-                                       Text="Could not read system information." />
-                            <Button x:Name="AiSetupDetectionRetryButton"
-                                    Classes="re-vitae-secondary"
-                                    Content="Retry"
-                                    HorizontalAlignment="Center"
-                                    Click="OnAiSetupDetectionRetryClicked" />
-                        </StackPanel>
-
-                        <ScrollViewer x:Name="AiSetupContentScrollViewer"
-                                      IsVisible="False"
-                                      Padding="0,0,4,0">
-                            <StackPanel Spacing="16"
-                                        Classes="re-vitae-section-body">
-                                <Border x:Name="AiSetupActiveBackendStrip"
-                                        Classes="re-vitae-app-card"
-                                        Padding="16"
-                                        IsVisible="False">
-                                    <Grid ColumnDefinitions="*,Auto"
-                                          ColumnSpacing="12">
-                                        <TextBlock x:Name="AiSetupActiveBackendTextBlock"
-                                                   TextWrapping="Wrap"
-                                                   VerticalAlignment="Center" />
-                                        <Button x:Name="AiSetupActiveBackendActionButton"
-                                                Grid.Column="1"
-                                                Classes="re-vitae-secondary"
-                                                Click="OnAiSetupActiveBackendActionClicked" />
-                                    </Grid>
-                                </Border>
-
-                                <Expander x:Name="AiSetupOnlineProvidersExpander"
-                                          IsExpanded="True">
-                                    <Expander.Header>
-                                        <TextBlock x:Name="AiSetupOnlineProvidersSectionHeader"
-                                                   Classes="re-vitae-app-title"
-                                                   FontSize="16" />
-                                    </Expander.Header>
-                                    <StackPanel Spacing="12"
-                                                Margin="4,8,4,0">
-                                        <TextBlock x:Name="AiSetupOnlinePrivacyNoteTextBlock"
-                                                   Classes="re-vitae-secondary"
-                                                   TextWrapping="Wrap"
-                                                   FontSize="13"
-                                                   LineHeight="18" />
-                                        <StackPanel x:Name="AiSetupOnlineProvidersPanel"
-                                                    Spacing="10" />
-                                    </StackPanel>
-                                </Expander>
-
-                                <Expander x:Name="AiSetupLocalModelsExpander"
-                                          IsExpanded="False">
-                                    <Expander.Header>
-                                        <TextBlock x:Name="AiSetupLocalModelsSectionHeader"
-                                                   Classes="re-vitae-app-title"
-                                                   FontSize="16" />
-                                    </Expander.Header>
-                                    <StackPanel Spacing="16"
-                                                Margin="4,8,4,0">
-                                <TextBlock x:Name="AiSetupSystemDetailsTitleTextBlock"
-                                           Classes="re-vitae-app-title"
-                                           FontSize="16"
-                                           Text="Your system" />
-                                <Border Classes="re-vitae-app-card"
-                                        Padding="20">
-                                    <StackPanel x:Name="AiSetupSystemDetailsPanel"
-                                                Spacing="6" />
-                                </Border>
-                                <TextBlock x:Name="AiSetupWarningTextBlock"
-                                           Classes="re-vitae-error"
-                                           TextWrapping="Wrap"
-                                           IsVisible="False" />
-                                <TextBlock x:Name="AiSetupPrivacyNoteTextBlock"
-                                           Classes="re-vitae-secondary"
-                                           TextWrapping="Wrap"
-                                           FontSize="13"
-                                           LineHeight="18" />
-                                <Border x:Name="AiSetupRecommendedCard"
-                                        Classes="re-vitae-app-card"
-                                        Padding="20"
-                                        IsVisible="False">
-                                    <StackPanel Spacing="6">
-                                        <TextBlock x:Name="AiSetupRecommendedBadgeTextBlock"
-                                                   Classes="re-vitae-primary"
-                                                   FontWeight="SemiBold"
-                                                   Text="Recommended for your device" />
-                                        <TextBlock x:Name="AiSetupRecommendedNameTextBlock"
-                                                   Classes="re-vitae-app-title"
-                                                   FontSize="18" />
-                                        <TextBlock x:Name="AiSetupRecommendedMetaTextBlock"
-                                                   Classes="re-vitae-secondary" />
-                                    </StackPanel>
-                                </Border>
-                                <TextBlock x:Name="AiSetupAllModelsLabelTextBlock"
-                                           Classes="re-vitae-app-title"
-                                           FontSize="16"
-                                           Text="All models" />
-                                <StackPanel x:Name="AiSetupModelsPanel"
-                                            Spacing="10" />
-                                <TextBlock x:Name="AiSetupStatusTextBlock"
-                                           Classes="re-vitae-secondary"
-                                           TextWrapping="Wrap"
-                                           IsVisible="False" />
-                                <ProgressBar x:Name="AiSetupPullProgressBar"
-                                             IsVisible="False"
-                                             MinWidth="240"
-                                             Height="6" />
-                                <StackPanel x:Name="AiSetupDownloadConfirmPanel"
-                                            Spacing="10"
-                                            IsVisible="False">
-                                    <TextBlock x:Name="AiSetupDownloadConfirmTextBlock"
-                                               TextWrapping="Wrap" />
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="10"
-                                                HorizontalAlignment="Right">
-                                        <Button x:Name="AiSetupDownloadConfirmCancelButton"
-                                                Classes="re-vitae-secondary"
-                                                Content="Cancel"
-                                                Click="OnAiSetupDownloadConfirmCancelClicked" />
-                                        <Button x:Name="AiSetupDownloadConfirmOkButton"
-                                                Classes="re-vitae-primary"
-                                                Content="OK"
-                                                Click="OnAiSetupDownloadConfirmOkClicked" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <StackPanel x:Name="AiSetupModelActionConfirmPanel"
-                                            Spacing="10"
-                                            IsVisible="False">
-                                    <TextBlock x:Name="AiSetupModelActionConfirmTextBlock"
-                                               TextWrapping="Wrap" />
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="10"
-                                                HorizontalAlignment="Right">
-                                        <Button x:Name="AiSetupModelActionConfirmCancelButton"
-                                                Classes="re-vitae-secondary"
-                                                Content="Cancel"
-                                                Click="OnAiSetupModelActionConfirmCancelClicked" />
-                                        <Button x:Name="AiSetupModelActionConfirmOkButton"
-                                                Classes="re-vitae-primary"
-                                                Content="OK"
-                                                Click="OnAiSetupModelActionConfirmOkClicked" />
-                                    </StackPanel>
-                                </StackPanel>
-                                    </StackPanel>
-                                </Expander>
-
-                                <StackPanel x:Name="AiSetupProviderSwitchConfirmPanel"
-                                            Spacing="10"
-                                            IsVisible="False">
-                                    <TextBlock x:Name="AiSetupProviderSwitchConfirmTextBlock"
-                                               TextWrapping="Wrap" />
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="10"
-                                                HorizontalAlignment="Right">
-                                        <Button x:Name="AiSetupProviderSwitchConfirmCancelButton"
-                                                Classes="re-vitae-secondary"
-                                                Content="Cancel"
-                                                Click="OnAiSetupProviderSwitchConfirmCancelClicked" />
-                                        <Button x:Name="AiSetupProviderSwitchConfirmOkButton"
-                                                Classes="re-vitae-primary"
-                                                Content="OK"
-                                                Click="OnAiSetupProviderSwitchConfirmOkClicked" />
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <StackPanel x:Name="AiSetupProviderUntestedConfirmPanel"
-                                            Spacing="10"
-                                            IsVisible="False">
-                                    <TextBlock x:Name="AiSetupProviderUntestedConfirmTextBlock"
-                                               TextWrapping="Wrap" />
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="10"
-                                                HorizontalAlignment="Right">
-                                        <Button x:Name="AiSetupProviderUntestedConfirmCancelButton"
-                                                Classes="re-vitae-secondary"
-                                                Content="Cancel"
-                                                Click="OnAiSetupProviderUntestedConfirmCancelClicked" />
-                                        <Button x:Name="AiSetupProviderUntestedConfirmOkButton"
-                                                Classes="re-vitae-primary"
-                                                Content="Activate anyway"
-                                                Click="OnAiSetupProviderUntestedConfirmOkClicked" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </StackPanel>
-                        </ScrollViewer>
-                        </Grid>
-                    </Grid>
-
-                    <StackPanel Grid.Row="2"
-                                Orientation="Horizontal"
-                                Spacing="10"
-                                HorizontalAlignment="Right"
-                                Margin="0,14,0,0">
-                        <Button x:Name="AiSetupDownloadButton"
-                                Classes="re-vitae-primary"
-                                Content="Download model"
-                                IsEnabled="False"
-                                Click="OnAiSetupDownloadClicked" />
-                        <Button x:Name="AiSetupBottomCloseButton"
-                                Content="Close"
-                                Click="OnCloseAiSetupClicked" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="SetupModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="SetupModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="520"
-                    MaxHeight="400"
-                    MinWidth="320"
-                    MinHeight="200"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <TextBlock x:Name="SetupTitleTextBlock"
-                                   Classes="re-vitae-app-title"
-                                   FontSize="24"
-                                   Text="Setup"
-                                   VerticalAlignment="Center" />
-                        <Button x:Name="SetupTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnCloseSetupClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="20"
-                                                        Height="20" />
-                        </Button>
-                    </Grid>
-
-                    <StackPanel Grid.Row="1"
-                                Margin="0,14,0,0"
-                                Spacing="18"
-                                Classes="re-vitae-section-body">
-                        <StackPanel Classes="re-vitae-form-field">
-                            <TextBlock x:Name="LanguageLabelTextBlock"
-                                       Text="Language" />
-                            <ComboBox x:Name="LanguageComboBox"
-                                      MinWidth="220"
-                                      SelectionChanged="OnLanguageSelectionChanged">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate DataType="loc:SupportedLanguage">
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="8">
-                                            <TextBlock Text="{Binding FlagEmoji}"
-                                                       FontSize="16"
-                                                       VerticalAlignment="Center" />
-                                            <TextBlock Text="{Binding NativeName}"
-                                                       VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <Button x:Name="SetupBottomCloseButton"
-                            Grid.Row="2"
-                            Content="Close"
-                            HorizontalAlignment="Right"
-                            Click="OnCloseSetupClicked" />
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="TemplatesModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="TemplatesModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="1100"
-                    MaxHeight="800"
-                    MinWidth="360"
-                    MinHeight="280"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <TextBlock x:Name="TemplatesTitleTextBlock"
-                                   Classes="re-vitae-app-title"
-                                   FontSize="24"
-                                   Text="Templates"
-                                   VerticalAlignment="Center" />
-                        <Button x:Name="TemplatesTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnCloseTemplatesClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="20"
-                                                        Height="20" />
-                        </Button>
-                    </Grid>
-
-                    <ScrollViewer Grid.Row="1"
-                                  Margin="0,14,0,0">
-                        <WrapPanel x:Name="TemplateCardsWrapPanel" />
-                    </ScrollViewer>
-
-                    <Button x:Name="TemplatesBottomCloseButton"
-                            Grid.Row="2"
-                            Content="Close"
-                            HorizontalAlignment="Right"
-                            Click="OnCloseTemplatesClicked" />
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="ReplaceCvConfirmModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="ReplaceCvConfirmModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="520"
-                    MinWidth="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="16"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="ReplaceCvConfirmTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="24"
-                               Text="Replace current CV?" />
-                    <TextBlock x:Name="ReplaceCvConfirmMessageTextBlock"
-                               Classes="re-vitae-secondary"
-                               TextWrapping="Wrap"
-                               Text="Importing a new file will replace all current CV data. Do you want to continue?" />
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="10"
-                                HorizontalAlignment="Right">
-                        <Button x:Name="ReplaceCvConfirmCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnReplaceCvConfirmCancelClicked" />
-                        <Button x:Name="ReplaceCvConfirmOkButton"
-                                Classes="re-vitae-primary"
-                                Content="OK"
-                                Click="OnReplaceCvConfirmOkClicked" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="NewCvConfirmModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="NewCvConfirmModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="520"
-                    MinWidth="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="16"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="NewCvConfirmTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="24"
-                               Text="Discard changes?" />
-                    <TextBlock x:Name="NewCvConfirmMessageTextBlock"
-                               Classes="re-vitae-secondary"
-                               TextWrapping="Wrap"
-                               Text="Creating a new CV will discard all current data. Do you want to continue?" />
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="10"
-                                HorizontalAlignment="Right">
-                        <Button x:Name="NewCvConfirmCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnNewCvConfirmCancelClicked" />
-                        <Button x:Name="NewCvConfirmOkButton"
-                                Classes="re-vitae-primary"
-                                Content="OK"
-                                Click="OnNewCvConfirmOkClicked" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="UnsavedChangesConfirmModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="UnsavedChangesConfirmModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="520"
-                    MinWidth="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="16"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="UnsavedChangesConfirmTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="24"
-                               Text="Save changes?" />
-                    <TextBlock x:Name="UnsavedChangesConfirmMessageTextBlock"
-                               Classes="re-vitae-secondary"
-                               TextWrapping="Wrap"
-                               Text="Your CV has unsaved changes. Save before continuing?" />
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="10"
-                                HorizontalAlignment="Right">
-                        <Button x:Name="UnsavedChangesConfirmCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnUnsavedChangesCancelClicked" />
-                        <Button x:Name="UnsavedChangesConfirmDiscardButton"
-                                Classes="re-vitae-secondary"
-                                Content="Don't save"
-                                Click="OnUnsavedChangesDiscardClicked" />
-                        <Button x:Name="UnsavedChangesConfirmSaveButton"
-                                Classes="re-vitae-primary"
-                                Content="Save"
-                                Click="OnUnsavedChangesSaveClicked" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="ProjectRecentClearConfirmModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="ProjectRecentClearConfirmModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="520"
-                    MinWidth="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="16"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="ProjectRecentClearConfirmTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="24"
-                               Text="Clear recent projects?" />
-                    <TextBlock x:Name="ProjectRecentClearConfirmMessageTextBlock"
-                               Classes="re-vitae-secondary"
-                               TextWrapping="Wrap"
-                               Text="This removes the recent projects list. Saved files on disk are not deleted." />
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="10"
-                                HorizontalAlignment="Right">
-                        <Button x:Name="ProjectRecentClearConfirmCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnProjectRecentClearConfirmCancelClicked" />
-                        <Button x:Name="ProjectRecentClearConfirmOkButton"
-                                Classes="re-vitae-primary"
-                                Content="OK"
-                                Click="OnProjectRecentClearConfirmOkClicked" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="ReplaceCvImportProgressModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="ReplaceCvImportProgressModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="480"
-                    MinWidth="320"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="12"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="ReplaceCvImportProgressTextBlock"
-                               Classes="re-vitae-secondary"
-                               Text="Reading document…" />
-                    <ProgressBar IsIndeterminate="True"
-                                 Height="4" />
-                    <TextBlock x:Name="ReplaceCvImportErrorTextBlock"
-                               Classes="re-vitae-error"
-                               TextWrapping="Wrap"
-                               IsVisible="False" />
-                    <Button x:Name="ReplaceCvImportRetryButton"
-                            Classes="re-vitae-secondary"
-                            Content="Try import again"
-                            HorizontalAlignment="Left"
-                            IsVisible="False"
-                            Click="OnReplaceCvImportRetryClicked" />
-
-                    <Button x:Name="ReplaceCvImportForceOcrButton"
-                            Classes="re-vitae-secondary"
-                            Content="Import as scan (OCR)"
-                            HorizontalAlignment="Left"
-                            IsVisible="False"
-                            Click="OnReplaceCvImportForceOcrClicked" />
-
-                    <Button x:Name="ReplaceImportTryAiButton"
-                            Classes="re-vitae-primary"
-                            Content="Try AI import"
-                            HorizontalAlignment="Left"
-                            IsVisible="False"
-                            Click="OnReplaceImportTryAiClicked" />
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="PreviewExpandModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="PreviewExpandModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="1100"
-                    MaxHeight="800"
-                    MinWidth="360"
-                    MinHeight="280"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <TextBlock x:Name="PreviewExpandTitleTextBlock"
-                                   Classes="re-vitae-app-title"
-                                   FontSize="24"
-                                   Text="Expanded preview"
-                                   VerticalAlignment="Center" />
-                        <Button x:Name="PreviewExpandTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnClosePreviewExpandClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="20"
-                                                        Height="20" />
-                        </Button>
-                    </Grid>
-
-                    <Border Grid.Row="1"
-                            Margin="0,14,0,14"
-                            Classes="re-vitae-preview-surface">
-                        <ScrollViewer Classes="re-vitae-preview-scroll"
-                                      HorizontalScrollBarVisibility="Auto"
-                                      VerticalScrollBarVisibility="Auto">
-                            <ContentControl x:Name="PreviewExpandContentControl" />
-                        </ScrollViewer>
-                    </Border>
-
-                    <Button x:Name="PreviewExpandBottomCloseButton"
-                            Grid.Row="2"
-                            Content="Close"
-                            HorizontalAlignment="Right"
-                            Click="OnClosePreviewExpandClicked" />
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="AboutModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="AboutModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="640"
-                    MinWidth="400"
-                    MinHeight="360"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*">
-                    <Grid ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <TextBlock x:Name="AboutModalTitleTextBlock"
-                                   Classes="re-vitae-app-title"
-                                   FontSize="28"
-                                   Text="About"
-                                   VerticalAlignment="Center" />
-                        <Button x:Name="AboutModalTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnCloseAboutClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="22"
-                                                        Height="22" />
-                        </Button>
-                    </Grid>
-
-                    <Border Grid.Row="1"
-                            Margin="0,24,0,0"
-                            Padding="32,36"
-                            Classes="re-vitae-app-card"
-                            HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="20"
-                                    HorizontalAlignment="Center">
-                            <TextBlock x:Name="AboutModalAppNameTextBlock"
-                                       Classes="re-vitae-app-title"
-                                       FontSize="42"
-                                       HorizontalAlignment="Center"
-                                       Text="ReVitae" />
-                            <TextBlock x:Name="AboutModalTaglineTextBlock"
-                                       Classes="re-vitae-subtitle"
-                                       FontSize="16"
-                                       LineHeight="24"
-                                       TextWrapping="Wrap"
-                                       TextAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       MaxWidth="520"
-                                       Text="Create a simple CV preview and export a plain PDF." />
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="10"
-                                        HorizontalAlignment="Center"
-                                        Margin="0,8,0,0">
-                                <Border Padding="12,6"
-                                        CornerRadius="14"
-                                        Background="{DynamicResource MaterialThemeBackgroundBrush}"
-                                        BorderBrush="{DynamicResource MaterialDividerBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock x:Name="AboutModalVersionTextBlock"
-                                               FontSize="14"
-                                               Text="Version 0.1.0" />
-                                </Border>
-                                <Border x:Name="AboutModalEarlyPreviewBadge"
-                                        Padding="12,6"
-                                        CornerRadius="14"
-                                        Background="{DynamicResource PrimaryHueMidBrush}"
-                                        IsVisible="False">
-                                    <TextBlock x:Name="AboutModalEarlyPreviewTextBlock"
-                                               FontSize="14"
-                                               Foreground="White"
-                                               FontWeight="SemiBold"
-                                               Text="Early preview" />
-                                </Border>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="ExportModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="ExportModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="960"
-                    MaxHeight="720"
-                    MinWidth="360"
-                    MinHeight="280"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <StackPanel Spacing="4">
-                            <TextBlock x:Name="ExportModalTitleTextBlock"
-                                       Classes="re-vitae-app-title"
-                                       FontSize="24"
-                                       Text="Export CV" />
-                            <TextBlock x:Name="ExportModalSubtitleTextBlock"
-                                       Classes="re-vitae-secondary"
-                                       Text="Choose a file format for your download." />
-                        </StackPanel>
-                        <Button x:Name="ExportModalTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnCloseExportModalClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="20"
-                                                        Height="20" />
-                        </Button>
-                    </Grid>
-
-                    <ScrollViewer Grid.Row="1"
-                                  Margin="0,14,0,0">
-                        <StackPanel Spacing="8">
-                            <StackPanel x:Name="ExportFormatCategoriesPanel"
-                                        Spacing="8" />
-                            <StackPanel x:Name="ExportImageOptionsPanel"
-                                        Spacing="14"
-                                        IsVisible="False">
-                                <TextBlock x:Name="ExportImageOptionsTitleTextBlock"
-                                           Classes="re-vitae-app-title"
-                                           FontSize="18"
-                                           Text="Image export options" />
-                                <TextBlock Classes="re-vitae-secondary"
-                                           Text="Choose format, delivery, and pages." />
-                                <StackPanel Spacing="8">
-                                    <TextBlock x:Name="ExportImageFormatLabelTextBlock"
-                                               Classes="re-vitae-field-label"
-                                               Text="Image format" />
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <RadioButton x:Name="ExportImageFormatPngRadio"
-                                                     GroupName="ExportImageFormat"
-                                                     IsChecked="True"
-                                                     Content="PNG" />
-                                        <RadioButton x:Name="ExportImageFormatJpegRadio"
-                                                     GroupName="ExportImageFormat"
-                                                     Content="JPEG" />
-                                        <RadioButton x:Name="ExportImageFormatWebpRadio"
-                                                     GroupName="ExportImageFormat"
-                                                     Content="WebP" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <StackPanel Spacing="8">
-                                    <TextBlock x:Name="ExportImageDeliveryLabelTextBlock"
-                                               Classes="re-vitae-field-label"
-                                               Text="Delivery" />
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <RadioButton x:Name="ExportImageDeliveryZipRadio"
-                                                     GroupName="ExportImageDelivery"
-                                                     IsChecked="True"
-                                                     Content="ZIP" />
-                                        <RadioButton x:Name="ExportImageDeliverySeparateRadio"
-                                                     GroupName="ExportImageDelivery"
-                                                     Content="Separate files" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <StackPanel Spacing="8">
-                                    <TextBlock x:Name="ExportImageQualityLabelTextBlock"
-                                               Classes="re-vitae-field-label"
-                                               Text="Quality" />
-                                    <Slider x:Name="ExportImageQualitySlider"
-                                            Minimum="70"
-                                            Maximum="100"
-                                            Value="90"
-                                            TickFrequency="5"
-                                            IsSnapToTickEnabled="True" />
-                                    <TextBlock x:Name="ExportImageQualityValueTextBlock"
-                                               Classes="re-vitae-secondary"
-                                               Text="90" />
-                                </StackPanel>
-                                <StackPanel Spacing="8">
-                                    <TextBlock x:Name="ExportImageScaleLabelTextBlock"
-                                               Classes="re-vitae-field-label"
-                                               Text="Resolution" />
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <RadioButton x:Name="ExportImageScale1xRadio"
-                                                     GroupName="ExportImageScale"
-                                                     Content="1×" />
-                                        <RadioButton x:Name="ExportImageScale2xRadio"
-                                                     GroupName="ExportImageScale"
-                                                     IsChecked="True"
-                                                     Content="2×" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <StackPanel Spacing="8">
-                                    <TextBlock x:Name="ExportImagePagesLabelTextBlock"
-                                               Classes="re-vitae-field-label"
-                                               Text="Pages" />
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <RadioButton x:Name="ExportImagePagesAllRadio"
-                                                     GroupName="ExportImagePages"
-                                                     IsChecked="True"
-                                                     Content="All pages" />
-                                        <RadioButton x:Name="ExportImagePagesRangeRadio"
-                                                     GroupName="ExportImagePages"
-                                                     Content="Page range" />
-                                    </StackPanel>
-                                    <Grid ColumnDefinitions="Auto,80,Auto,80"
-                                          ColumnSpacing="8"
-                                          x:Name="ExportImagePageRangeGrid"
-                                          IsVisible="False">
-                                        <TextBlock x:Name="ExportImagePageFromLabelTextBlock"
-                                                   Grid.Column="0"
-                                                   VerticalAlignment="Center"
-                                                   Text="From" />
-                                        <NumericUpDown x:Name="ExportImagePageFromNumeric"
-                                                       Grid.Column="1"
-                                                       Minimum="1"
-                                                       Maximum="999"
-                                                       Value="1"
-                                                       FormatString="0"
-                                                       AllowSpin="True" />
-                                        <TextBlock x:Name="ExportImagePageToLabelTextBlock"
-                                                   Grid.Column="2"
-                                                   VerticalAlignment="Center"
-                                                   Text="To" />
-                                        <NumericUpDown x:Name="ExportImagePageToNumeric"
-                                                       Grid.Column="3"
-                                                       Minimum="1"
-                                                       Maximum="999"
-                                                       Value="1"
-                                                       FormatString="0"
-                                                       AllowSpin="True" />
-                                    </Grid>
-                                    <TextBlock x:Name="ExportImageRangeErrorTextBlock"
-                                               Foreground="#C62828"
-                                               IsVisible="False"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                                <TextBlock x:Name="ExportImageSizeEstimateTextBlock"
-                                           Classes="re-vitae-secondary"
-                                           Text="Calculating size…" />
-                                <TextBlock x:Name="ExportImageProgressTextBlock"
-                                           Classes="re-vitae-secondary"
-                                           IsVisible="False"
-                                           TextWrapping="Wrap" />
-                                <StackPanel Orientation="Horizontal"
-                                            HorizontalAlignment="Right"
-                                            Spacing="8">
-                                    <Button x:Name="ExportImageBackButton"
-                                            Content="Back to formats"
-                                            Click="OnExportImageBackClicked" />
-                                    <Button x:Name="ExportImageExportButton"
-                                            Classes="accent"
-                                            Content="Export images"
-                                            Click="OnExportImageExportClicked" />
-                                </StackPanel>
-                            </StackPanel>
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <Button x:Name="ExportModalBottomCloseButton"
-                            Grid.Row="2"
-                            Content="Close"
-                            HorizontalAlignment="Right"
-                            Click="OnCloseExportModalClicked" />
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="QualityHintModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="QualityHintModalPanel"
-                    Classes="re-vitae-modal-panel re-vitae-quality-hint-modal"
-                    MaxWidth="1200"
-                    MaxHeight="960"
-                    MinWidth="720"
-                    MinHeight="480"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <TextBlock x:Name="QualityHintModalTitleTextBlock"
-                                   Classes="re-vitae-app-title"
-                                   FontSize="22"
-                                   TextWrapping="Wrap"
-                                   VerticalAlignment="Center" />
-                        <Button x:Name="QualityHintModalTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnCloseQualityHintModalClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="22"
-                                                        Height="22" />
-                        </Button>
-                    </Grid>
-
-                    <ScrollViewer Grid.Row="1"
-                                  Margin="0,20,0,20">
-                        <StackPanel x:Name="QualityHintModalContentPanel"
-                                    Spacing="20"
-                                    Classes="re-vitae-section-body" />
-                    </ScrollViewer>
-
-                    <Button x:Name="QualityHintModalBottomCloseButton"
-                            Grid.Row="2"
-                            Content="Close"
-                            HorizontalAlignment="Right"
-                            Click="OnCloseQualityHintModalClicked" />
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="AiSuggestionModalOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border x:Name="AiSuggestionModalPanel"
-                    Classes="re-vitae-modal-panel"
-                    MaxWidth="720"
-                    MaxHeight="640"
-                    MinWidth="400"
-                    MinHeight="280"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <TextBlock x:Name="AiCvSuggestionTitleTextBlock"
-                                   Classes="re-vitae-app-title"
-                                   FontSize="22"
-                                   Text="AI suggestion"
-                                   VerticalAlignment="Center" />
-                        <Button x:Name="AiCvSuggestionTopCloseButton"
-                                Grid.Column="1"
-                                Classes="re-vitae-expand-toggle"
-                                Click="OnCloseAiSuggestionModalClicked"
-                                ToolTip.Tip="Close"
-                                AutomationProperties.Name="Close">
-                            <materialIcons:MaterialIcon Kind="Close"
-                                                        Width="22"
-                                                        Height="22" />
-                        </Button>
-                    </Grid>
-
-                    <StackPanel Grid.Row="1"
-                                Margin="0,20,0,20"
-                                Spacing="16">
-                        <StackPanel x:Name="AiCvOnlineSendConfirmPanel"
-                                    Spacing="12"
-                                    IsVisible="False">
-                            <TextBlock x:Name="AiCvOnlineSendConfirmTextBlock"
-                                       TextWrapping="Wrap" />
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="12"
-                                        HorizontalAlignment="Right">
-                                <Button x:Name="AiCvOnlineSendConfirmCancelButton"
-                                        Classes="re-vitae-secondary"
-                                        Content="Cancel"
-                                        Click="OnAiCvOnlineSendConfirmCancelClicked" />
-                                <Button x:Name="AiCvOnlineSendConfirmOkButton"
-                                        Classes="re-vitae-primary"
-                                        Content="OK"
-                                        Click="OnAiCvOnlineSendConfirmOkClicked" />
-                            </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel x:Name="AiCvSuggestionLoadingPanel"
-                                    Spacing="12"
-                                    IsVisible="False">
-                            <ProgressBar IsIndeterminate="True"
-                                         Height="6" />
-                            <TextBlock x:Name="AiCvSuggestionLoadingTextBlock"
-                                       Text="Generating suggestion…"
-                                       Classes="re-vitae-secondary" />
-                        </StackPanel>
-
-                        <StackPanel x:Name="AiCvSuggestionContentPanel"
-                                    Spacing="12"
-                                    IsVisible="False">
-                            <TextBox x:Name="AiCvSuggestionTextBox"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     MinHeight="160"
-                                     IsReadOnly="True" />
-                        </StackPanel>
-
-                        <StackPanel x:Name="AiCvSuggestionErrorPanel"
-                                    Spacing="8"
-                                    IsVisible="False">
-                            <TextBlock x:Name="AiCvSuggestionErrorTextBlock"
-                                       TextWrapping="Wrap"
-                                       Foreground="#C62828" />
-                        </StackPanel>
-
-                        <TextBlock x:Name="AiCvSuggestionBackendTextBlock"
-                                   Classes="re-vitae-secondary"
-                                   FontSize="13"
-                                   TextWrapping="Wrap" />
-                    </StackPanel>
-
-                    <StackPanel x:Name="AiCvSuggestionActionsPanel"
-                                Grid.Row="2"
-                                Orientation="Horizontal"
-                                Spacing="12"
-                                HorizontalAlignment="Right"
-                                IsVisible="False">
-                        <Button x:Name="AiCvSuggestionRetryButton"
-                                Classes="re-vitae-secondary"
-                                Content="Retry"
-                                IsVisible="False"
-                                Click="OnAiCvSuggestionRetryClicked" />
-                        <Button x:Name="AiCvSuggestionCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnAiCvSuggestionCancelClicked" />
-                        <Button x:Name="AiCvSuggestionEditButton"
-                                Classes="re-vitae-secondary"
-                                Content="Edit in form"
-                                Click="OnAiCvSuggestionEditClicked" />
-                        <Button x:Name="AiCvSuggestionAcceptButton"
-                                Classes="re-vitae-primary"
-                                Content="Accept"
-                                Click="OnAiCvSuggestionAcceptClicked" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Border x:Name="QualityHintSnackbarBorder"
-                Grid.Row="1"
-                VerticalAlignment="Bottom"
-                HorizontalAlignment="Center"
-                Margin="0,0,0,16"
-                Padding="20,14"
-                IsVisible="False">
-            <TextBlock x:Name="QualityHintSnackbarTextBlock"
-                       TextWrapping="Wrap"
-                       FontSize="15"
-                       LineHeight="22"
-                       MaxWidth="720" />
-        </Border>
-
-        <Grid x:Name="AiImportProgressOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border Classes="re-vitae-modal-panel"
-                    MaxWidth="520"
-                    MinWidth="360"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="12"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="AiImportProgressTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="22"
-                               Text="AI import" />
-                    <TextBlock x:Name="AiImportProgressStepTextBlock"
-                               TextWrapping="Wrap"
-                               Classes="re-vitae-secondary" />
-                    <TextBlock x:Name="AiImportProgressBackendTextBlock"
-                               Classes="re-vitae-secondary" />
-                    <ProgressBar x:Name="AiImportProgressBar"
-                                 Height="6"
-                                 Minimum="0"
-                                 Maximum="100" />
-                    <Button x:Name="AiImportProgressCancelButton"
-                            Classes="re-vitae-secondary"
-                            Content="Cancel"
-                            HorizontalAlignment="Left"
-                            Click="OnAiImportProgressCancelClicked" />
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="AiImportReviewOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border Classes="re-vitae-modal-panel"
-                    MaxWidth="760"
-                    MinWidth="420"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="12"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="AiImportReviewTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="22"
-                               Text="Review AI import" />
-                    <TextBlock x:Name="AiImportReviewBackendTextBlock"
-                               Classes="re-vitae-secondary" />
-                    <TextBlock x:Name="AiImportReviewWarningTextBlock"
-                               TextWrapping="Wrap"
-                               Classes="re-vitae-error" />
-                    <TextBlock x:Name="AiImportReviewPhotoNoteTextBlock"
-                               TextWrapping="Wrap"
-                               Classes="re-vitae-secondary" />
-                    <TextBlock x:Name="AiImportReviewSummaryTitleTextBlock"
-                               Classes="re-vitae-app-title"
-                               FontSize="16"
-                               Text="Section summary" />
-                    <StackPanel x:Name="AiImportReviewSummaryPanel"
-                                Spacing="6" />
-                    <TextBlock x:Name="AiImportReviewImprovedTextBlock"
-                               TextWrapping="Wrap"
-                               Classes="re-vitae-secondary" />
-                    <TextBlock x:Name="AiImportReviewPartialWarningTextBlock"
-                               TextWrapping="Wrap"
-                               Classes="re-vitae-error"
-                               IsVisible="False" />
-                    <Expander x:Name="AiImportReviewDetailsExpander"
-                              Header="Details"
-                              IsVisible="False">
-                        <TextBlock x:Name="AiImportReviewDetailsTextBlock"
-                                   TextWrapping="Wrap"
-                                   Classes="re-vitae-secondary" />
-                    </Expander>
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="12"
-                                HorizontalAlignment="Right">
-                        <Button x:Name="AiImportReviewCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnAiImportReviewCancelClicked" />
-                        <Button x:Name="AiImportReviewMergeEmptyButton"
-                                Classes="re-vitae-secondary"
-                                Content="Fill empty fields only"
-                                IsVisible="False"
-                                Click="OnAiImportReviewMergeEmptyClicked" />
-                        <Button x:Name="AiImportReviewApplyButton"
-                                Classes="re-vitae-primary"
-                                Content="Apply to form"
-                                Click="OnAiImportReviewApplyClicked" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="AiImportOnlineConfirmOverlay"
-              Grid.RowSpan="2"
-              Classes="re-vitae-modal-overlay"
-              IsVisible="False">
-            <Border Classes="re-vitae-modal-panel"
-                    MaxWidth="520"
-                    MinWidth="360"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Spacing="12"
-                            Classes="re-vitae-section-body">
-                    <TextBlock x:Name="AiImportOnlineConfirmTextBlock"
-                               TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="12"
-                                HorizontalAlignment="Right">
-                        <Button x:Name="AiImportOnlineConfirmCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnAiImportOnlineConfirmCancelClicked" />
-                        <Button x:Name="AiImportOnlineConfirmOkButton"
-                                Classes="re-vitae-primary"
-                                Content="OK"
-                                Click="OnAiImportOnlineConfirmOkClicked" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Border x:Name="AiDownloadDockOverlay"
-                Grid.RowSpan="2"
-                Classes="re-vitae-app-card"
-                IsVisible="False"
-                MaxWidth="340"
-                Margin="16"
-                Padding="14"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom">
-            <StackPanel Spacing="8">
-                <TextBlock x:Name="AiDownloadDockModelTextBlock"
-                           Classes="re-vitae-app-title"
-                           FontSize="14"
-                           TextWrapping="Wrap"
-                           Cursor="Hand"
-                           PointerReleased="OnAiDownloadDockClicked" />
-                <Grid ColumnDefinitions="*,Auto"
-                      ColumnSpacing="8">
-                    <ProgressBar x:Name="AiDownloadDockProgressBar"
-                                 Grid.Column="0"
-                                 Height="6"
-                                 MinWidth="180" />
-                    <TextBlock x:Name="AiDownloadDockPercentTextBlock"
-                               Grid.Column="1"
-                               Classes="re-vitae-secondary"
-                               VerticalAlignment="Center" />
-                </Grid>
-                <TextBlock x:Name="AiDownloadDockStatusTextBlock"
-                           Classes="re-vitae-secondary"
-                           FontSize="12"
-                           TextTrimming="CharacterEllipsis" />
-                <StackPanel x:Name="AiDownloadDockActionsPanel"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                    <Button x:Name="AiDownloadDockPauseButton"
-                            Classes="re-vitae-secondary"
-                            Content="Pause"
-                            Click="OnAiDownloadPauseClicked" />
-                    <Button x:Name="AiDownloadDockResumeButton"
-                            Classes="re-vitae-primary"
-                            Content="Resume"
-                            IsVisible="False"
-                            Click="OnAiDownloadResumeClicked" />
-                    <Button x:Name="AiDownloadDockStopButton"
-                            Classes="re-vitae-secondary"
-                            Content="Stop download"
-                            Click="OnAiDownloadStopClicked" />
-                </StackPanel>
-                <StackPanel x:Name="AiDownloadDockStopConfirmPanel"
-                            Spacing="8"
-                            IsVisible="False">
-                    <TextBlock x:Name="AiDownloadDockStopConfirmTextBlock"
-                               TextWrapping="Wrap"
-                               FontSize="12" />
-                    <StackPanel Orientation="Horizontal"
-                                Spacing="8">
-                        <Button x:Name="AiDownloadDockStopConfirmCancelButton"
-                                Classes="re-vitae-secondary"
-                                Content="Cancel"
-                                Click="OnAiDownloadStopConfirmCancelClicked" />
-                        <Button x:Name="AiDownloadDockStopConfirmOkButton"
-                                Classes="re-vitae-primary"
-                                Content="OK"
-                                Click="OnAiDownloadStopConfirmOkClicked" />
-                    </StackPanel>
-                </StackPanel>
-            </StackPanel>
-        </Border>
-    </Grid>
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:loc="clr-namespace:ReVitae.Core.Localization;assembly=ReVitae.Core"
+		xmlns:controls="clr-namespace:ReVitae.Controls"
+		xmlns:workExperience="clr-namespace:ReVitae.WorkExperience"
+		xmlns:education="clr-namespace:ReVitae.Education"
+		xmlns:skills="clr-namespace:ReVitae.Skills"
+		xmlns:languages="clr-namespace:ReVitae.Languages"
+		xmlns:certificates="clr-namespace:ReVitae.Certificates"
+		xmlns:projects="clr-namespace:ReVitae.Projects"
+		xmlns:links="clr-namespace:ReVitae.Links"
+		xmlns:additionalInformation="clr-namespace:ReVitae.AdditionalInformation"
+		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+		x:Class="ReVitae.MainWindow"
+		mc:Ignorable="d"
+		d:DesignWidth="900"
+		d:DesignHeight="600"
+		Width="900"
+		Height="720"
+		MinWidth="720"
+		MinHeight="480"
+		Title="ReVitae"
+		KeyDown="OnWindowKeyDown"
+		Closing="OnWindowClosing"
+		SizeChanged="OnWindowSizeChanged">
+	<Grid x:Name="RootGrid"
+					RowDefinitions="Auto,*"
+					Margin="24">
+		<Grid Grid.Row="0"
+							ColumnDefinitions="*,Auto"
+							ColumnSpacing="16">
+			<StackPanel Grid.Column="0"
+						Classes="re-vitae-page">
+				<TextBlock Text="ReVitae"
+													 Classes="re-vitae-app-title" />
+				<TextBlock x:Name="HeaderSubtitleTextBlock"
+													 Classes="re-vitae-subtitle"
+													 Text="Create a simple CV preview and export a plain PDF." />
+			</StackPanel>
+
+			<StackPanel Grid.Column="1"
+						Orientation="Horizontal"
+						Spacing="8"
+						HorizontalAlignment="Right"
+						VerticalAlignment="Center">
+				<Button x:Name="OpenCreateNewCvButton"
+						Classes="re-vitae-icon-button"
+						Click="OnOpenCreateNewCvClicked"
+						ToolTip.Tip="Create new CV"
+						AutomationProperties.Name="Create new CV">
+					<materialIcons:MaterialIcon Kind="FileDocumentPlusOutline"
+												Width="24"
+												Height="24" />
+				</Button>
+
+				<Button x:Name="SaveProjectButton"
+						Classes="re-vitae-icon-button"
+						Click="OnSaveProjectClicked"
+						ToolTip.Tip="Save"
+						AutomationProperties.Name="Save">
+					<materialIcons:MaterialIcon Kind="ContentSave"
+												Width="24"
+												Height="24" />
+				</Button>
+
+				<Button x:Name="SaveProjectAsButton"
+						Classes="re-vitae-icon-button"
+						Click="OnSaveProjectAsClicked"
+						ToolTip.Tip="Save As"
+						AutomationProperties.Name="Save As">
+					<materialIcons:MaterialIcon Kind="ContentSaveOutline"
+												Width="24"
+												Height="24" />
+				</Button>
+
+				<Button x:Name="OpenProjectButton"
+						Classes="re-vitae-icon-button"
+						Click="OnOpenProjectClicked"
+						ToolTip.Tip="Open"
+						AutomationProperties.Name="Open">
+					<materialIcons:MaterialIcon Kind="FolderOpenOutline"
+												Width="24"
+												Height="24" />
+				</Button>
+
+				<Button x:Name="UploadCvButton"
+						Classes="re-vitae-icon-button"
+						Click="OnUploadCvClicked"
+						ToolTip.Tip="Upload another CV"
+						AutomationProperties.Name="Upload another CV">
+					<materialIcons:MaterialIcon Kind="FileUpload"
+												Width="24"
+												Height="24" />
+				</Button>
+
+				<Button x:Name="OpenAiSetupButton"
+						Classes="re-vitae-icon-button"
+						Click="OnOpenAiSetupClicked"
+						ToolTip.Tip="Open AI setup"
+						AutomationProperties.Name="Open AI setup">
+					<Panel Width="24"
+													 Height="24">
+						<materialIcons:MaterialIcon Kind="Robot"
+													Width="24"
+													Height="24" />
+						<Ellipse x:Name="AiDownloadHeaderBadge"
+																 Width="8"
+																 Height="8"
+																 Fill="#2563EB"
+																 HorizontalAlignment="Right"
+																 VerticalAlignment="Top"
+																 Margin="0,-2,-2,0"
+																 IsVisible="False" />
+						<Ellipse x:Name="AiOnlineActiveHeaderBadge"
+																 Width="8"
+																 Height="8"
+																 Fill="#2563EB"
+																 HorizontalAlignment="Left"
+																 VerticalAlignment="Top"
+																 Margin="-2,-2,0,0"
+																 IsVisible="False" />
+						<Ellipse x:Name="AiLocalActiveHeaderBadge"
+																 Width="8"
+																 Height="8"
+																 Fill="#16A34A"
+																 HorizontalAlignment="Left"
+																 VerticalAlignment="Bottom"
+																 Margin="-2,0,0,-2"
+																 IsVisible="False" />
+					</Panel>
+				</Button>
+
+				<Button x:Name="OpenSetupButton"
+						Classes="re-vitae-icon-button"
+						Click="OnOpenSetupClicked"
+						ToolTip.Tip="Open setup"
+						AutomationProperties.Name="Open setup">
+					<materialIcons:MaterialIcon Kind="Cog"
+												Width="24"
+												Height="24" />
+				</Button>
+
+				<Button x:Name="OpenTemplatesButton"
+						Classes="re-vitae-icon-button"
+						Click="OnOpenTemplatesClicked"
+						ToolTip.Tip="Open templates"
+						AutomationProperties.Name="Open templates">
+					<materialIcons:MaterialIcon Kind="Palette"
+												Width="24"
+												Height="24" />
+				</Button>
+
+				<Button x:Name="OpenAboutButton"
+						Classes="re-vitae-icon-button"
+						Click="OnOpenAboutClicked"
+						ToolTip.Tip="About"
+						AutomationProperties.Name="About">
+					<materialIcons:MaterialIcon Kind="InformationOutline"
+												Width="24"
+												Height="24" />
+				</Button>
+			</StackPanel>
+		</Grid>
+
+		<Grid Grid.Row="1"
+							Margin="0,24,0,0"
+							ColumnDefinitions="*,*"
+							ColumnSpacing="24">
+			<ScrollViewer x:Name="FormScrollViewer" Grid.Column="0">
+				<Border Classes="re-vitae-app-card">
+					<StackPanel Classes="re-vitae-section-body">
+						<controls:ExpandableSection x:Name="PersonalInformationSection"
+													IsExpanded="True">
+							<controls:ExpandableSection.SectionContent>
+								<StackPanel Classes="re-vitae-section-body">
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="ProfilePhotoLabelTextBlock" Text="Profile photo" />
+							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+								<Button x:Name="ProfilePhotoUploadButton"
+										Classes="re-vitae-icon-button"
+										Background="Transparent"
+										BorderThickness="0"
+										Padding="0"
+										Click="OnProfilePhotoUploadClicked">
+									<Border x:Name="ProfilePhotoPreviewHost"
+											Width="112"
+											Height="112"
+											CornerRadius="56"
+											ClipToBounds="True"
+											Background="#E8E8E8" />
+								</Button>
+								<StackPanel Grid.Column="1"
+											VerticalAlignment="Center"
+											Spacing="8">
+									<TextBlock x:Name="ProfilePhotoHintTextBlock"
+																							 Text="Click to upload a photo"
+																							 TextWrapping="Wrap" />
+									<Button x:Name="ProfilePhotoRemoveButton"
+											Classes="re-vitae-text-button"
+											IsVisible="False"
+											Click="OnProfilePhotoRemoveClicked"
+											Content="Remove photo" />
+								</StackPanel>
+							</Grid>
+							<TextBlock x:Name="ProfilePhotoErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="FirstNameLabelTextBlock" Text="First name" />
+							<TextBox x:Name="FirstNameTextBox"
+																		 PlaceholderText="John"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="FirstNameErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="LastNameLabelTextBlock" Text="Last name" />
+							<TextBox x:Name="LastNameTextBox"
+																		 PlaceholderText="Doe"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="LastNameErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="ProfessionalTitleLabelTextBlock" Text="Professional title" />
+							<TextBox x:Name="ProfessionalTitleTextBox"
+																		 PlaceholderText="Frontend Developer"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="ProfessionalTitleErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="EmailLabelTextBlock" Text="Email" />
+							<TextBox x:Name="EmailTextBox"
+																		 PlaceholderText="john.doe@example.com"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="EmailErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="PhoneLabelTextBlock" Text="Phone" />
+							<TextBox x:Name="PhoneTextBox"
+																		 PlaceholderText="+421 900 000 000"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="PhoneErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="LocationLabelTextBlock" Text="Location" />
+							<TextBox x:Name="LocationTextBox"
+																		 PlaceholderText="Bratislava, Slovakia"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="LocationErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="LinkedInUrlLabelTextBlock" Text="LinkedIn URL" />
+							<TextBox x:Name="LinkedInUrlTextBox"
+																		 PlaceholderText="https://www.linkedin.com/in/johndoe"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="LinkedInUrlErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="PortfolioUrlLabelTextBlock" Text="Portfolio / website URL" />
+							<TextBox x:Name="PortfolioUrlTextBox"
+																		 PlaceholderText="https://johndoe.dev"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="PortfolioUrlErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="GitHubUrlLabelTextBlock" Text="GitHub URL" />
+							<TextBox x:Name="GitHubUrlTextBox"
+																		 PlaceholderText="https://github.com/johndoe"
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="GitHubUrlErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="ShortSummaryLabelTextBlock" Text="Short summary" />
+							<TextBox x:Name="ShortSummaryTextBox"
+																		 Classes="re-vitae-multiline"
+																		 PlaceholderText="Write two to four sentences about your professional profile."
+																		 TextChanged="OnFormTextChanged" />
+							<TextBlock x:Name="ShortSummaryErrorTextBlock"
+																			 Classes="re-vitae-error" />
+						</StackPanel>
+								</StackPanel>
+							</controls:ExpandableSection.SectionContent>
+						</controls:ExpandableSection>
+
+						<workExperience:WorkExperienceSectionView x:Name="WorkExperienceSection" />
+
+						<education:EducationSectionView x:Name="EducationSection" />
+
+						<skills:SkillsSectionView x:Name="SkillsSection" />
+
+						<languages:LanguagesSectionView x:Name="LanguagesSection" />
+
+						<certificates:CertificatesSectionView x:Name="CertificatesSection" />
+
+						<projects:ProjectsSectionView x:Name="ProjectsSection" />
+
+						<links:LinksSectionView x:Name="LinksSection" />
+
+						<additionalInformation:AdditionalInformationSectionView x:Name="AdditionalInformationSection" />
+
+						<StackPanel x:Name="QualityHintExportSummaryPanel"
+									Orientation="Horizontal"
+									Spacing="8"
+									IsVisible="False">
+							<TextBlock x:Name="QualityHintExportSummaryTextBlock"
+																			 Classes="re-vitae-secondary"
+																			 VerticalAlignment="Center" />
+							<Button x:Name="QualityHintExportReviewButton"
+									Classes="re-vitae-secondary"
+									Content="Review"
+									Click="OnQualityHintExportReviewClicked" />
+						</StackPanel>
+
+						<Button x:Name="ExportPdfButton"
+								Classes="re-vitae-primary"
+								Content="Export"
+								Click="OnExportPdfClicked" />
+
+						<TextBlock x:Name="ExportStatusTextBlock"
+																	 Classes="re-vitae-secondary" />
+
+						<StackPanel x:Name="ImportAiEnhancePanel"
+									Orientation="Horizontal"
+									Spacing="12"
+									IsVisible="False">
+							<TextBlock x:Name="ImportAiEnhanceBannerTextBlock"
+																			 Classes="re-vitae-secondary"
+																			 VerticalAlignment="Center" />
+							<Button x:Name="ImportAiEnhanceButton"
+									Classes="re-vitae-secondary"
+									Content="Enhance with AI"
+									Click="OnImportAiEnhanceClicked" />
+						</StackPanel>
+
+						<StackPanel x:Name="ExportPostActionPanel"
+									Orientation="Horizontal"
+									Spacing="12"
+									IsVisible="False">
+							<Button x:Name="ExportOpenFileButton"
+									Classes="re-vitae-secondary"
+									Content="Open file"
+									Click="OnExportOpenFileClicked" />
+							<Button x:Name="ExportShowInFolderButton"
+									Classes="re-vitae-secondary"
+									Content="Show in folder"
+									Click="OnExportShowInFolderClicked" />
+						</StackPanel>
+					</StackPanel>
+				</Border>
+			</ScrollViewer>
+
+			<Border Grid.Column="1"
+					Classes="re-vitae-app-card">
+				<Grid RowDefinitions="Auto,*"
+											RowSpacing="14">
+					<Grid Grid.Row="0"
+													Classes="re-vitae-section-header"
+													ColumnDefinitions="Auto,*,Auto">
+						<Border Grid.Column="0"
+								Classes="re-vitae-section-header-spacer" />
+						<TextBlock x:Name="PreviewTitleTextBlock"
+																	 Grid.Column="1"
+																	 Classes="re-vitae-section-title"
+																	 VerticalAlignment="Center"
+																	 Text="Preview" />
+						<Button x:Name="OpenPreviewExpandButton"
+								Grid.Column="2"
+								Classes="re-vitae-expand-toggle"
+								Click="OnOpenPreviewExpandClicked"
+								ToolTip.Tip="Expand preview"
+								AutomationProperties.Name="Expand preview">
+							<materialIcons:MaterialIcon Kind="ArrowExpand"
+														Width="22"
+														Height="22" />
+						</Button>
+					</Grid>
+					<Border Grid.Row="1"
+							Classes="re-vitae-preview-surface">
+						<ScrollViewer Classes="re-vitae-preview-scroll"
+																			HorizontalScrollBarVisibility="Auto"
+																			VerticalScrollBarVisibility="Auto">
+							<ContentControl x:Name="PreviewContentControl" />
+						</ScrollViewer>
+					</Border>
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="IntroModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="True">
+			<Border x:Name="IntroModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="560"
+					MinWidth="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="16"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="IntroTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="24"
+															 Text="Welcome to ReVitae" />
+					<TextBlock x:Name="IntroSubtitleTextBlock"
+															 Classes="re-vitae-secondary"
+															 TextWrapping="Wrap"
+															 Text="Create a new CV from scratch or import an existing file to get started faster." />
+					<TextBlock x:Name="IntroHelperTextBlock"
+															 Classes="re-vitae-secondary"
+															 TextWrapping="Wrap"
+															 Text="Works with PDF, Word, OpenDocument, RTF, text, Markdown, HTML, JSON, XML, and other common CV files. Scanned or image-only PDFs are not supported." />
+
+					<StackPanel x:Name="IntroActionsPanel"
+								Spacing="10">
+						<Button x:Name="CreateNewCvButton"
+								Classes="re-vitae-primary"
+								HorizontalAlignment="Stretch"
+								Click="OnCreateNewCvClicked"
+								AutomationProperties.Name="Create new CV">
+							<StackPanel Orientation="Horizontal"
+										Spacing="10"
+										HorizontalAlignment="Center">
+								<materialIcons:MaterialIcon Kind="FilePlus"
+															Width="20"
+															Height="20" />
+								<TextBlock x:Name="CreateNewCvButtonTextBlock"
+																					 Text="Create new CV"
+																					 VerticalAlignment="Center" />
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="ImportCvButton"
+								Classes="re-vitae-secondary"
+								HorizontalAlignment="Stretch"
+								Click="OnImportCvClicked"
+								AutomationProperties.Name="Import existing CV">
+							<StackPanel Orientation="Horizontal"
+										Spacing="10"
+										HorizontalAlignment="Center">
+								<materialIcons:MaterialIcon Kind="FileUpload"
+															Width="20"
+															Height="20" />
+								<TextBlock x:Name="ImportCvButtonTextBlock"
+																					 Text="Import existing CV"
+																					 VerticalAlignment="Center" />
+							</StackPanel>
+						</Button>
+
+						<Button x:Name="IntroOpenProjectButton"
+								Classes="re-vitae-secondary"
+								HorizontalAlignment="Stretch"
+								Click="OnIntroOpenProjectClicked"
+								AutomationProperties.Name="Open saved project">
+							<StackPanel Orientation="Horizontal"
+										Spacing="10"
+										HorizontalAlignment="Center">
+								<materialIcons:MaterialIcon Kind="FolderOpenOutline"
+															Width="20"
+															Height="20" />
+								<TextBlock x:Name="IntroOpenProjectButtonTextBlock"
+																					 Text="Open saved project"
+																					 VerticalAlignment="Center" />
+							</StackPanel>
+						</Button>
+					</StackPanel>
+
+					<Border x:Name="IntroRecoveryPanel"
+							Classes="re-vitae-app-card"
+							Padding="12"
+							IsVisible="False">
+						<StackPanel Spacing="8">
+							<TextBlock x:Name="IntroRecoveryTitleTextBlock"
+																			 Classes="re-vitae-app-title"
+																			 FontSize="16"
+																			 Text="Recover unsaved work?" />
+							<TextBlock x:Name="IntroRecoveryMessageTextBlock"
+																			 Classes="re-vitae-secondary"
+																			 TextWrapping="Wrap"
+																			 Text="ReVitae found an autosaved CV from an unexpected exit." />
+							<StackPanel Orientation="Horizontal"
+										Spacing="10">
+								<Button x:Name="IntroRecoveryRestoreButton"
+										Classes="re-vitae-primary"
+										Content="Recover"
+										Click="OnIntroRecoveryRestoreClicked" />
+								<Button x:Name="IntroRecoveryDiscardButton"
+										Classes="re-vitae-secondary"
+										Content="Discard"
+										Click="OnIntroRecoveryDiscardClicked" />
+							</StackPanel>
+						</StackPanel>
+					</Border>
+
+					<TextBlock x:Name="IntroRecentTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="16"
+															 Text="Recent projects"
+															 IsVisible="False" />
+
+					<StackPanel x:Name="IntroRecentProjectsPanel"
+								Spacing="8"
+								IsVisible="False" />
+
+					<Button x:Name="IntroClearRecentProjectsButton"
+							Classes="re-vitae-secondary"
+							Content="Clear list"
+							HorizontalAlignment="Left"
+							IsVisible="False"
+							Click="OnIntroClearRecentProjectsClicked" />
+
+					<StackPanel x:Name="IntroProgressPanel"
+								Spacing="8"
+								IsVisible="False">
+						<TextBlock x:Name="IntroProgressTextBlock"
+																	 Classes="re-vitae-secondary"
+																	 Text="Reading document…" />
+						<ProgressBar IsIndeterminate="True"
+																		 Height="4" />
+					</StackPanel>
+
+					<TextBlock x:Name="IntroErrorTextBlock"
+															 Classes="re-vitae-error"
+															 TextWrapping="Wrap"
+															 IsVisible="False" />
+
+					<Button x:Name="IntroRetryImportButton"
+							Classes="re-vitae-secondary"
+							Content="Try import again"
+							HorizontalAlignment="Left"
+							IsVisible="False"
+							Click="OnIntroRetryImportClicked" />
+
+					<Button x:Name="IntroImportForceOcrButton"
+							Classes="re-vitae-secondary"
+							Content="Import as scan (OCR)"
+							HorizontalAlignment="Left"
+							IsVisible="False"
+							Click="OnIntroForceOcrImportClicked" />
+
+					<Button x:Name="IntroImportTryAiButton"
+							Classes="re-vitae-primary"
+							Content="Try AI import"
+							HorizontalAlignment="Left"
+							IsVisible="False"
+							Click="OnIntroImportTryAiClicked" />
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="AiSetupModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="AiSetupModalPanel"
+					Classes="re-vitae-modal-panel re-vitae-ai-setup-modal"
+					MaxWidth="960"
+					MaxHeight="720"
+					MinWidth="360"
+					MinHeight="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<Grid Grid.Row="0"
+													ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<TextBlock x:Name="AiSetupTitleTextBlock"
+																	 Classes="re-vitae-app-title"
+																	 FontSize="24"
+																	 Text="AI setup"
+																	 VerticalAlignment="Center" />
+						<Button x:Name="AiSetupTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseAiSetupClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="20"
+														Height="20" />
+						</Button>
+					</Grid>
+
+					<Grid Grid.Row="1"
+													Margin="0,14,0,0"
+													RowDefinitions="Auto,*">
+						<Border x:Name="AiSetupDownloadJobBanner"
+								Grid.Row="0"
+								Classes="re-vitae-app-card"
+								Padding="16"
+								Margin="0,0,0,12"
+								IsVisible="False">
+							<StackPanel Spacing="10">
+								<TextBlock x:Name="AiSetupDownloadBannerTitleTextBlock"
+																					 Classes="re-vitae-app-title"
+																					 FontSize="16" />
+								<Grid ColumnDefinitions="*,Auto"
+																			ColumnSpacing="8">
+									<ProgressBar x:Name="AiSetupDownloadBannerProgressBar"
+																								 Grid.Column="0"
+																								 Height="6" />
+									<TextBlock x:Name="AiSetupDownloadBannerPercentTextBlock"
+																							 Grid.Column="1"
+																							 Classes="re-vitae-secondary"
+																							 VerticalAlignment="Center" />
+								</Grid>
+								<TextBlock x:Name="AiSetupDownloadBannerStatusTextBlock"
+																					 Classes="re-vitae-secondary"
+																					 FontSize="12"
+																					 TextTrimming="CharacterEllipsis" />
+								<TextBlock x:Name="AiSetupDownloadBannerErrorTextBlock"
+																					 Classes="re-vitae-error"
+																					 IsVisible="False"
+																					 TextWrapping="Wrap" />
+								<StackPanel x:Name="AiSetupDownloadBannerActionsPanel"
+											Orientation="Horizontal"
+											Spacing="10">
+									<Button x:Name="AiSetupDownloadPauseButton"
+											Classes="re-vitae-secondary"
+											Content="Pause"
+											Click="OnAiDownloadPauseClicked" />
+									<Button x:Name="AiSetupDownloadResumeButton"
+											Classes="re-vitae-primary"
+											Content="Resume"
+											IsVisible="False"
+											Click="OnAiDownloadResumeClicked" />
+									<Button x:Name="AiSetupDownloadStopButton"
+											Classes="re-vitae-secondary"
+											Content="Stop download"
+											Click="OnAiDownloadStopClicked" />
+								</StackPanel>
+								<StackPanel x:Name="AiSetupDownloadStopConfirmPanel"
+											Spacing="10"
+											IsVisible="False">
+									<TextBlock x:Name="AiSetupDownloadStopConfirmTextBlock"
+																							 TextWrapping="Wrap" />
+									<StackPanel Orientation="Horizontal"
+												Spacing="10"
+												HorizontalAlignment="Right">
+										<Button x:Name="AiSetupDownloadStopConfirmCancelButton"
+												Classes="re-vitae-secondary"
+												Content="Cancel"
+												Click="OnAiDownloadStopConfirmCancelClicked" />
+										<Button x:Name="AiSetupDownloadStopConfirmOkButton"
+												Classes="re-vitae-primary"
+												Content="OK"
+												Click="OnAiDownloadStopConfirmOkClicked" />
+									</StackPanel>
+								</StackPanel>
+								<Button x:Name="AiSetupDownloadRefreshSystemButton"
+										Classes="re-vitae-secondary"
+										Content="Refresh system info"
+										IsVisible="False"
+										Click="OnAiSetupDownloadRefreshSystemClicked" />
+							</StackPanel>
+						</Border>
+
+						<Grid Grid.Row="1">
+						<StackPanel x:Name="AiSetupDetectionProgressPanel"
+									Spacing="12"
+									VerticalAlignment="Center"
+									HorizontalAlignment="Center">
+							<ProgressBar IsIndeterminate="True"
+																				 MinWidth="240"
+																				 Height="6" />
+							<TextBlock x:Name="AiSetupDetectingTextBlock"
+																			 Classes="re-vitae-secondary"
+																			 HorizontalAlignment="Center"
+																			 Text="Detecting your system…" />
+						</StackPanel>
+
+						<StackPanel x:Name="AiSetupDetectionFailedPanel"
+									Spacing="12"
+									VerticalAlignment="Center"
+									HorizontalAlignment="Center"
+									IsVisible="False">
+							<TextBlock x:Name="AiSetupDetectionFailedTextBlock"
+																			 Classes="re-vitae-error"
+																			 TextWrapping="Wrap"
+																			 TextAlignment="Center"
+																			 Text="Could not read system information." />
+							<Button x:Name="AiSetupDetectionRetryButton"
+									Classes="re-vitae-secondary"
+									Content="Retry"
+									HorizontalAlignment="Center"
+									Click="OnAiSetupDetectionRetryClicked" />
+						</StackPanel>
+
+						<ScrollViewer x:Name="AiSetupContentScrollViewer"
+																			IsVisible="False"
+																			Padding="0,0,4,0">
+							<StackPanel Spacing="16"
+										Classes="re-vitae-section-body">
+								<Border x:Name="AiSetupActiveBackendStrip"
+										Classes="re-vitae-app-card"
+										Padding="16"
+										IsVisible="False">
+									<Grid ColumnDefinitions="*,Auto"
+																					ColumnSpacing="12">
+										<TextBlock x:Name="AiSetupActiveBackendTextBlock"
+																									 TextWrapping="Wrap"
+																									 VerticalAlignment="Center" />
+										<Button x:Name="AiSetupActiveBackendActionButton"
+												Grid.Column="1"
+												Classes="re-vitae-secondary"
+												Click="OnAiSetupActiveBackendActionClicked" />
+									</Grid>
+								</Border>
+
+								<Expander x:Name="AiSetupOnlineProvidersExpander"
+																					IsExpanded="True">
+									<Expander.Header>
+										<TextBlock x:Name="AiSetupOnlineProvidersSectionHeader"
+																									 Classes="re-vitae-app-title"
+																									 FontSize="16" />
+									</Expander.Header>
+									<StackPanel Spacing="12"
+												Margin="4,8,4,0">
+										<TextBlock x:Name="AiSetupOnlinePrivacyNoteTextBlock"
+																									 Classes="re-vitae-secondary"
+																									 TextWrapping="Wrap"
+																									 FontSize="13"
+																									 LineHeight="18" />
+										<StackPanel x:Name="AiSetupOnlineProvidersPanel"
+													Spacing="10" />
+									</StackPanel>
+								</Expander>
+
+								<Expander x:Name="AiSetupLocalModelsExpander"
+																					IsExpanded="False">
+									<Expander.Header>
+										<TextBlock x:Name="AiSetupLocalModelsSectionHeader"
+																									 Classes="re-vitae-app-title"
+																									 FontSize="16" />
+									</Expander.Header>
+									<StackPanel Spacing="16"
+												Margin="4,8,4,0">
+								<TextBlock x:Name="AiSetupSystemDetailsTitleTextBlock"
+																					 Classes="re-vitae-app-title"
+																					 FontSize="16"
+																					 Text="Your system" />
+								<Border Classes="re-vitae-app-card"
+										Padding="20">
+									<StackPanel x:Name="AiSetupSystemDetailsPanel"
+												Spacing="6" />
+								</Border>
+								<TextBlock x:Name="AiSetupWarningTextBlock"
+																					 Classes="re-vitae-error"
+																					 TextWrapping="Wrap"
+																					 IsVisible="False" />
+								<TextBlock x:Name="AiSetupPrivacyNoteTextBlock"
+																					 Classes="re-vitae-secondary"
+																					 TextWrapping="Wrap"
+																					 FontSize="13"
+																					 LineHeight="18" />
+								<Border x:Name="AiSetupRecommendedCard"
+										Classes="re-vitae-app-card"
+										Padding="20"
+										IsVisible="False">
+									<StackPanel Spacing="6">
+										<TextBlock x:Name="AiSetupRecommendedBadgeTextBlock"
+																									 Classes="re-vitae-primary"
+																									 FontWeight="SemiBold"
+																									 Text="Recommended for your device" />
+										<TextBlock x:Name="AiSetupRecommendedNameTextBlock"
+																									 Classes="re-vitae-app-title"
+																									 FontSize="18" />
+										<TextBlock x:Name="AiSetupRecommendedMetaTextBlock"
+																									 Classes="re-vitae-secondary" />
+									</StackPanel>
+								</Border>
+								<TextBlock x:Name="AiSetupAllModelsLabelTextBlock"
+																					 Classes="re-vitae-app-title"
+																					 FontSize="16"
+																					 Text="All models" />
+								<StackPanel x:Name="AiSetupModelsPanel"
+											Spacing="10" />
+								<TextBlock x:Name="AiSetupStatusTextBlock"
+																					 Classes="re-vitae-secondary"
+																					 TextWrapping="Wrap"
+																					 IsVisible="False" />
+								<ProgressBar x:Name="AiSetupPullProgressBar"
+																						 IsVisible="False"
+																						 MinWidth="240"
+																						 Height="6" />
+								<StackPanel x:Name="AiSetupDownloadConfirmPanel"
+											Spacing="10"
+											IsVisible="False">
+									<TextBlock x:Name="AiSetupDownloadConfirmTextBlock"
+																							 TextWrapping="Wrap" />
+									<StackPanel Orientation="Horizontal"
+												Spacing="10"
+												HorizontalAlignment="Right">
+										<Button x:Name="AiSetupDownloadConfirmCancelButton"
+												Classes="re-vitae-secondary"
+												Content="Cancel"
+												Click="OnAiSetupDownloadConfirmCancelClicked" />
+										<Button x:Name="AiSetupDownloadConfirmOkButton"
+												Classes="re-vitae-primary"
+												Content="OK"
+												Click="OnAiSetupDownloadConfirmOkClicked" />
+									</StackPanel>
+								</StackPanel>
+								<StackPanel x:Name="AiSetupModelActionConfirmPanel"
+											Spacing="10"
+											IsVisible="False">
+									<TextBlock x:Name="AiSetupModelActionConfirmTextBlock"
+																							 TextWrapping="Wrap" />
+									<StackPanel Orientation="Horizontal"
+												Spacing="10"
+												HorizontalAlignment="Right">
+										<Button x:Name="AiSetupModelActionConfirmCancelButton"
+												Classes="re-vitae-secondary"
+												Content="Cancel"
+												Click="OnAiSetupModelActionConfirmCancelClicked" />
+										<Button x:Name="AiSetupModelActionConfirmOkButton"
+												Classes="re-vitae-primary"
+												Content="OK"
+												Click="OnAiSetupModelActionConfirmOkClicked" />
+									</StackPanel>
+								</StackPanel>
+									</StackPanel>
+								</Expander>
+
+								<StackPanel x:Name="AiSetupProviderSwitchConfirmPanel"
+											Spacing="10"
+											IsVisible="False">
+									<TextBlock x:Name="AiSetupProviderSwitchConfirmTextBlock"
+																							 TextWrapping="Wrap" />
+									<StackPanel Orientation="Horizontal"
+												Spacing="10"
+												HorizontalAlignment="Right">
+										<Button x:Name="AiSetupProviderSwitchConfirmCancelButton"
+												Classes="re-vitae-secondary"
+												Content="Cancel"
+												Click="OnAiSetupProviderSwitchConfirmCancelClicked" />
+										<Button x:Name="AiSetupProviderSwitchConfirmOkButton"
+												Classes="re-vitae-primary"
+												Content="OK"
+												Click="OnAiSetupProviderSwitchConfirmOkClicked" />
+									</StackPanel>
+								</StackPanel>
+
+								<StackPanel x:Name="AiSetupProviderUntestedConfirmPanel"
+											Spacing="10"
+											IsVisible="False">
+									<TextBlock x:Name="AiSetupProviderUntestedConfirmTextBlock"
+																							 TextWrapping="Wrap" />
+									<StackPanel Orientation="Horizontal"
+												Spacing="10"
+												HorizontalAlignment="Right">
+										<Button x:Name="AiSetupProviderUntestedConfirmCancelButton"
+												Classes="re-vitae-secondary"
+												Content="Cancel"
+												Click="OnAiSetupProviderUntestedConfirmCancelClicked" />
+										<Button x:Name="AiSetupProviderUntestedConfirmOkButton"
+												Classes="re-vitae-primary"
+												Content="Activate anyway"
+												Click="OnAiSetupProviderUntestedConfirmOkClicked" />
+									</StackPanel>
+								</StackPanel>
+							</StackPanel>
+						</ScrollViewer>
+						</Grid>
+					</Grid>
+
+					<StackPanel Grid.Row="2"
+								Orientation="Horizontal"
+								Spacing="10"
+								HorizontalAlignment="Right"
+								Margin="0,14,0,0">
+						<Button x:Name="AiSetupDownloadButton"
+								Classes="re-vitae-primary"
+								Content="Download model"
+								IsEnabled="False"
+								Click="OnAiSetupDownloadClicked" />
+						<Button x:Name="AiSetupBottomCloseButton"
+								Content="Close"
+								Click="OnCloseAiSetupClicked" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="SetupModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="SetupModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="520"
+					MaxHeight="400"
+					MinWidth="320"
+					MinHeight="200"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<Grid Grid.Row="0"
+													ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<TextBlock x:Name="SetupTitleTextBlock"
+																	 Classes="re-vitae-app-title"
+																	 FontSize="24"
+																	 Text="Setup"
+																	 VerticalAlignment="Center" />
+						<Button x:Name="SetupTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseSetupClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="20"
+														Height="20" />
+						</Button>
+					</Grid>
+
+					<StackPanel Grid.Row="1"
+								Margin="0,14,0,0"
+								Spacing="18"
+								Classes="re-vitae-section-body">
+						<StackPanel Classes="re-vitae-form-field">
+							<TextBlock x:Name="LanguageLabelTextBlock"
+																			 Text="Language" />
+							<ComboBox x:Name="LanguageComboBox"
+																			MinWidth="220"
+																			SelectionChanged="OnLanguageSelectionChanged">
+								<ComboBox.ItemTemplate>
+									<DataTemplate DataType="loc:SupportedLanguage">
+										<StackPanel Orientation="Horizontal"
+													Spacing="8">
+											<TextBlock Text="{Binding FlagEmoji}"
+																											 FontSize="16"
+																											 VerticalAlignment="Center" />
+											<TextBlock Text="{Binding NativeName}"
+																											 VerticalAlignment="Center" />
+										</StackPanel>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+						</StackPanel>
+					</StackPanel>
+
+					<Button x:Name="SetupBottomCloseButton"
+							Grid.Row="2"
+							Content="Close"
+							HorizontalAlignment="Right"
+							Click="OnCloseSetupClicked" />
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="TemplatesModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="TemplatesModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="1100"
+					MaxHeight="800"
+					MinWidth="360"
+					MinHeight="280"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<Grid Grid.Row="0"
+													ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<TextBlock x:Name="TemplatesTitleTextBlock"
+																	 Classes="re-vitae-app-title"
+																	 FontSize="24"
+																	 Text="Templates"
+																	 VerticalAlignment="Center" />
+						<Button x:Name="TemplatesTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseTemplatesClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="20"
+														Height="20" />
+						</Button>
+					</Grid>
+
+					<ScrollViewer Grid.Row="1"
+																	Margin="0,14,0,0">
+						<WrapPanel x:Name="TemplateCardsWrapPanel" />
+					</ScrollViewer>
+
+					<Button x:Name="TemplatesBottomCloseButton"
+							Grid.Row="2"
+							Content="Close"
+							HorizontalAlignment="Right"
+							Click="OnCloseTemplatesClicked" />
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="ReplaceCvConfirmModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="ReplaceCvConfirmModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="520"
+					MinWidth="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="16"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="ReplaceCvConfirmTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="24"
+															 Text="Replace current CV?" />
+					<TextBlock x:Name="ReplaceCvConfirmMessageTextBlock"
+															 Classes="re-vitae-secondary"
+															 TextWrapping="Wrap"
+															 Text="Importing a new file will replace all current CV data. Do you want to continue?" />
+					<StackPanel Orientation="Horizontal"
+								Spacing="10"
+								HorizontalAlignment="Right">
+						<Button x:Name="ReplaceCvConfirmCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnReplaceCvConfirmCancelClicked" />
+						<Button x:Name="ReplaceCvConfirmOkButton"
+								Classes="re-vitae-primary"
+								Content="OK"
+								Click="OnReplaceCvConfirmOkClicked" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="NewCvConfirmModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="NewCvConfirmModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="520"
+					MinWidth="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="16"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="NewCvConfirmTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="24"
+															 Text="Discard changes?" />
+					<TextBlock x:Name="NewCvConfirmMessageTextBlock"
+															 Classes="re-vitae-secondary"
+															 TextWrapping="Wrap"
+															 Text="Creating a new CV will discard all current data. Do you want to continue?" />
+					<StackPanel Orientation="Horizontal"
+								Spacing="10"
+								HorizontalAlignment="Right">
+						<Button x:Name="NewCvConfirmCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnNewCvConfirmCancelClicked" />
+						<Button x:Name="NewCvConfirmOkButton"
+								Classes="re-vitae-primary"
+								Content="OK"
+								Click="OnNewCvConfirmOkClicked" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="UnsavedChangesConfirmModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="UnsavedChangesConfirmModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="520"
+					MinWidth="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="16"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="UnsavedChangesConfirmTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="24"
+															 Text="Save changes?" />
+					<TextBlock x:Name="UnsavedChangesConfirmMessageTextBlock"
+															 Classes="re-vitae-secondary"
+															 TextWrapping="Wrap"
+															 Text="Your CV has unsaved changes. Save before continuing?" />
+					<StackPanel Orientation="Horizontal"
+								Spacing="10"
+								HorizontalAlignment="Right">
+						<Button x:Name="UnsavedChangesConfirmCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnUnsavedChangesCancelClicked" />
+						<Button x:Name="UnsavedChangesConfirmDiscardButton"
+								Classes="re-vitae-secondary"
+								Content="Don't save"
+								Click="OnUnsavedChangesDiscardClicked" />
+						<Button x:Name="UnsavedChangesConfirmSaveButton"
+								Classes="re-vitae-primary"
+								Content="Save"
+								Click="OnUnsavedChangesSaveClicked" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="ProjectRecentClearConfirmModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="ProjectRecentClearConfirmModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="520"
+					MinWidth="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="16"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="ProjectRecentClearConfirmTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="24"
+															 Text="Clear recent projects?" />
+					<TextBlock x:Name="ProjectRecentClearConfirmMessageTextBlock"
+															 Classes="re-vitae-secondary"
+															 TextWrapping="Wrap"
+															 Text="This removes the recent projects list. Saved files on disk are not deleted." />
+					<StackPanel Orientation="Horizontal"
+								Spacing="10"
+								HorizontalAlignment="Right">
+						<Button x:Name="ProjectRecentClearConfirmCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnProjectRecentClearConfirmCancelClicked" />
+						<Button x:Name="ProjectRecentClearConfirmOkButton"
+								Classes="re-vitae-primary"
+								Content="OK"
+								Click="OnProjectRecentClearConfirmOkClicked" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="ReplaceCvImportProgressModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="ReplaceCvImportProgressModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="480"
+					MinWidth="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="12"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="ReplaceCvImportProgressTextBlock"
+															 Classes="re-vitae-secondary"
+															 Text="Reading document…" />
+					<ProgressBar IsIndeterminate="True"
+																 Height="4" />
+					<TextBlock x:Name="ReplaceCvImportErrorTextBlock"
+															 Classes="re-vitae-error"
+															 TextWrapping="Wrap"
+															 IsVisible="False" />
+					<Button x:Name="ReplaceCvImportRetryButton"
+							Classes="re-vitae-secondary"
+							Content="Try import again"
+							HorizontalAlignment="Left"
+							IsVisible="False"
+							Click="OnReplaceCvImportRetryClicked" />
+
+					<Button x:Name="ReplaceCvImportForceOcrButton"
+							Classes="re-vitae-secondary"
+							Content="Import as scan (OCR)"
+							HorizontalAlignment="Left"
+							IsVisible="False"
+							Click="OnReplaceCvImportForceOcrClicked" />
+
+					<Button x:Name="ReplaceImportTryAiButton"
+							Classes="re-vitae-primary"
+							Content="Try AI import"
+							HorizontalAlignment="Left"
+							IsVisible="False"
+							Click="OnReplaceImportTryAiClicked" />
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="PreviewExpandModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="PreviewExpandModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="1100"
+					MaxHeight="800"
+					MinWidth="360"
+					MinHeight="280"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<Grid Grid.Row="0"
+													ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<TextBlock x:Name="PreviewExpandTitleTextBlock"
+																	 Classes="re-vitae-app-title"
+																	 FontSize="24"
+																	 Text="Expanded preview"
+																	 VerticalAlignment="Center" />
+						<Button x:Name="PreviewExpandTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnClosePreviewExpandClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="20"
+														Height="20" />
+						</Button>
+					</Grid>
+
+					<Border Grid.Row="1"
+							Margin="0,14,0,14"
+							Classes="re-vitae-preview-surface">
+						<ScrollViewer Classes="re-vitae-preview-scroll"
+																			HorizontalScrollBarVisibility="Auto"
+																			VerticalScrollBarVisibility="Auto">
+							<ContentControl x:Name="PreviewExpandContentControl" />
+						</ScrollViewer>
+					</Border>
+
+					<Button x:Name="PreviewExpandBottomCloseButton"
+							Grid.Row="2"
+							Content="Close"
+							HorizontalAlignment="Right"
+							Click="OnClosePreviewExpandClicked" />
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="AboutModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="AboutModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="640"
+					MinWidth="400"
+					MinHeight="360"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*">
+					<Grid ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<TextBlock x:Name="AboutModalTitleTextBlock"
+																	 Classes="re-vitae-app-title"
+																	 FontSize="28"
+																	 Text="About"
+																	 VerticalAlignment="Center" />
+						<Button x:Name="AboutModalTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseAboutClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="22"
+														Height="22" />
+						</Button>
+					</Grid>
+
+					<Border Grid.Row="1"
+							Margin="0,24,0,0"
+							Padding="32,36"
+							Classes="re-vitae-app-card"
+							HorizontalAlignment="Stretch">
+						<StackPanel Spacing="20"
+									HorizontalAlignment="Center">
+							<TextBlock x:Name="AboutModalAppNameTextBlock"
+																			 Classes="re-vitae-app-title"
+																			 FontSize="42"
+																			 HorizontalAlignment="Center"
+																			 Text="ReVitae" />
+							<TextBlock x:Name="AboutModalTaglineTextBlock"
+																			 Classes="re-vitae-subtitle"
+																			 FontSize="16"
+																			 LineHeight="24"
+																			 TextWrapping="Wrap"
+																			 TextAlignment="Center"
+																			 HorizontalAlignment="Center"
+																			 MaxWidth="520"
+																			 Text="Create a simple CV preview and export a plain PDF." />
+							<StackPanel Orientation="Horizontal"
+										Spacing="10"
+										HorizontalAlignment="Center"
+										Margin="0,8,0,0">
+								<Border Padding="12,6"
+										CornerRadius="14"
+										Background="{DynamicResource MaterialThemeBackgroundBrush}"
+										BorderBrush="{DynamicResource MaterialDividerBrush}"
+										BorderThickness="1">
+									<TextBlock x:Name="AboutModalVersionTextBlock"
+																							 FontSize="14"
+																							 Text="Version 0.1.0" />
+								</Border>
+								<Border x:Name="AboutModalEarlyPreviewBadge"
+										Padding="12,6"
+										CornerRadius="14"
+										Background="{DynamicResource PrimaryHueMidBrush}"
+										IsVisible="False">
+									<TextBlock x:Name="AboutModalEarlyPreviewTextBlock"
+																							 FontSize="14"
+																							 Foreground="White"
+																							 FontWeight="SemiBold"
+																							 Text="Early preview" />
+								</Border>
+							</StackPanel>
+							<TextBlock x:Name="AboutModalAuthorTextBlock"
+										Classes="re-vitae-subtitle"
+										FontSize="14"
+										TextAlignment="Center"
+										HorizontalAlignment="Center"
+										Text="Ladislav Kostolny · 01laky@gmail.com" />
+						</StackPanel>
+					</Border>
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="ExportModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="ExportModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="960"
+					MaxHeight="720"
+					MinWidth="360"
+					MinHeight="280"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<Grid Grid.Row="0"
+													ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<StackPanel Spacing="4">
+							<TextBlock x:Name="ExportModalTitleTextBlock"
+																			 Classes="re-vitae-app-title"
+																			 FontSize="24"
+																			 Text="Export CV" />
+							<TextBlock x:Name="ExportModalSubtitleTextBlock"
+																			 Classes="re-vitae-secondary"
+																			 Text="Choose a file format for your download." />
+						</StackPanel>
+						<Button x:Name="ExportModalTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseExportModalClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="20"
+														Height="20" />
+						</Button>
+					</Grid>
+
+					<ScrollViewer Grid.Row="1"
+																	Margin="0,14,0,0">
+						<StackPanel Spacing="8">
+							<StackPanel x:Name="ExportFormatCategoriesPanel"
+										Spacing="8" />
+							<StackPanel x:Name="ExportImageOptionsPanel"
+										Spacing="14"
+										IsVisible="False">
+								<TextBlock x:Name="ExportImageOptionsTitleTextBlock"
+																					 Classes="re-vitae-app-title"
+																					 FontSize="18"
+																					 Text="Image export options" />
+								<TextBlock Classes="re-vitae-secondary"
+																					 Text="Choose format, delivery, and pages." />
+								<StackPanel Spacing="8">
+									<TextBlock x:Name="ExportImageFormatLabelTextBlock"
+																							 Classes="re-vitae-field-label"
+																							 Text="Image format" />
+									<StackPanel Orientation="Horizontal" Spacing="8">
+										<RadioButton x:Name="ExportImageFormatPngRadio"
+																										 GroupName="ExportImageFormat"
+																										 IsChecked="True"
+																										 Content="PNG" />
+										<RadioButton x:Name="ExportImageFormatJpegRadio"
+																										 GroupName="ExportImageFormat"
+																										 Content="JPEG" />
+										<RadioButton x:Name="ExportImageFormatWebpRadio"
+																										 GroupName="ExportImageFormat"
+																										 Content="WebP" />
+									</StackPanel>
+								</StackPanel>
+								<StackPanel Spacing="8">
+									<TextBlock x:Name="ExportImageDeliveryLabelTextBlock"
+																							 Classes="re-vitae-field-label"
+																							 Text="Delivery" />
+									<StackPanel Orientation="Horizontal" Spacing="8">
+										<RadioButton x:Name="ExportImageDeliveryZipRadio"
+																										 GroupName="ExportImageDelivery"
+																										 IsChecked="True"
+																										 Content="ZIP" />
+										<RadioButton x:Name="ExportImageDeliverySeparateRadio"
+																										 GroupName="ExportImageDelivery"
+																										 Content="Separate files" />
+									</StackPanel>
+								</StackPanel>
+								<StackPanel Spacing="8">
+									<TextBlock x:Name="ExportImageQualityLabelTextBlock"
+																							 Classes="re-vitae-field-label"
+																							 Text="Quality" />
+									<Slider x:Name="ExportImageQualitySlider"
+											Minimum="70"
+											Maximum="100"
+											Value="90"
+											TickFrequency="5"
+											IsSnapToTickEnabled="True" />
+									<TextBlock x:Name="ExportImageQualityValueTextBlock"
+																							 Classes="re-vitae-secondary"
+																							 Text="90" />
+								</StackPanel>
+								<StackPanel Spacing="8">
+									<TextBlock x:Name="ExportImageScaleLabelTextBlock"
+																							 Classes="re-vitae-field-label"
+																							 Text="Resolution" />
+									<StackPanel Orientation="Horizontal" Spacing="8">
+										<RadioButton x:Name="ExportImageScale1xRadio"
+																										 GroupName="ExportImageScale"
+																										 Content="1×" />
+										<RadioButton x:Name="ExportImageScale2xRadio"
+																										 GroupName="ExportImageScale"
+																										 IsChecked="True"
+																										 Content="2×" />
+									</StackPanel>
+								</StackPanel>
+								<StackPanel Spacing="8">
+									<TextBlock x:Name="ExportImagePagesLabelTextBlock"
+																							 Classes="re-vitae-field-label"
+																							 Text="Pages" />
+									<StackPanel Orientation="Horizontal" Spacing="8">
+										<RadioButton x:Name="ExportImagePagesAllRadio"
+																										 GroupName="ExportImagePages"
+																										 IsChecked="True"
+																										 Content="All pages" />
+										<RadioButton x:Name="ExportImagePagesRangeRadio"
+																										 GroupName="ExportImagePages"
+																										 Content="Page range" />
+									</StackPanel>
+									<Grid ColumnDefinitions="Auto,80,Auto,80"
+																					ColumnSpacing="8"
+																					x:Name="ExportImagePageRangeGrid"
+																					IsVisible="False">
+										<TextBlock x:Name="ExportImagePageFromLabelTextBlock"
+																									 Grid.Column="0"
+																									 VerticalAlignment="Center"
+																									 Text="From" />
+										<NumericUpDown x:Name="ExportImagePageFromNumeric"
+																											 Grid.Column="1"
+																											 Minimum="1"
+																											 Maximum="999"
+																											 Value="1"
+																											 FormatString="0"
+																											 AllowSpin="True" />
+										<TextBlock x:Name="ExportImagePageToLabelTextBlock"
+																									 Grid.Column="2"
+																									 VerticalAlignment="Center"
+																									 Text="To" />
+										<NumericUpDown x:Name="ExportImagePageToNumeric"
+																											 Grid.Column="3"
+																											 Minimum="1"
+																											 Maximum="999"
+																											 Value="1"
+																											 FormatString="0"
+																											 AllowSpin="True" />
+									</Grid>
+									<TextBlock x:Name="ExportImageRangeErrorTextBlock"
+																							 Foreground="#C62828"
+																							 IsVisible="False"
+																							 TextWrapping="Wrap" />
+								</StackPanel>
+								<TextBlock x:Name="ExportImageSizeEstimateTextBlock"
+																					 Classes="re-vitae-secondary"
+																					 Text="Calculating size…" />
+								<TextBlock x:Name="ExportImageProgressTextBlock"
+																					 Classes="re-vitae-secondary"
+																					 IsVisible="False"
+																					 TextWrapping="Wrap" />
+								<StackPanel Orientation="Horizontal"
+											HorizontalAlignment="Right"
+											Spacing="8">
+									<Button x:Name="ExportImageBackButton"
+											Content="Back to formats"
+											Click="OnExportImageBackClicked" />
+									<Button x:Name="ExportImageExportButton"
+											Classes="accent"
+											Content="Export images"
+											Click="OnExportImageExportClicked" />
+								</StackPanel>
+							</StackPanel>
+						</StackPanel>
+					</ScrollViewer>
+
+					<Button x:Name="ExportModalBottomCloseButton"
+							Grid.Row="2"
+							Content="Close"
+							HorizontalAlignment="Right"
+							Click="OnCloseExportModalClicked" />
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="QualityHintModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="QualityHintModalPanel"
+					Classes="re-vitae-modal-panel re-vitae-quality-hint-modal"
+					MaxWidth="1200"
+					MaxHeight="960"
+					MinWidth="720"
+					MinHeight="480"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<Grid Grid.Row="0"
+													ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<TextBlock x:Name="QualityHintModalTitleTextBlock"
+																	 Classes="re-vitae-app-title"
+																	 FontSize="22"
+																	 TextWrapping="Wrap"
+																	 VerticalAlignment="Center" />
+						<Button x:Name="QualityHintModalTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseQualityHintModalClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="22"
+														Height="22" />
+						</Button>
+					</Grid>
+
+					<ScrollViewer Grid.Row="1"
+																	Margin="0,20,0,20">
+						<StackPanel x:Name="QualityHintModalContentPanel"
+									Spacing="20"
+									Classes="re-vitae-section-body" />
+					</ScrollViewer>
+
+					<Button x:Name="QualityHintModalBottomCloseButton"
+							Grid.Row="2"
+							Content="Close"
+							HorizontalAlignment="Right"
+							Click="OnCloseQualityHintModalClicked" />
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="AiSuggestionModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border x:Name="AiSuggestionModalPanel"
+					Classes="re-vitae-modal-panel"
+					MaxWidth="720"
+					MaxHeight="640"
+					MinWidth="400"
+					MinHeight="280"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,*,Auto">
+					<Grid Grid.Row="0"
+													ColumnDefinitions="*,Auto"
+													ColumnSpacing="16">
+						<TextBlock x:Name="AiCvSuggestionTitleTextBlock"
+																	 Classes="re-vitae-app-title"
+																	 FontSize="22"
+																	 Text="AI suggestion"
+																	 VerticalAlignment="Center" />
+						<Button x:Name="AiCvSuggestionTopCloseButton"
+								Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseAiSuggestionModalClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="22"
+														Height="22" />
+						</Button>
+					</Grid>
+
+					<StackPanel Grid.Row="1"
+								Margin="0,20,0,20"
+								Spacing="16">
+						<StackPanel x:Name="AiCvOnlineSendConfirmPanel"
+									Spacing="12"
+									IsVisible="False">
+							<TextBlock x:Name="AiCvOnlineSendConfirmTextBlock"
+																			 TextWrapping="Wrap" />
+							<StackPanel Orientation="Horizontal"
+										Spacing="12"
+										HorizontalAlignment="Right">
+								<Button x:Name="AiCvOnlineSendConfirmCancelButton"
+										Classes="re-vitae-secondary"
+										Content="Cancel"
+										Click="OnAiCvOnlineSendConfirmCancelClicked" />
+								<Button x:Name="AiCvOnlineSendConfirmOkButton"
+										Classes="re-vitae-primary"
+										Content="OK"
+										Click="OnAiCvOnlineSendConfirmOkClicked" />
+							</StackPanel>
+						</StackPanel>
+
+						<StackPanel x:Name="AiCvSuggestionLoadingPanel"
+									Spacing="12"
+									IsVisible="False">
+							<ProgressBar IsIndeterminate="True"
+																				 Height="6" />
+							<TextBlock x:Name="AiCvSuggestionLoadingTextBlock"
+																			 Text="Generating suggestion…"
+																			 Classes="re-vitae-secondary" />
+						</StackPanel>
+
+						<StackPanel x:Name="AiCvSuggestionContentPanel"
+									Spacing="12"
+									IsVisible="False">
+							<TextBox x:Name="AiCvSuggestionTextBox"
+																		 AcceptsReturn="True"
+																		 TextWrapping="Wrap"
+																		 MinHeight="160"
+																		 IsReadOnly="True" />
+						</StackPanel>
+
+						<StackPanel x:Name="AiCvSuggestionErrorPanel"
+									Spacing="8"
+									IsVisible="False">
+							<TextBlock x:Name="AiCvSuggestionErrorTextBlock"
+																			 TextWrapping="Wrap"
+																			 Foreground="#C62828" />
+						</StackPanel>
+
+						<TextBlock x:Name="AiCvSuggestionBackendTextBlock"
+																	 Classes="re-vitae-secondary"
+																	 FontSize="13"
+																	 TextWrapping="Wrap" />
+					</StackPanel>
+
+					<StackPanel x:Name="AiCvSuggestionActionsPanel"
+								Grid.Row="2"
+								Orientation="Horizontal"
+								Spacing="12"
+								HorizontalAlignment="Right"
+								IsVisible="False">
+						<Button x:Name="AiCvSuggestionRetryButton"
+								Classes="re-vitae-secondary"
+								Content="Retry"
+								IsVisible="False"
+								Click="OnAiCvSuggestionRetryClicked" />
+						<Button x:Name="AiCvSuggestionCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnAiCvSuggestionCancelClicked" />
+						<Button x:Name="AiCvSuggestionEditButton"
+								Classes="re-vitae-secondary"
+								Content="Edit in form"
+								Click="OnAiCvSuggestionEditClicked" />
+						<Button x:Name="AiCvSuggestionAcceptButton"
+								Classes="re-vitae-primary"
+								Content="Accept"
+								Click="OnAiCvSuggestionAcceptClicked" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</Grid>
+
+		<Border x:Name="QualityHintSnackbarBorder"
+				Grid.Row="1"
+				VerticalAlignment="Bottom"
+				HorizontalAlignment="Center"
+				Margin="0,0,0,16"
+				Padding="20,14"
+				IsVisible="False">
+			<TextBlock x:Name="QualityHintSnackbarTextBlock"
+											 TextWrapping="Wrap"
+											 FontSize="15"
+											 LineHeight="22"
+											 MaxWidth="720" />
+		</Border>
+
+		<Grid x:Name="AiImportProgressOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border Classes="re-vitae-modal-panel"
+					MaxWidth="520"
+					MinWidth="360"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="12"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="AiImportProgressTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="22"
+															 Text="AI import" />
+					<TextBlock x:Name="AiImportProgressStepTextBlock"
+															 TextWrapping="Wrap"
+															 Classes="re-vitae-secondary" />
+					<TextBlock x:Name="AiImportProgressBackendTextBlock"
+															 Classes="re-vitae-secondary" />
+					<ProgressBar x:Name="AiImportProgressBar"
+																 Height="6"
+																 Minimum="0"
+																 Maximum="100" />
+					<Button x:Name="AiImportProgressCancelButton"
+							Classes="re-vitae-secondary"
+							Content="Cancel"
+							HorizontalAlignment="Left"
+							Click="OnAiImportProgressCancelClicked" />
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="AiImportReviewOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border Classes="re-vitae-modal-panel"
+					MaxWidth="760"
+					MinWidth="420"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="12"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="AiImportReviewTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="22"
+															 Text="Review AI import" />
+					<TextBlock x:Name="AiImportReviewBackendTextBlock"
+															 Classes="re-vitae-secondary" />
+					<TextBlock x:Name="AiImportReviewWarningTextBlock"
+															 TextWrapping="Wrap"
+															 Classes="re-vitae-error" />
+					<TextBlock x:Name="AiImportReviewPhotoNoteTextBlock"
+															 TextWrapping="Wrap"
+															 Classes="re-vitae-secondary" />
+					<TextBlock x:Name="AiImportReviewSummaryTitleTextBlock"
+															 Classes="re-vitae-app-title"
+															 FontSize="16"
+															 Text="Section summary" />
+					<StackPanel x:Name="AiImportReviewSummaryPanel"
+								Spacing="6" />
+					<TextBlock x:Name="AiImportReviewImprovedTextBlock"
+															 TextWrapping="Wrap"
+															 Classes="re-vitae-secondary" />
+					<TextBlock x:Name="AiImportReviewPartialWarningTextBlock"
+															 TextWrapping="Wrap"
+															 Classes="re-vitae-error"
+															 IsVisible="False" />
+					<Expander x:Name="AiImportReviewDetailsExpander"
+															Header="Details"
+															IsVisible="False">
+						<TextBlock x:Name="AiImportReviewDetailsTextBlock"
+																	 TextWrapping="Wrap"
+																	 Classes="re-vitae-secondary" />
+					</Expander>
+					<StackPanel Orientation="Horizontal"
+								Spacing="12"
+								HorizontalAlignment="Right">
+						<Button x:Name="AiImportReviewCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnAiImportReviewCancelClicked" />
+						<Button x:Name="AiImportReviewMergeEmptyButton"
+								Classes="re-vitae-secondary"
+								Content="Fill empty fields only"
+								IsVisible="False"
+								Click="OnAiImportReviewMergeEmptyClicked" />
+						<Button x:Name="AiImportReviewApplyButton"
+								Classes="re-vitae-primary"
+								Content="Apply to form"
+								Click="OnAiImportReviewApplyClicked" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="AiImportOnlineConfirmOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border Classes="re-vitae-modal-panel"
+					MaxWidth="520"
+					MinWidth="360"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<StackPanel Spacing="12"
+							Classes="re-vitae-section-body">
+					<TextBlock x:Name="AiImportOnlineConfirmTextBlock"
+															 TextWrapping="Wrap" />
+					<StackPanel Orientation="Horizontal"
+								Spacing="12"
+								HorizontalAlignment="Right">
+						<Button x:Name="AiImportOnlineConfirmCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnAiImportOnlineConfirmCancelClicked" />
+						<Button x:Name="AiImportOnlineConfirmOkButton"
+								Classes="re-vitae-primary"
+								Content="OK"
+								Click="OnAiImportOnlineConfirmOkClicked" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Border x:Name="AiDownloadDockOverlay"
+				Grid.RowSpan="2"
+				Classes="re-vitae-app-card"
+				IsVisible="False"
+				MaxWidth="340"
+				Margin="16"
+				Padding="14"
+				HorizontalAlignment="Left"
+				VerticalAlignment="Bottom">
+			<StackPanel Spacing="8">
+				<TextBlock x:Name="AiDownloadDockModelTextBlock"
+													 Classes="re-vitae-app-title"
+													 FontSize="14"
+													 TextWrapping="Wrap"
+													 Cursor="Hand"
+													 PointerReleased="OnAiDownloadDockClicked" />
+				<Grid ColumnDefinitions="*,Auto"
+											ColumnSpacing="8">
+					<ProgressBar x:Name="AiDownloadDockProgressBar"
+																 Grid.Column="0"
+																 Height="6"
+																 MinWidth="180" />
+					<TextBlock x:Name="AiDownloadDockPercentTextBlock"
+															 Grid.Column="1"
+															 Classes="re-vitae-secondary"
+															 VerticalAlignment="Center" />
+				</Grid>
+				<TextBlock x:Name="AiDownloadDockStatusTextBlock"
+													 Classes="re-vitae-secondary"
+													 FontSize="12"
+													 TextTrimming="CharacterEllipsis" />
+				<StackPanel x:Name="AiDownloadDockActionsPanel"
+							Orientation="Horizontal"
+							Spacing="8">
+					<Button x:Name="AiDownloadDockPauseButton"
+							Classes="re-vitae-secondary"
+							Content="Pause"
+							Click="OnAiDownloadPauseClicked" />
+					<Button x:Name="AiDownloadDockResumeButton"
+							Classes="re-vitae-primary"
+							Content="Resume"
+							IsVisible="False"
+							Click="OnAiDownloadResumeClicked" />
+					<Button x:Name="AiDownloadDockStopButton"
+							Classes="re-vitae-secondary"
+							Content="Stop download"
+							Click="OnAiDownloadStopClicked" />
+				</StackPanel>
+				<StackPanel x:Name="AiDownloadDockStopConfirmPanel"
+							Spacing="8"
+							IsVisible="False">
+					<TextBlock x:Name="AiDownloadDockStopConfirmTextBlock"
+															 TextWrapping="Wrap"
+															 FontSize="12" />
+					<StackPanel Orientation="Horizontal"
+								Spacing="8">
+						<Button x:Name="AiDownloadDockStopConfirmCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnAiDownloadStopConfirmCancelClicked" />
+						<Button x:Name="AiDownloadDockStopConfirmOkButton"
+								Classes="re-vitae-primary"
+								Content="OK"
+								Click="OnAiDownloadStopConfirmOkClicked" />
+					</StackPanel>
+				</StackPanel>
+			</StackPanel>
+		</Border>
+	</Grid>
 </Window>

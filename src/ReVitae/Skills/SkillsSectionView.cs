@@ -24,968 +24,968 @@ namespace ReVitae.Skills;
 
 public sealed class SkillsSectionView : UserControl, IValidationNavigableSection, IQualityHintSection
 {
-    private readonly ExpandableSection _section;
-    private readonly SectionHeaderBadges _headerBadges;
-    private readonly StackPanel _contentPanel;
-    private readonly StackPanel _entriesPanel;
-    private readonly TextBlock _emptyHintTextBlock;
-    private readonly Button _addButton;
-    private ValidationTouchTracker _touchTracker = new();
-    private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
-    private readonly List<SkillsGroupEntry> _entries = [];
-    private readonly Dictionary<string, SkillsGroupCard> _cardsById = new(StringComparer.Ordinal);
-    private string? _dragSourceGroupId;
-    private string? _dragSourceSkillGroupId;
-    private string? _dragSourceSkillId;
-    private int? _pendingGroupDropIndex;
-    private string? _pendingSkillDropGroupId;
-    private int? _pendingSkillDropIndex;
-    private IPointer? _capturedPointer;
-    private bool _suppressEntriesChanged;
-
-    public SkillsSectionView()
-    {
-        _headerBadges = new SectionHeaderBadges();
-
-        _entriesPanel = new StackPanel { Spacing = 12 };
-        _emptyHintTextBlock = new TextBlock
-        {
-            TextWrapping = TextWrapping.Wrap
-        };
-        _emptyHintTextBlock.Classes.Add(UiClasses.SecondaryText);
-
-        _addButton = new Button { HorizontalAlignment = HorizontalAlignment.Left };
-        _addButton.Classes.Add(UiClasses.PrimaryButton);
-        _addButton.Click += (_, _) => AddEntry();
-
-        _contentPanel = new StackPanel
-        {
-            Spacing = 12,
-            Children =
-            {
-                _emptyHintTextBlock,
-                _addButton,
-                _entriesPanel
-            }
-        };
-
-        _section = new ExpandableSection
-        {
-            SectionContent = _contentPanel,
-            IsExpanded = true,
-            HeaderActions = _headerBadges.Root
-        };
-        _section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
-
-        Content = _section;
-        _entriesPanel.AddHandler(InputElement.PointerMovedEvent, OnEntriesPanelPointerMoved, RoutingStrategies.Tunnel);
-        _entriesPanel.AddHandler(InputElement.PointerReleasedEvent, OnEntriesPanelPointerReleased, RoutingStrategies.Tunnel);
-    }
-
-    public event EventHandler? EntriesChanged;
-
-    public event EventHandler? ExpandStateChanged;
-
-    public IReadOnlyList<SkillsGroupEntry> Entries => _entries;
-
-    public void SetLocalizer(AppLocalizer localizer)
-    {
-        _localizer = localizer;
-        _section.Title = _localizer.Get(TranslationKeys.Skills);
-        _section.ExpandToolTip = _localizer.Get(TranslationKeys.ExpandSection);
-        _section.CollapseToolTip = _localizer.Get(TranslationKeys.CollapseSection);
-        _emptyHintTextBlock.Text = _localizer.Get(TranslationKeys.SkillsEmptyHint);
-        _addButton.Content = _localizer.Get(TranslationKeys.SkillsAdd);
-
-        foreach (var card in _cardsById.Values)
-        {
-            card.ApplyLocalization(_localizer);
-        }
-    }
-
-    public void ApplyQualityHints(
-        IReadOnlyList<CvQualityHint> sectionHints,
-        AppLocalizer localizer,
-        Func<CvQualityHint, bool>? navigateToHint,
-        Action<CvQualityHint>? dismissHint,
-        Action? flyoutOpened)
-    {
-        QualityHintsService.UpdateSectionQualityBadge(
-            _headerBadges.QualityBadgePanel,
-            _headerBadges.QualityBadgeTextBlock,
-            sectionHints,
-            localizer,
-            _section.Title ?? string.Empty,
-            navigateToHint,
-            dismissHint,
-            flyoutOpened);
-    }
-
-    public ValidationTouchTracker TouchTracker => _touchTracker;
-
-    public void UpdateValidation(FieldValidationResult validationResult) =>
-        UpdateValidation(validationResult, _touchTracker);
-
-    public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
-    {
-        _touchTracker = touchTracker;
-
-        var sectionErrors = validationResult.Errors
-            .Where(error => SkillsFieldKeys.TryParseGroupId(error.FieldKey, out _, out _))
-            .ToArray();
-
-        FormValidationService.UpdateSectionErrorBadge(
-            _headerBadges.ErrorBadgePanel,
-            _headerBadges.ErrorBadgeTextBlock,
-            sectionErrors.Length,
-            !_section.IsExpanded,
-            _localizer,
-            TranslationKeys.SkillsValidationErrors,
-            () => _section.IsExpanded = true);
-
-        foreach (var (entryId, card) in _cardsById)
-        {
-            var errors = sectionErrors
-                .Where(error => SkillsFieldKeys.TryParseGroupId(error.FieldKey, out var parsedId, out _)
-                    && parsedId == entryId)
-                .ToArray();
-            card.UpdateValidation(errors, touchTracker);
-        }
-    }
-
-    public IReadOnlyList<string> GetOrderedFieldKeys()
-    {
-        var keys = new List<string>();
-        foreach (var entry in _entries)
-        {
-            var groupId = entry.Id;
-            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.Category));
-            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillName));
-            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillProficiency));
-            keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillsCollection));
-            foreach (var skill in entry.Skills.Where(skill => skill.HasUserInput()))
-            {
-                keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillName));
-                keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillProficiency));
-                keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillYearsOfExperience));
-            }
-        }
-
-        return keys;
-    }
-
-    public bool ExpandAndRevealField(string fieldKey)
-    {
-        if (!SkillsFieldKeys.TryParseGroupId(fieldKey, out var groupId, out _))
-        {
-            return false;
-        }
-
-        if (!_cardsById.TryGetValue(groupId, out var card))
-        {
-            return false;
-        }
-
-        _section.IsExpanded = true;
-        card.SetExpanded(true);
-        var control = FindControlForFieldKey(fieldKey);
-        control?.Focus();
-        return control is not null;
-    }
-
-    public Control? FindControlForFieldKey(string fieldKey)
-    {
-        if (!SkillsFieldKeys.TryParseGroupId(fieldKey, out var groupId, out _))
-        {
-            return null;
-        }
-
-        return _cardsById.TryGetValue(groupId, out var card)
-            ? card.FindControlForFieldKey(fieldKey)
-            : null;
-    }
-
-    public void ReplaceEntries(IReadOnlyList<SkillsGroupEntry> entries, bool expandSection = true)
-    {
-        _suppressEntriesChanged = true;
-        try
-        {
-            _entries.Clear();
-            _entries.AddRange(entries);
-            _section.IsExpanded = expandSection;
-            RebuildEntryCards();
-            foreach (var entry in _entries)
-            {
-                if (_cardsById.TryGetValue(entry.Id, out var card))
-                {
-                    card.SetExpanded(entry.HasUserInput());
-                }
-            }
-        }
-        finally
-        {
-            _suppressEntriesChanged = false;
-        }
-
-        EntriesChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
-
-    public bool IsSectionExpanded => _section.IsExpanded;
-
-    public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
-    {
-    }
-
-    public void AddEntry(SkillsGroupEntry? entry = null, int? insertIndex = null)
-    {
-        var newEntry = entry ?? new SkillsGroupEntry();
-        var index = insertIndex ?? 0;
-        index = Math.Clamp(index, 0, _entries.Count);
-        _entries.Insert(index, newEntry);
-        RebuildEntryCards();
-        NotifyEntriesChanged();
-    }
-
-    private void NotifyEntriesChanged()
-    {
-        if (!_suppressEntriesChanged)
-        {
-            EntriesChanged?.Invoke(this, EventArgs.Empty);
-        }
-    }
-
-    internal void BeginSkillDrag(string groupId, string skillId)
-    {
-        _dragSourceSkillGroupId = groupId;
-        _dragSourceSkillId = skillId;
-        _pendingSkillDropGroupId = groupId;
-        _pendingSkillDropIndex = null;
-    }
-
-    internal void BeginGroupDrag(string groupId)
-    {
-        _dragSourceGroupId = groupId;
-        _pendingGroupDropIndex = FindGroupIndexById(groupId);
-    }
-
-    internal void CaptureDragPointer(IPointer pointer)
-    {
-        _capturedPointer = pointer;
-        pointer.Capture(_entriesPanel);
-    }
-
-    internal void EndSkillDrag()
-    {
-        _dragSourceSkillGroupId = null;
-        _dragSourceSkillId = null;
-        _pendingSkillDropGroupId = null;
-        _pendingSkillDropIndex = null;
-        foreach (var card in _cardsById.Values)
-        {
-            card.ClearSkillDragVisuals();
-            card.ClearGroupDragVisual();
-        }
-    }
-
-    private void EndGroupDrag()
-    {
-        _dragSourceGroupId = null;
-        _pendingGroupDropIndex = null;
-        foreach (var card in _cardsById.Values)
-        {
-            card.ClearGroupDragVisual();
-        }
-    }
-
-    private void EndAllDrags()
-    {
-        EndSkillDrag();
-        EndGroupDrag();
-        _capturedPointer?.Capture(null);
-        _capturedPointer = null;
-    }
-
-    internal void MoveSkillToGroup(string targetGroupId, int? targetSkillIndex)
-    {
-        if (string.IsNullOrWhiteSpace(_dragSourceSkillGroupId)
-            || string.IsNullOrWhiteSpace(_dragSourceSkillId))
-        {
-            return;
-        }
-
-        var sourceGroup = _entries.FirstOrDefault(entry => entry.Id == _dragSourceSkillGroupId);
-        var targetGroup = _entries.FirstOrDefault(entry => entry.Id == targetGroupId);
-        var skill = sourceGroup?.Skills.FirstOrDefault(item => item.Id == _dragSourceSkillId);
-        if (sourceGroup is null || targetGroup is null || skill is null)
-        {
-            return;
-        }
-
-        var sourceSkillIndex = sourceGroup.Skills.FindIndex(item => item.Id == _dragSourceSkillId);
-        sourceGroup.Skills.Remove(skill);
-        var insertIndex = targetSkillIndex ?? targetGroup.Skills.Count;
-        if (ReferenceEquals(sourceGroup, targetGroup) && insertIndex > sourceSkillIndex)
-        {
-            insertIndex--;
-        }
-
-        insertIndex = Math.Clamp(insertIndex, 0, targetGroup.Skills.Count);
-        targetGroup.Skills.Insert(insertIndex, skill);
-
-        RebuildEntryCards();
-        NotifyEntriesChanged();
-    }
-
-    private void RebuildEntryCards()
-    {
-        _entriesPanel.Children.Clear();
-        _cardsById.Clear();
-
-        for (var index = 0; index < _entries.Count; index++)
-        {
-            var entry = _entries[index];
-            var card = new SkillsGroupCard(this, entry, _localizer, _touchTracker);
-            card.Changed += (_, _) => NotifyEntriesChanged();
-            card.DuplicateRequested += (_, sourceEntry) =>
-            {
-                var sourceIndex = _entries.FindIndex(item => item.Id == sourceEntry.Id);
-                if (sourceIndex >= 0)
-                {
-                    AddEntry(sourceEntry.Duplicate(), sourceIndex + 1);
-                }
-            };
-            card.RemoveRequested += (_, sourceEntry) =>
-            {
-                _entries.RemoveAll(item => item.Id == sourceEntry.Id);
-                RebuildEntryCards();
-                NotifyEntriesChanged();
-            };
-
-            _cardsById[entry.Id] = card;
-            _entriesPanel.Children.Add(card.RootBorder);
-        }
-
-        _emptyHintTextBlock.IsVisible = _entries.Count == 0;
-    }
-
-    private void MoveGroupToIndex(string? sourceGroupId, int targetIndex)
-    {
-        if (string.IsNullOrWhiteSpace(sourceGroupId))
-        {
-            return;
-        }
-
-        var sourceIndex = _entries.FindIndex(entry => entry.Id == sourceGroupId);
-        if (sourceIndex < 0 || sourceIndex == targetIndex)
-        {
-            return;
-        }
-
-        var entry = _entries[sourceIndex];
-        _entries.RemoveAt(sourceIndex);
-        if (targetIndex > sourceIndex)
-        {
-            targetIndex--;
-        }
-
-        _entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
-        RebuildEntryCards();
-        NotifyEntriesChanged();
-    }
-
-    private void OnEntriesPanelPointerMoved(object? sender, PointerEventArgs e)
-    {
-        if (_dragSourceGroupId is not null)
-        {
-            _pendingGroupDropIndex = FindGroupDropIndex(e.GetPosition(_entriesPanel));
-            return;
-        }
-
-        if (_dragSourceSkillId is not null)
-        {
-            var target = FindSkillDropTarget(e.GetPosition(_entriesPanel));
-            _pendingSkillDropGroupId = target.GroupId;
-            _pendingSkillDropIndex = target.SkillIndex;
-        }
-    }
-
-    private void OnEntriesPanelPointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (_dragSourceGroupId is not null && _pendingGroupDropIndex is int groupTargetIndex)
-        {
-            MoveGroupToIndex(_dragSourceGroupId, groupTargetIndex);
-        }
-        else if (_dragSourceSkillGroupId is not null
-            && _dragSourceSkillId is not null
-            && _pendingSkillDropGroupId is not null)
-        {
-            MoveSkillToGroup(_pendingSkillDropGroupId, _pendingSkillDropIndex);
-        }
-
-        EndAllDrags();
-    }
-
-    private int? FindGroupDropIndex(Point position)
-    {
-        for (var index = 0; index < _entriesPanel.Children.Count; index++)
-        {
-            if (_entriesPanel.Children[index] is not Visual visual)
-            {
-                continue;
-            }
-
-            if (GetBoundsRelativeTo(visual, _entriesPanel).Contains(position))
-            {
-                return index;
-            }
-        }
-
-        return null;
-    }
-
-    private int? FindGroupIndexById(string groupId)
-    {
-        for (var index = 0; index < _entries.Count; index++)
-        {
-            if (_entries[index].Id == groupId)
-            {
-                return index;
-            }
-        }
-
-        return null;
-    }
-
-    private (string? GroupId, int? SkillIndex) FindSkillDropTarget(Point position)
-    {
-        foreach (var (groupId, card) in _cardsById)
-        {
-            var panelBounds = GetBoundsRelativeTo(card.SkillsDropPanel, _entriesPanel);
-            if (!panelBounds.Contains(position))
-            {
-                continue;
-            }
-
-            for (var index = 0; index < card.SkillsDropPanel.Children.Count; index++)
-            {
-                if (card.SkillsDropPanel.Children[index] is not Visual chipVisual)
-                {
-                    continue;
-                }
-
-                if (GetBoundsRelativeTo(chipVisual, _entriesPanel).Contains(position)
-                    && card.TryGetSkillIdFromChip(chipVisual, out var skillId)
-                    && skillId != _dragSourceSkillId)
-                {
-                    var group = _entries.First(entry => entry.Id == groupId);
-                    var skillIndex = group.Skills.FindIndex(skill => skill.Id == skillId);
-                    return (groupId, skillIndex >= 0 ? skillIndex : null);
-                }
-            }
-
-            var groupEntry = _entries.First(entry => entry.Id == groupId);
-            return (groupId, groupEntry.Skills.Count);
-        }
-
-        return (null, null);
-    }
-
-    private static Rect GetBoundsRelativeTo(Visual visual, Visual relativeTo)
-    {
-        var topLeft = visual.TranslatePoint(new Point(0, 0), relativeTo);
-        if (topLeft is null)
-        {
-            return default;
-        }
-
-        return new Rect(topLeft.Value, visual.Bounds.Size);
-    }
-
-    private sealed class SkillsGroupCard
-    {
-        private readonly SkillsSectionView _sectionView;
-        private readonly SkillsGroupEntry _entry;
-        private readonly ValidationFieldRegistry _validationRegistry = new();
-        private AppLocalizer _localizer;
-        private readonly ExpandableSection _expandableSection;
-        private readonly StackPanel _errorBadgePanel;
-        private readonly TextBlock _errorBadgeTextBlock;
-        private readonly TextBox _categoryTextBox;
-        private readonly AutoCompleteBox _skillNameAutoComplete;
-        private readonly ComboBox _proficiencyComboBox;
-        private readonly TextBox _yearsTextBox;
-        private readonly TextBox _bulkSkillsTextBox;
-        private readonly TextBlock _bulkCounterTextBlock;
-        private readonly WrapPanel _skillsPanel;
-        private readonly Dictionary<Visual, string> _skillIdsByChip = new();
-        private readonly Border _dragArea;
-
-        public SkillsGroupCard(
-            SkillsSectionView sectionView,
-            SkillsGroupEntry entry,
-            AppLocalizer localizer,
-            ValidationTouchTracker touchTracker)
-        {
-            _sectionView = sectionView;
-            _entry = entry;
-            _localizer = localizer;
-
-            (_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
-
-            _dragArea = new Border();
-            _dragArea.Classes.Add(UiClasses.DragHandle);
-            var dragIcon = MaterialIconFactory.Create(MaterialIconKind.DragVertical, 18);
-            dragIcon.HorizontalAlignment = HorizontalAlignment.Center;
-            dragIcon.VerticalAlignment = VerticalAlignment.Center;
-            _dragArea.Child = dragIcon;
-            _dragArea.PointerPressed += OnGroupDragPointerPressed;
-
-            _categoryTextBox = CreateTextBox(OnFieldChanged);
-            _skillNameAutoComplete = CreateSkillAutoComplete();
-            _proficiencyComboBox = CreateProficiencyComboBox();
-            _yearsTextBox = CreateTextBox(OnFieldChanged);
-            _bulkSkillsTextBox = CreateMultilineTextBox(OnFieldChanged);
-            _bulkCounterTextBlock = CreateCounterTextBlock();
-            _skillsPanel = new WrapPanel
-            {
-                Orientation = Orientation.Horizontal,
-                MinHeight = 48
-            };
-            _skillsPanel.Classes.Add(UiClasses.SkillChipPanel);
-
-            var addSkillButton = new Button();
-            addSkillButton.Classes.Add(UiClasses.SecondaryButton);
-            addSkillButton.Click += (_, _) => AddSkillFromInputs();
-
-            var addFromListButton = new Button();
-            addFromListButton.Classes.Add(UiClasses.SecondaryButton);
-            addFromListButton.Click += (_, _) => AddSkillsFromBulkText();
-
-            var duplicateButton = new Button();
-            duplicateButton.Classes.Add(UiClasses.SecondaryButton);
-            duplicateButton.Click += (_, _) => DuplicateRequested?.Invoke(this, _entry);
-            var removeButton = new Button();
-            removeButton.Classes.Add(UiClasses.SecondaryButton);
-            removeButton.Click += (_, _) => RemoveRequested?.Invoke(this, _entry);
-
-            var addSkillRow = new Grid
-            {
-                ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto"),
-                ColumnSpacing = 8
-            };
-            addSkillRow.Children.Add(_skillNameAutoComplete);
-            Grid.SetColumn(_proficiencyComboBox, 1);
-            addSkillRow.Children.Add(_proficiencyComboBox);
-            Grid.SetColumn(_yearsTextBox, 2);
-            addSkillRow.Children.Add(_yearsTextBox);
-            Grid.SetColumn(addSkillButton, 3);
-            addSkillRow.Children.Add(addSkillButton);
-
-            var headerActions = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 8,
-                Children = { _dragArea, _errorBadgePanel }
-            };
-
-            var groupId = _entry.Id;
-            var proficiencyError = new TextBlock { TextWrapping = TextWrapping.Wrap, IsVisible = false };
-            proficiencyError.Classes.Add(UiClasses.ErrorText);
-            var proficiencyBinding = new ValidationFieldBinding(
-                SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillProficiency),
-                _proficiencyComboBox,
-                proficiencyError);
-            proficiencyBinding.WireTouchTracking(touchTracker);
-            _validationRegistry.Register(proficiencyBinding);
-
-            var addSkillArea = new StackPanel
-            {
-                Spacing = 6,
-                Children = { addSkillRow, proficiencyError }
-            };
-
-            var body = new StackPanel
-            {
-                Spacing = 10,
-                Children =
-                {
-                    ValidationFieldRegistry.CreateFieldPanel(
-                        _localizer.Get(TranslationKeys.SkillsCategory),
-                        _categoryTextBox,
-                        SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.Category),
-                        _validationRegistry,
-                        touchTracker),
-                    ValidationFieldRegistry.CreateFieldPanel(
-                        _localizer.Get(TranslationKeys.SkillsSkillName),
-                        addSkillArea,
-                        SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillName),
-                        _validationRegistry,
-                        touchTracker),
-                    ValidationFieldRegistry.CreateFieldPanel(
-                        _localizer.Get(TranslationKeys.SkillsBulkSkills),
-                        _bulkSkillsTextBox,
-                        SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillsCollection),
-                        _validationRegistry,
-                        touchTracker,
-                        _bulkCounterTextBlock),
-                    addFromListButton,
-                    _skillsPanel,
-                    new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        Spacing = 8,
-                        Children = { duplicateButton, removeButton }
-                    }
-                }
-            };
-
-            _expandableSection = new ExpandableSection
-            {
-                SectionContent = body,
-                IsExpanded = true,
-                HeaderActions = headerActions
-            };
-            _expandableSection.ExpandStateChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
-
-            RootBorder = new Border { Child = _expandableSection };
-            RootBorder.Classes.Add(UiClasses.EntryCard);
-
-            duplicateButton.Content = _localizer.Get(TranslationKeys.SkillsDuplicate);
-            removeButton.Content = _localizer.Get(TranslationKeys.SkillsRemove);
-            addSkillButton.Content = _localizer.Get(TranslationKeys.SkillsAddSkill);
-            addFromListButton.Content = _localizer.Get(TranslationKeys.SkillsAddFromList);
-
-            LoadFromEntry();
-            ApplyLocalization(_localizer);
-            RebuildSkillChips();
-            UpdateBulkCounter();
-        }
-
-        public event EventHandler? Changed;
-
-        public event EventHandler<SkillsGroupEntry>? DuplicateRequested;
-
-        public event EventHandler<SkillsGroupEntry>? RemoveRequested;
-
-        public Border RootBorder { get; }
-
-        public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
-
-        public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
-        {
-        }
-
-        public WrapPanel SkillsDropPanel => _skillsPanel;
-
-        public bool TryGetSkillIdFromChip(Visual chipVisual, out string skillId)
-        {
-            return _skillIdsByChip.TryGetValue(chipVisual, out skillId!);
-        }
-
-        public void ClearGroupDragVisual()
-        {
-            RootBorder.Opacity = 1;
-        }
-
-        public void ApplyLocalization(AppLocalizer localizer)
-        {
-            _localizer = localizer;
-            _expandableSection.Title = _entry.BuildHeaderSummary();
-            _expandableSection.ExpandToolTip = _localizer.Get(TranslationKeys.SkillsExpand);
-            _expandableSection.CollapseToolTip = _localizer.Get(TranslationKeys.SkillsCollapse);
-            ToolTip.SetTip(_dragArea, _localizer.Get(TranslationKeys.SkillsDragToReorder));
-            _bulkSkillsTextBox.PlaceholderText = _localizer.Get(TranslationKeys.SkillsBulkSkillsPlaceholder);
-            RefreshProficiencyItems();
-            RebuildSkillChips();
-            UpdateBulkCounter();
-        }
-
-        public void ClearSkillDragVisuals()
-        {
-            foreach (var child in _skillsPanel.Children.OfType<Border>())
-            {
-                child.Opacity = 1;
-            }
-        }
-
-        public Control? FindControlForFieldKey(string fieldKey) =>
-            _validationRegistry.FindControlForFieldKey(fieldKey);
-
-        public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
-        {
-            _validationRegistry.ApplyErrors(errors, _localizer, touchTracker);
-            ValidationErrorBadgeFactory.Update(
-                _errorBadgePanel,
-                _errorBadgeTextBlock,
-                errors.Count,
-                !_expandableSection.IsExpanded,
-                _localizer.Format(TranslationKeys.SkillsValidationErrors, errors.Count),
-                () => _expandableSection.IsExpanded = true);
-        }
-
-        private AutoCompleteBox CreateSkillAutoComplete()
-        {
-            var autoComplete = new AutoCompleteBox
-            {
-                FilterMode = AutoCompleteFilterMode.ContainsOrdinal,
-                ItemsSource = SkillsSuggestions.All,
-                MinimumPrefixLength = 0,
-                MaxDropDownHeight = 200
-            };
-            autoComplete.TextChanged += OnFieldChanged;
-            autoComplete.KeyDown += (_, e) =>
-            {
-                if (e.Key == Key.Enter)
-                {
-                    AddSkillFromInputs();
-                    e.Handled = true;
-                }
-            };
-            return autoComplete;
-        }
-
-        private ComboBox CreateProficiencyComboBox()
-        {
-            var comboBox = new ComboBox { MinWidth = 140 };
-            comboBox.SelectionChanged += OnFieldChanged;
-            return comboBox;
-        }
-
-        private void RefreshProficiencyItems()
-        {
-            var selected = _proficiencyComboBox.SelectedItem as ProficiencyLevel? ?? ProficiencyLevel.Intermediate;
-            _proficiencyComboBox.ItemsSource = ProficiencyLevelExtensions.SupportedValues
-                .Select(level => new ComboBoxItem
-                {
-                    Content = _localizer.Get(level.ToTranslationKey()),
-                    Tag = level
-                })
-                .ToArray();
-            _proficiencyComboBox.SelectedItem = _proficiencyComboBox.Items
-                .Cast<ComboBoxItem>()
-                .FirstOrDefault(item => item.Tag is ProficiencyLevel level && level == selected);
-        }
-
-        private void LoadFromEntry()
-        {
-            _categoryTextBox.Text = _entry.Category;
-            RefreshProficiencyItems();
-        }
-
-        private void SyncCategoryToEntry()
-        {
-            _entry.Category = _categoryTextBox.Text ?? string.Empty;
-        }
-
-        private void OnFieldChanged(object? sender, RoutedEventArgs e)
-        {
-            SyncCategoryToEntry();
-            _expandableSection.Title = _entry.BuildHeaderSummary();
-            UpdateBulkCounter();
-            Changed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void AddSkillFromInputs()
-        {
-            var name = _skillNameAutoComplete.Text?.Trim() ?? string.Empty;
-            if (name.Length == 0)
-            {
-                return;
-            }
-
-            var proficiency = _proficiencyComboBox.SelectedItem is ComboBoxItem { Tag: ProficiencyLevel level }
-                ? level
-                : ProficiencyLevel.Intermediate;
-
-            _entry.Skills.Add(new SkillItem
-            {
-                Name = name,
-                Proficiency = proficiency,
-                YearsOfExperience = ParseYears(_yearsTextBox.Text)
-            });
-
-            _skillNameAutoComplete.Text = string.Empty;
-            _yearsTextBox.Text = string.Empty;
-            _expandableSection.Title = _entry.BuildHeaderSummary();
-            RebuildSkillChips();
-            Changed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void AddSkillsFromBulkText()
-        {
-            var text = _bulkSkillsTextBox.Text ?? string.Empty;
-            if (text.Length > SkillsSchema.BulkSkillsMaxLength)
-            {
-                return;
-            }
-
-            var proficiency = _proficiencyComboBox.SelectedItem is ComboBoxItem { Tag: ProficiencyLevel level }
-                ? level
-                : ProficiencyLevel.Intermediate;
-            var years = ParseYears(_yearsTextBox.Text);
-
-            foreach (var name in SkillsTextParser.ParseSkillNames(text))
-            {
-                _entry.Skills.Add(new SkillItem
-                {
-                    Name = name,
-                    Proficiency = proficiency,
-                    YearsOfExperience = years
-                });
-            }
-
-            _bulkSkillsTextBox.Text = string.Empty;
-            _expandableSection.Title = _entry.BuildHeaderSummary();
-            RebuildSkillChips();
-            UpdateBulkCounter();
-            Changed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void RebuildSkillChips()
-        {
-            _skillsPanel.Children.Clear();
-            _skillIdsByChip.Clear();
-
-            var groupId = _entry.Id;
-            foreach (var skill in _entry.Skills)
-            {
-                if (!skill.HasUserInput())
-                {
-                    continue;
-                }
-
-                var chip = CreateSkillChip(skill);
-                _skillIdsByChip[chip] = skill.Id;
-                _skillsPanel.Children.Add(chip);
-
-                var chipTarget = new ChipValidationTarget(chip);
-                _validationRegistry.RegisterChip(
-                    SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillName),
-                    chipTarget);
-                _validationRegistry.RegisterChip(
-                    SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillProficiency),
-                    chipTarget);
-                _validationRegistry.RegisterChip(
-                    SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillYearsOfExperience),
-                    chipTarget);
-            }
-        }
-
-        private Border CreateSkillChip(SkillItem skill)
-        {
-            var label = BuildSkillChipLabel(skill);
-            var textBlock = new TextBlock
-            {
-                Text = label,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            var dragHandle = new Border { Padding = new Thickness(4, 0) };
-            dragHandle.Classes.Add(UiClasses.DragHandle);
-            dragHandle.Child = MaterialIconFactory.Create(MaterialIconKind.DragVertical, 14);
-            ToolTip.SetTip(dragHandle, _localizer.Get(TranslationKeys.SkillsDragSkillToMove));
-
-            var removeButton = new Button
-            {
-                Padding = new Thickness(4, 0),
-                Content = MaterialIconFactory.Create(MaterialIconKind.Close, 14)
-            };
-            removeButton.Classes.Add(UiClasses.IconButton);
-            ToolTip.SetTip(removeButton, _localizer.Get(TranslationKeys.SkillsRemoveSkill));
-            removeButton.Click += (_, _) =>
-            {
-                _entry.Skills.RemoveAll(item => item.Id == skill.Id);
-                RebuildSkillChips();
-                _expandableSection.Title = _entry.BuildHeaderSummary();
-                Changed?.Invoke(this, EventArgs.Empty);
-            };
-
-            var row = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 6,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children = { dragHandle, textBlock, removeButton }
-            };
-
-            var chip = new Border
-            {
-                Child = row,
-                Margin = new Thickness(0, 0, 8, 8)
-            };
-            chip.Classes.Add(UiClasses.SkillChip);
-
-            dragHandle.PointerPressed += (_, e) =>
-            {
-                if (!e.GetCurrentPoint(dragHandle).Properties.IsLeftButtonPressed)
-                {
-                    return;
-                }
-
-                chip.Opacity = 0.75;
-                _sectionView.BeginSkillDrag(_entry.Id, skill.Id);
-                _sectionView.CaptureDragPointer(e.Pointer);
-            };
-
-            return chip;
-        }
-
-        private string BuildSkillChipLabel(SkillItem skill)
-        {
-            var parts = new List<string> { skill.Name.Trim(), _localizer.Get(skill.Proficiency.ToTranslationKey()) };
-            if (skill.YearsOfExperience is not null)
-            {
-                parts.Add($"{skill.YearsOfExperience} {_localizer.Get(TranslationKeys.PreviewYearsSuffix)}");
-            }
-
-            return string.Join(" · ", parts);
-        }
-
-        private void UpdateBulkCounter()
-        {
-            _bulkCounterTextBlock.Text =
-                $"{(_bulkSkillsTextBox.Text ?? string.Empty).Length} / {SkillsSchema.BulkSkillsMaxLength}";
-        }
-
-        private void OnGroupDragPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            if (!e.GetCurrentPoint(_dragArea).Properties.IsLeftButtonPressed)
-            {
-                return;
-            }
-
-            RootBorder.Opacity = 0.75;
-            _sectionView.BeginGroupDrag(_entry.Id);
-            _sectionView.CaptureDragPointer(e.Pointer);
-        }
-
-        private static TextBox CreateTextBox(EventHandler<RoutedEventArgs> onChanged)
-        {
-            var textBox = new TextBox();
-            textBox.TextChanged += onChanged;
-            return textBox;
-        }
-
-        private static TextBox CreateMultilineTextBox(EventHandler<RoutedEventArgs> onChanged)
-        {
-            var textBox = CreateTextBox(onChanged);
-            textBox.Classes.Add(UiClasses.MultilineTextBox);
-            textBox.MinHeight = 72;
-            return textBox;
-        }
-
-        private static TextBlock CreateCounterTextBlock()
-        {
-            var counter = new TextBlock { HorizontalAlignment = HorizontalAlignment.Right };
-            counter.Classes.Add(UiClasses.CounterText);
-            return counter;
-        }
-
-        private static int? ParseYears(string? text)
-        {
-            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var years) ? years : null;
-        }
-    }
+	private readonly ExpandableSection _section;
+	private readonly SectionHeaderBadges _headerBadges;
+	private readonly StackPanel _contentPanel;
+	private readonly StackPanel _entriesPanel;
+	private readonly TextBlock _emptyHintTextBlock;
+	private readonly Button _addButton;
+	private ValidationTouchTracker _touchTracker = new();
+	private AppLocalizer _localizer = AppLocalizer.FromSystemCulture();
+	private readonly List<SkillsGroupEntry> _entries = [];
+	private readonly Dictionary<string, SkillsGroupCard> _cardsById = new(StringComparer.Ordinal);
+	private string? _dragSourceGroupId;
+	private string? _dragSourceSkillGroupId;
+	private string? _dragSourceSkillId;
+	private int? _pendingGroupDropIndex;
+	private string? _pendingSkillDropGroupId;
+	private int? _pendingSkillDropIndex;
+	private IPointer? _capturedPointer;
+	private bool _suppressEntriesChanged;
+
+	public SkillsSectionView()
+	{
+		_headerBadges = new SectionHeaderBadges();
+
+		_entriesPanel = new StackPanel { Spacing = 12 };
+		_emptyHintTextBlock = new TextBlock
+		{
+			TextWrapping = TextWrapping.Wrap
+		};
+		_emptyHintTextBlock.Classes.Add(UiClasses.SecondaryText);
+
+		_addButton = new Button { HorizontalAlignment = HorizontalAlignment.Left };
+		_addButton.Classes.Add(UiClasses.PrimaryButton);
+		_addButton.Click += (_, _) => AddEntry();
+
+		_contentPanel = new StackPanel
+		{
+			Spacing = 12,
+			Children =
+			{
+				_emptyHintTextBlock,
+				_addButton,
+				_entriesPanel
+			}
+		};
+
+		_section = new ExpandableSection
+		{
+			SectionContent = _contentPanel,
+			IsExpanded = true,
+			HeaderActions = _headerBadges.Root
+		};
+		_section.ExpandStateChanged += (_, _) => ExpandStateChanged?.Invoke(this, EventArgs.Empty);
+
+		Content = _section;
+		_entriesPanel.AddHandler(InputElement.PointerMovedEvent, OnEntriesPanelPointerMoved, RoutingStrategies.Tunnel);
+		_entriesPanel.AddHandler(InputElement.PointerReleasedEvent, OnEntriesPanelPointerReleased, RoutingStrategies.Tunnel);
+	}
+
+	public event EventHandler? EntriesChanged;
+
+	public event EventHandler? ExpandStateChanged;
+
+	public IReadOnlyList<SkillsGroupEntry> Entries => _entries;
+
+	public void SetLocalizer(AppLocalizer localizer)
+	{
+		_localizer = localizer;
+		_section.Title = _localizer.Get(TranslationKeys.Skills);
+		_section.ExpandToolTip = _localizer.Get(TranslationKeys.ExpandSection);
+		_section.CollapseToolTip = _localizer.Get(TranslationKeys.CollapseSection);
+		_emptyHintTextBlock.Text = _localizer.Get(TranslationKeys.SkillsEmptyHint);
+		_addButton.Content = _localizer.Get(TranslationKeys.SkillsAdd);
+
+		foreach (var card in _cardsById.Values)
+		{
+			card.ApplyLocalization(_localizer);
+		}
+	}
+
+	public void ApplyQualityHints(
+		IReadOnlyList<CvQualityHint> sectionHints,
+		AppLocalizer localizer,
+		Func<CvQualityHint, bool>? navigateToHint,
+		Action<CvQualityHint>? dismissHint,
+		Action? flyoutOpened)
+	{
+		QualityHintsService.UpdateSectionQualityBadge(
+			_headerBadges.QualityBadgePanel,
+			_headerBadges.QualityBadgeTextBlock,
+			sectionHints,
+			localizer,
+			_section.Title ?? string.Empty,
+			navigateToHint,
+			dismissHint,
+			flyoutOpened);
+	}
+
+	public ValidationTouchTracker TouchTracker => _touchTracker;
+
+	public void UpdateValidation(FieldValidationResult validationResult) =>
+		UpdateValidation(validationResult, _touchTracker);
+
+	public void UpdateValidation(FieldValidationResult validationResult, ValidationTouchTracker touchTracker)
+	{
+		_touchTracker = touchTracker;
+
+		var sectionErrors = validationResult.Errors
+			.Where(error => SkillsFieldKeys.TryParseGroupId(error.FieldKey, out _, out _))
+			.ToArray();
+
+		FormValidationService.UpdateSectionErrorBadge(
+			_headerBadges.ErrorBadgePanel,
+			_headerBadges.ErrorBadgeTextBlock,
+			sectionErrors.Length,
+			!_section.IsExpanded,
+			_localizer,
+			TranslationKeys.SkillsValidationErrors,
+			() => _section.IsExpanded = true);
+
+		foreach (var (entryId, card) in _cardsById)
+		{
+			var errors = sectionErrors
+				.Where(error => SkillsFieldKeys.TryParseGroupId(error.FieldKey, out var parsedId, out _)
+					&& parsedId == entryId)
+				.ToArray();
+			card.UpdateValidation(errors, touchTracker);
+		}
+	}
+
+	public IReadOnlyList<string> GetOrderedFieldKeys()
+	{
+		var keys = new List<string>();
+		foreach (var entry in _entries)
+		{
+			var groupId = entry.Id;
+			keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.Category));
+			keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillName));
+			keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillProficiency));
+			keys.Add(SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillsCollection));
+			foreach (var skill in entry.Skills.Where(skill => skill.HasUserInput()))
+			{
+				keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillName));
+				keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillProficiency));
+				keys.Add(SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillYearsOfExperience));
+			}
+		}
+
+		return keys;
+	}
+
+	public bool ExpandAndRevealField(string fieldKey)
+	{
+		if (!SkillsFieldKeys.TryParseGroupId(fieldKey, out var groupId, out _))
+		{
+			return false;
+		}
+
+		if (!_cardsById.TryGetValue(groupId, out var card))
+		{
+			return false;
+		}
+
+		_section.IsExpanded = true;
+		card.SetExpanded(true);
+		var control = FindControlForFieldKey(fieldKey);
+		control?.Focus();
+		return control is not null;
+	}
+
+	public Control? FindControlForFieldKey(string fieldKey)
+	{
+		if (!SkillsFieldKeys.TryParseGroupId(fieldKey, out var groupId, out _))
+		{
+			return null;
+		}
+
+		return _cardsById.TryGetValue(groupId, out var card)
+			? card.FindControlForFieldKey(fieldKey)
+			: null;
+	}
+
+	public void ReplaceEntries(IReadOnlyList<SkillsGroupEntry> entries, bool expandSection = true)
+	{
+		_suppressEntriesChanged = true;
+		try
+		{
+			_entries.Clear();
+			_entries.AddRange(entries);
+			_section.IsExpanded = expandSection;
+			RebuildEntryCards();
+			foreach (var entry in _entries)
+			{
+				if (_cardsById.TryGetValue(entry.Id, out var card))
+				{
+					card.SetExpanded(entry.HasUserInput());
+				}
+			}
+		}
+		finally
+		{
+			_suppressEntriesChanged = false;
+		}
+
+		EntriesChanged?.Invoke(this, EventArgs.Empty);
+	}
+
+	public void SetSectionExpanded(bool isExpanded) => _section.IsExpanded = isExpanded;
+
+	public bool IsSectionExpanded => _section.IsExpanded;
+
+	public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+	{
+	}
+
+	public void AddEntry(SkillsGroupEntry? entry = null, int? insertIndex = null)
+	{
+		var newEntry = entry ?? new SkillsGroupEntry();
+		var index = insertIndex ?? 0;
+		index = Math.Clamp(index, 0, _entries.Count);
+		_entries.Insert(index, newEntry);
+		RebuildEntryCards();
+		NotifyEntriesChanged();
+	}
+
+	private void NotifyEntriesChanged()
+	{
+		if (!_suppressEntriesChanged)
+		{
+			EntriesChanged?.Invoke(this, EventArgs.Empty);
+		}
+	}
+
+	internal void BeginSkillDrag(string groupId, string skillId)
+	{
+		_dragSourceSkillGroupId = groupId;
+		_dragSourceSkillId = skillId;
+		_pendingSkillDropGroupId = groupId;
+		_pendingSkillDropIndex = null;
+	}
+
+	internal void BeginGroupDrag(string groupId)
+	{
+		_dragSourceGroupId = groupId;
+		_pendingGroupDropIndex = FindGroupIndexById(groupId);
+	}
+
+	internal void CaptureDragPointer(IPointer pointer)
+	{
+		_capturedPointer = pointer;
+		pointer.Capture(_entriesPanel);
+	}
+
+	internal void EndSkillDrag()
+	{
+		_dragSourceSkillGroupId = null;
+		_dragSourceSkillId = null;
+		_pendingSkillDropGroupId = null;
+		_pendingSkillDropIndex = null;
+		foreach (var card in _cardsById.Values)
+		{
+			card.ClearSkillDragVisuals();
+			card.ClearGroupDragVisual();
+		}
+	}
+
+	private void EndGroupDrag()
+	{
+		_dragSourceGroupId = null;
+		_pendingGroupDropIndex = null;
+		foreach (var card in _cardsById.Values)
+		{
+			card.ClearGroupDragVisual();
+		}
+	}
+
+	private void EndAllDrags()
+	{
+		EndSkillDrag();
+		EndGroupDrag();
+		_capturedPointer?.Capture(null);
+		_capturedPointer = null;
+	}
+
+	internal void MoveSkillToGroup(string targetGroupId, int? targetSkillIndex)
+	{
+		if (string.IsNullOrWhiteSpace(_dragSourceSkillGroupId)
+			|| string.IsNullOrWhiteSpace(_dragSourceSkillId))
+		{
+			return;
+		}
+
+		var sourceGroup = _entries.FirstOrDefault(entry => entry.Id == _dragSourceSkillGroupId);
+		var targetGroup = _entries.FirstOrDefault(entry => entry.Id == targetGroupId);
+		var skill = sourceGroup?.Skills.FirstOrDefault(item => item.Id == _dragSourceSkillId);
+		if (sourceGroup is null || targetGroup is null || skill is null)
+		{
+			return;
+		}
+
+		var sourceSkillIndex = sourceGroup.Skills.FindIndex(item => item.Id == _dragSourceSkillId);
+		sourceGroup.Skills.Remove(skill);
+		var insertIndex = targetSkillIndex ?? targetGroup.Skills.Count;
+		if (ReferenceEquals(sourceGroup, targetGroup) && insertIndex > sourceSkillIndex)
+		{
+			insertIndex--;
+		}
+
+		insertIndex = Math.Clamp(insertIndex, 0, targetGroup.Skills.Count);
+		targetGroup.Skills.Insert(insertIndex, skill);
+
+		RebuildEntryCards();
+		NotifyEntriesChanged();
+	}
+
+	private void RebuildEntryCards()
+	{
+		_entriesPanel.Children.Clear();
+		_cardsById.Clear();
+
+		for (var index = 0; index < _entries.Count; index++)
+		{
+			var entry = _entries[index];
+			var card = new SkillsGroupCard(this, entry, _localizer, _touchTracker);
+			card.Changed += (_, _) => NotifyEntriesChanged();
+			card.DuplicateRequested += (_, sourceEntry) =>
+			{
+				var sourceIndex = _entries.FindIndex(item => item.Id == sourceEntry.Id);
+				if (sourceIndex >= 0)
+				{
+					AddEntry(sourceEntry.Duplicate(), sourceIndex + 1);
+				}
+			};
+			card.RemoveRequested += (_, sourceEntry) =>
+			{
+				_entries.RemoveAll(item => item.Id == sourceEntry.Id);
+				RebuildEntryCards();
+				NotifyEntriesChanged();
+			};
+
+			_cardsById[entry.Id] = card;
+			_entriesPanel.Children.Add(card.RootBorder);
+		}
+
+		_emptyHintTextBlock.IsVisible = _entries.Count == 0;
+	}
+
+	private void MoveGroupToIndex(string? sourceGroupId, int targetIndex)
+	{
+		if (string.IsNullOrWhiteSpace(sourceGroupId))
+		{
+			return;
+		}
+
+		var sourceIndex = _entries.FindIndex(entry => entry.Id == sourceGroupId);
+		if (sourceIndex < 0 || sourceIndex == targetIndex)
+		{
+			return;
+		}
+
+		var entry = _entries[sourceIndex];
+		_entries.RemoveAt(sourceIndex);
+		if (targetIndex > sourceIndex)
+		{
+			targetIndex--;
+		}
+
+		_entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
+		RebuildEntryCards();
+		NotifyEntriesChanged();
+	}
+
+	private void OnEntriesPanelPointerMoved(object? sender, PointerEventArgs e)
+	{
+		if (_dragSourceGroupId is not null)
+		{
+			_pendingGroupDropIndex = FindGroupDropIndex(e.GetPosition(_entriesPanel));
+			return;
+		}
+
+		if (_dragSourceSkillId is not null)
+		{
+			var target = FindSkillDropTarget(e.GetPosition(_entriesPanel));
+			_pendingSkillDropGroupId = target.GroupId;
+			_pendingSkillDropIndex = target.SkillIndex;
+		}
+	}
+
+	private void OnEntriesPanelPointerReleased(object? sender, PointerReleasedEventArgs e)
+	{
+		if (_dragSourceGroupId is not null && _pendingGroupDropIndex is int groupTargetIndex)
+		{
+			MoveGroupToIndex(_dragSourceGroupId, groupTargetIndex);
+		}
+		else if (_dragSourceSkillGroupId is not null
+			&& _dragSourceSkillId is not null
+			&& _pendingSkillDropGroupId is not null)
+		{
+			MoveSkillToGroup(_pendingSkillDropGroupId, _pendingSkillDropIndex);
+		}
+
+		EndAllDrags();
+	}
+
+	private int? FindGroupDropIndex(Point position)
+	{
+		for (var index = 0; index < _entriesPanel.Children.Count; index++)
+		{
+			if (_entriesPanel.Children[index] is not Visual visual)
+			{
+				continue;
+			}
+
+			if (GetBoundsRelativeTo(visual, _entriesPanel).Contains(position))
+			{
+				return index;
+			}
+		}
+
+		return null;
+	}
+
+	private int? FindGroupIndexById(string groupId)
+	{
+		for (var index = 0; index < _entries.Count; index++)
+		{
+			if (_entries[index].Id == groupId)
+			{
+				return index;
+			}
+		}
+
+		return null;
+	}
+
+	private (string? GroupId, int? SkillIndex) FindSkillDropTarget(Point position)
+	{
+		foreach (var (groupId, card) in _cardsById)
+		{
+			var panelBounds = GetBoundsRelativeTo(card.SkillsDropPanel, _entriesPanel);
+			if (!panelBounds.Contains(position))
+			{
+				continue;
+			}
+
+			for (var index = 0; index < card.SkillsDropPanel.Children.Count; index++)
+			{
+				if (card.SkillsDropPanel.Children[index] is not Visual chipVisual)
+				{
+					continue;
+				}
+
+				if (GetBoundsRelativeTo(chipVisual, _entriesPanel).Contains(position)
+					&& card.TryGetSkillIdFromChip(chipVisual, out var skillId)
+					&& skillId != _dragSourceSkillId)
+				{
+					var group = _entries.First(entry => entry.Id == groupId);
+					var skillIndex = group.Skills.FindIndex(skill => skill.Id == skillId);
+					return (groupId, skillIndex >= 0 ? skillIndex : null);
+				}
+			}
+
+			var groupEntry = _entries.First(entry => entry.Id == groupId);
+			return (groupId, groupEntry.Skills.Count);
+		}
+
+		return (null, null);
+	}
+
+	private static Rect GetBoundsRelativeTo(Visual visual, Visual relativeTo)
+	{
+		var topLeft = visual.TranslatePoint(new Point(0, 0), relativeTo);
+		if (topLeft is null)
+		{
+			return default;
+		}
+
+		return new Rect(topLeft.Value, visual.Bounds.Size);
+	}
+
+	private sealed class SkillsGroupCard
+	{
+		private readonly SkillsSectionView _sectionView;
+		private readonly SkillsGroupEntry _entry;
+		private readonly ValidationFieldRegistry _validationRegistry = new();
+		private AppLocalizer _localizer;
+		private readonly ExpandableSection _expandableSection;
+		private readonly StackPanel _errorBadgePanel;
+		private readonly TextBlock _errorBadgeTextBlock;
+		private readonly TextBox _categoryTextBox;
+		private readonly AutoCompleteBox _skillNameAutoComplete;
+		private readonly ComboBox _proficiencyComboBox;
+		private readonly TextBox _yearsTextBox;
+		private readonly TextBox _bulkSkillsTextBox;
+		private readonly TextBlock _bulkCounterTextBlock;
+		private readonly WrapPanel _skillsPanel;
+		private readonly Dictionary<Visual, string> _skillIdsByChip = new();
+		private readonly Border _dragArea;
+
+		public SkillsGroupCard(
+			SkillsSectionView sectionView,
+			SkillsGroupEntry entry,
+			AppLocalizer localizer,
+			ValidationTouchTracker touchTracker)
+		{
+			_sectionView = sectionView;
+			_entry = entry;
+			_localizer = localizer;
+
+			(_errorBadgePanel, _errorBadgeTextBlock) = ValidationErrorBadgeFactory.Create();
+
+			_dragArea = new Border();
+			_dragArea.Classes.Add(UiClasses.DragHandle);
+			var dragIcon = MaterialIconFactory.Create(MaterialIconKind.DragVertical, 18);
+			dragIcon.HorizontalAlignment = HorizontalAlignment.Center;
+			dragIcon.VerticalAlignment = VerticalAlignment.Center;
+			_dragArea.Child = dragIcon;
+			_dragArea.PointerPressed += OnGroupDragPointerPressed;
+
+			_categoryTextBox = CreateTextBox(OnFieldChanged);
+			_skillNameAutoComplete = CreateSkillAutoComplete();
+			_proficiencyComboBox = CreateProficiencyComboBox();
+			_yearsTextBox = CreateTextBox(OnFieldChanged);
+			_bulkSkillsTextBox = CreateMultilineTextBox(OnFieldChanged);
+			_bulkCounterTextBlock = CreateCounterTextBlock();
+			_skillsPanel = new WrapPanel
+			{
+				Orientation = Orientation.Horizontal,
+				MinHeight = 48
+			};
+			_skillsPanel.Classes.Add(UiClasses.SkillChipPanel);
+
+			var addSkillButton = new Button();
+			addSkillButton.Classes.Add(UiClasses.SecondaryButton);
+			addSkillButton.Click += (_, _) => AddSkillFromInputs();
+
+			var addFromListButton = new Button();
+			addFromListButton.Classes.Add(UiClasses.SecondaryButton);
+			addFromListButton.Click += (_, _) => AddSkillsFromBulkText();
+
+			var duplicateButton = new Button();
+			duplicateButton.Classes.Add(UiClasses.SecondaryButton);
+			duplicateButton.Click += (_, _) => DuplicateRequested?.Invoke(this, _entry);
+			var removeButton = new Button();
+			removeButton.Classes.Add(UiClasses.SecondaryButton);
+			removeButton.Click += (_, _) => RemoveRequested?.Invoke(this, _entry);
+
+			var addSkillRow = new Grid
+			{
+				ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto"),
+				ColumnSpacing = 8
+			};
+			addSkillRow.Children.Add(_skillNameAutoComplete);
+			Grid.SetColumn(_proficiencyComboBox, 1);
+			addSkillRow.Children.Add(_proficiencyComboBox);
+			Grid.SetColumn(_yearsTextBox, 2);
+			addSkillRow.Children.Add(_yearsTextBox);
+			Grid.SetColumn(addSkillButton, 3);
+			addSkillRow.Children.Add(addSkillButton);
+
+			var headerActions = new StackPanel
+			{
+				Orientation = Orientation.Horizontal,
+				Spacing = 8,
+				Children = { _dragArea, _errorBadgePanel }
+			};
+
+			var groupId = _entry.Id;
+			var proficiencyError = new TextBlock { TextWrapping = TextWrapping.Wrap, IsVisible = false };
+			proficiencyError.Classes.Add(UiClasses.ErrorText);
+			var proficiencyBinding = new ValidationFieldBinding(
+				SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillProficiency),
+				_proficiencyComboBox,
+				proficiencyError);
+			proficiencyBinding.WireTouchTracking(touchTracker);
+			_validationRegistry.Register(proficiencyBinding);
+
+			var addSkillArea = new StackPanel
+			{
+				Spacing = 6,
+				Children = { addSkillRow, proficiencyError }
+			};
+
+			var body = new StackPanel
+			{
+				Spacing = 10,
+				Children =
+				{
+					ValidationFieldRegistry.CreateFieldPanel(
+						_localizer.Get(TranslationKeys.SkillsCategory),
+						_categoryTextBox,
+						SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.Category),
+						_validationRegistry,
+						touchTracker),
+					ValidationFieldRegistry.CreateFieldPanel(
+						_localizer.Get(TranslationKeys.SkillsSkillName),
+						addSkillArea,
+						SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillName),
+						_validationRegistry,
+						touchTracker),
+					ValidationFieldRegistry.CreateFieldPanel(
+						_localizer.Get(TranslationKeys.SkillsBulkSkills),
+						_bulkSkillsTextBox,
+						SkillsFieldKeys.BuildGroup(groupId, SkillsFieldKeys.SkillsCollection),
+						_validationRegistry,
+						touchTracker,
+						_bulkCounterTextBlock),
+					addFromListButton,
+					_skillsPanel,
+					new StackPanel
+					{
+						Orientation = Orientation.Horizontal,
+						Spacing = 8,
+						Children = { duplicateButton, removeButton }
+					}
+				}
+			};
+
+			_expandableSection = new ExpandableSection
+			{
+				SectionContent = body,
+				IsExpanded = true,
+				HeaderActions = headerActions
+			};
+			_expandableSection.ExpandStateChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+
+			RootBorder = new Border { Child = _expandableSection };
+			RootBorder.Classes.Add(UiClasses.EntryCard);
+
+			duplicateButton.Content = _localizer.Get(TranslationKeys.SkillsDuplicate);
+			removeButton.Content = _localizer.Get(TranslationKeys.SkillsRemove);
+			addSkillButton.Content = _localizer.Get(TranslationKeys.SkillsAddSkill);
+			addFromListButton.Content = _localizer.Get(TranslationKeys.SkillsAddFromList);
+
+			LoadFromEntry();
+			ApplyLocalization(_localizer);
+			RebuildSkillChips();
+			UpdateBulkCounter();
+		}
+
+		public event EventHandler? Changed;
+
+		public event EventHandler<SkillsGroupEntry>? DuplicateRequested;
+
+		public event EventHandler<SkillsGroupEntry>? RemoveRequested;
+
+		public Border RootBorder { get; }
+
+		public void SetExpanded(bool isExpanded) => _expandableSection.IsExpanded = isExpanded;
+
+		public void ApplyImportConfidence(IReadOnlyList<ImportedFieldConfidence> confidences)
+		{
+		}
+
+		public WrapPanel SkillsDropPanel => _skillsPanel;
+
+		public bool TryGetSkillIdFromChip(Visual chipVisual, out string skillId)
+		{
+			return _skillIdsByChip.TryGetValue(chipVisual, out skillId!);
+		}
+
+		public void ClearGroupDragVisual()
+		{
+			RootBorder.Opacity = 1;
+		}
+
+		public void ApplyLocalization(AppLocalizer localizer)
+		{
+			_localizer = localizer;
+			_expandableSection.Title = _entry.BuildHeaderSummary();
+			_expandableSection.ExpandToolTip = _localizer.Get(TranslationKeys.SkillsExpand);
+			_expandableSection.CollapseToolTip = _localizer.Get(TranslationKeys.SkillsCollapse);
+			ToolTip.SetTip(_dragArea, _localizer.Get(TranslationKeys.SkillsDragToReorder));
+			_bulkSkillsTextBox.PlaceholderText = _localizer.Get(TranslationKeys.SkillsBulkSkillsPlaceholder);
+			RefreshProficiencyItems();
+			RebuildSkillChips();
+			UpdateBulkCounter();
+		}
+
+		public void ClearSkillDragVisuals()
+		{
+			foreach (var child in _skillsPanel.Children.OfType<Border>())
+			{
+				child.Opacity = 1;
+			}
+		}
+
+		public Control? FindControlForFieldKey(string fieldKey) =>
+			_validationRegistry.FindControlForFieldKey(fieldKey);
+
+		public void UpdateValidation(IReadOnlyList<FieldValidationError> errors, ValidationTouchTracker touchTracker)
+		{
+			_validationRegistry.ApplyErrors(errors, _localizer, touchTracker);
+			ValidationErrorBadgeFactory.Update(
+				_errorBadgePanel,
+				_errorBadgeTextBlock,
+				errors.Count,
+				!_expandableSection.IsExpanded,
+				_localizer.Format(TranslationKeys.SkillsValidationErrors, errors.Count),
+				() => _expandableSection.IsExpanded = true);
+		}
+
+		private AutoCompleteBox CreateSkillAutoComplete()
+		{
+			var autoComplete = new AutoCompleteBox
+			{
+				FilterMode = AutoCompleteFilterMode.ContainsOrdinal,
+				ItemsSource = SkillsSuggestions.All,
+				MinimumPrefixLength = 0,
+				MaxDropDownHeight = 200
+			};
+			autoComplete.TextChanged += OnFieldChanged;
+			autoComplete.KeyDown += (_, e) =>
+			{
+				if (e.Key == Key.Enter)
+				{
+					AddSkillFromInputs();
+					e.Handled = true;
+				}
+			};
+			return autoComplete;
+		}
+
+		private ComboBox CreateProficiencyComboBox()
+		{
+			var comboBox = new ComboBox { MinWidth = 140 };
+			comboBox.SelectionChanged += OnFieldChanged;
+			return comboBox;
+		}
+
+		private void RefreshProficiencyItems()
+		{
+			var selected = _proficiencyComboBox.SelectedItem as ProficiencyLevel? ?? ProficiencyLevel.Intermediate;
+			_proficiencyComboBox.ItemsSource = ProficiencyLevelExtensions.SupportedValues
+				.Select(level => new ComboBoxItem
+				{
+					Content = _localizer.Get(level.ToTranslationKey()),
+					Tag = level
+				})
+				.ToArray();
+			_proficiencyComboBox.SelectedItem = _proficiencyComboBox.Items
+				.Cast<ComboBoxItem>()
+				.FirstOrDefault(item => item.Tag is ProficiencyLevel level && level == selected);
+		}
+
+		private void LoadFromEntry()
+		{
+			_categoryTextBox.Text = _entry.Category;
+			RefreshProficiencyItems();
+		}
+
+		private void SyncCategoryToEntry()
+		{
+			_entry.Category = _categoryTextBox.Text ?? string.Empty;
+		}
+
+		private void OnFieldChanged(object? sender, RoutedEventArgs e)
+		{
+			SyncCategoryToEntry();
+			_expandableSection.Title = _entry.BuildHeaderSummary();
+			UpdateBulkCounter();
+			Changed?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void AddSkillFromInputs()
+		{
+			var name = _skillNameAutoComplete.Text?.Trim() ?? string.Empty;
+			if (name.Length == 0)
+			{
+				return;
+			}
+
+			var proficiency = _proficiencyComboBox.SelectedItem is ComboBoxItem { Tag: ProficiencyLevel level }
+				? level
+				: ProficiencyLevel.Intermediate;
+
+			_entry.Skills.Add(new SkillItem
+			{
+				Name = name,
+				Proficiency = proficiency,
+				YearsOfExperience = ParseYears(_yearsTextBox.Text)
+			});
+
+			_skillNameAutoComplete.Text = string.Empty;
+			_yearsTextBox.Text = string.Empty;
+			_expandableSection.Title = _entry.BuildHeaderSummary();
+			RebuildSkillChips();
+			Changed?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void AddSkillsFromBulkText()
+		{
+			var text = _bulkSkillsTextBox.Text ?? string.Empty;
+			if (text.Length > SkillsSchema.BulkSkillsMaxLength)
+			{
+				return;
+			}
+
+			var proficiency = _proficiencyComboBox.SelectedItem is ComboBoxItem { Tag: ProficiencyLevel level }
+				? level
+				: ProficiencyLevel.Intermediate;
+			var years = ParseYears(_yearsTextBox.Text);
+
+			foreach (var name in SkillsTextParser.ParseSkillNames(text))
+			{
+				_entry.Skills.Add(new SkillItem
+				{
+					Name = name,
+					Proficiency = proficiency,
+					YearsOfExperience = years
+				});
+			}
+
+			_bulkSkillsTextBox.Text = string.Empty;
+			_expandableSection.Title = _entry.BuildHeaderSummary();
+			RebuildSkillChips();
+			UpdateBulkCounter();
+			Changed?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void RebuildSkillChips()
+		{
+			_skillsPanel.Children.Clear();
+			_skillIdsByChip.Clear();
+
+			var groupId = _entry.Id;
+			foreach (var skill in _entry.Skills)
+			{
+				if (!skill.HasUserInput())
+				{
+					continue;
+				}
+
+				var chip = CreateSkillChip(skill);
+				_skillIdsByChip[chip] = skill.Id;
+				_skillsPanel.Children.Add(chip);
+
+				var chipTarget = new ChipValidationTarget(chip);
+				_validationRegistry.RegisterChip(
+					SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillName),
+					chipTarget);
+				_validationRegistry.RegisterChip(
+					SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillProficiency),
+					chipTarget);
+				_validationRegistry.RegisterChip(
+					SkillsFieldKeys.BuildSkill(groupId, skill.Id, SkillsFieldKeys.SkillYearsOfExperience),
+					chipTarget);
+			}
+		}
+
+		private Border CreateSkillChip(SkillItem skill)
+		{
+			var label = BuildSkillChipLabel(skill);
+			var textBlock = new TextBlock
+			{
+				Text = label,
+				VerticalAlignment = VerticalAlignment.Center
+			};
+
+			var dragHandle = new Border { Padding = new Thickness(4, 0) };
+			dragHandle.Classes.Add(UiClasses.DragHandle);
+			dragHandle.Child = MaterialIconFactory.Create(MaterialIconKind.DragVertical, 14);
+			ToolTip.SetTip(dragHandle, _localizer.Get(TranslationKeys.SkillsDragSkillToMove));
+
+			var removeButton = new Button
+			{
+				Padding = new Thickness(4, 0),
+				Content = MaterialIconFactory.Create(MaterialIconKind.Close, 14)
+			};
+			removeButton.Classes.Add(UiClasses.IconButton);
+			ToolTip.SetTip(removeButton, _localizer.Get(TranslationKeys.SkillsRemoveSkill));
+			removeButton.Click += (_, _) =>
+			{
+				_entry.Skills.RemoveAll(item => item.Id == skill.Id);
+				RebuildSkillChips();
+				_expandableSection.Title = _entry.BuildHeaderSummary();
+				Changed?.Invoke(this, EventArgs.Empty);
+			};
+
+			var row = new StackPanel
+			{
+				Orientation = Orientation.Horizontal,
+				Spacing = 6,
+				VerticalAlignment = VerticalAlignment.Center,
+				Children = { dragHandle, textBlock, removeButton }
+			};
+
+			var chip = new Border
+			{
+				Child = row,
+				Margin = new Thickness(0, 0, 8, 8)
+			};
+			chip.Classes.Add(UiClasses.SkillChip);
+
+			dragHandle.PointerPressed += (_, e) =>
+			{
+				if (!e.GetCurrentPoint(dragHandle).Properties.IsLeftButtonPressed)
+				{
+					return;
+				}
+
+				chip.Opacity = 0.75;
+				_sectionView.BeginSkillDrag(_entry.Id, skill.Id);
+				_sectionView.CaptureDragPointer(e.Pointer);
+			};
+
+			return chip;
+		}
+
+		private string BuildSkillChipLabel(SkillItem skill)
+		{
+			var parts = new List<string> { skill.Name.Trim(), _localizer.Get(skill.Proficiency.ToTranslationKey()) };
+			if (skill.YearsOfExperience is not null)
+			{
+				parts.Add($"{skill.YearsOfExperience} {_localizer.Get(TranslationKeys.PreviewYearsSuffix)}");
+			}
+
+			return string.Join(" · ", parts);
+		}
+
+		private void UpdateBulkCounter()
+		{
+			_bulkCounterTextBlock.Text =
+				$"{(_bulkSkillsTextBox.Text ?? string.Empty).Length} / {SkillsSchema.BulkSkillsMaxLength}";
+		}
+
+		private void OnGroupDragPointerPressed(object? sender, PointerPressedEventArgs e)
+		{
+			if (!e.GetCurrentPoint(_dragArea).Properties.IsLeftButtonPressed)
+			{
+				return;
+			}
+
+			RootBorder.Opacity = 0.75;
+			_sectionView.BeginGroupDrag(_entry.Id);
+			_sectionView.CaptureDragPointer(e.Pointer);
+		}
+
+		private static TextBox CreateTextBox(EventHandler<RoutedEventArgs> onChanged)
+		{
+			var textBox = new TextBox();
+			textBox.TextChanged += onChanged;
+			return textBox;
+		}
+
+		private static TextBox CreateMultilineTextBox(EventHandler<RoutedEventArgs> onChanged)
+		{
+			var textBox = CreateTextBox(onChanged);
+			textBox.Classes.Add(UiClasses.MultilineTextBox);
+			textBox.MinHeight = 72;
+			return textBox;
+		}
+
+		private static TextBlock CreateCounterTextBlock()
+		{
+			var counter = new TextBlock { HorizontalAlignment = HorizontalAlignment.Right };
+			counter.Classes.Add(UiClasses.CounterText);
+			return counter;
+		}
+
+		private static int? ParseYears(string? text)
+		{
+			return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var years) ? years : null;
+		}
+	}
 }

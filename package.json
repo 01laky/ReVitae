@@ -1,6 +1,6 @@
 {
   "name": "revitae",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "ReVitae is a cross-platform desktop application for creating and exporting CVs.",
   "directories": {
     "doc": "docs"
@@ -16,7 +16,7 @@
     "url": "git+https://github.com/01laky/ReVitae.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Ladislav Kostolny <01laky@gmail.com>",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {

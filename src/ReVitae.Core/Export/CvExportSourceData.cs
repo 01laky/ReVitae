@@ -10,12 +10,12 @@ using CvLinkEntry = ReVitae.Core.Cv.Links.LinkEntry;
 namespace ReVitae.Core.Export;
 
 public sealed record CvExportSourceData(
-    PersonalInformationImport Personal,
-    IReadOnlyList<CvWorkExperienceEntry> WorkExperience,
-    IReadOnlyList<CvEducationEntry> Education,
-    IReadOnlyList<CvSkillsGroupEntry> Skills,
-    IReadOnlyList<CvLanguageEntry> Languages,
-    IReadOnlyList<CvCertificateEntry> Certificates,
-    IReadOnlyList<CvProjectEntry> Projects,
-    IReadOnlyList<CvLinkEntry> Links,
-    string? AdditionalInformation);
+	PersonalInformationImport Personal,
+	IReadOnlyList<CvWorkExperienceEntry> WorkExperience,
+	IReadOnlyList<CvEducationEntry> Education,
+	IReadOnlyList<CvSkillsGroupEntry> Skills,
+	IReadOnlyList<CvLanguageEntry> Languages,
+	IReadOnlyList<CvCertificateEntry> Certificates,
+	IReadOnlyList<CvProjectEntry> Projects,
+	IReadOnlyList<CvLinkEntry> Links,
+	string? AdditionalInformation);

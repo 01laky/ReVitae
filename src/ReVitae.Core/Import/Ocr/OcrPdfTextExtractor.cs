@@ -5,76 +5,76 @@ namespace ReVitae.Core.Import.Ocr;
 
 public sealed class OcrPdfTextExtractor(IOcrEngine ocrEngine, IPdfPageRenderer pageRenderer) : ICvTextExtractor
 {
-    private OcrOptions CreateOptions() =>
-        new(OcrLanguageResolver.ResolveLanguages(CvImportSessionOptions.Session.UiLanguageCode));
+	private OcrOptions CreateOptions() =>
+		new(OcrLanguageResolver.ResolveLanguages(CvImportSessionOptions.Session.UiLanguageCode));
 
-    public CvTextExtractionResult Extract(string filePath)
-    {
-        CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"Extract started: {Path.GetFileName(filePath)}");
+	public CvTextExtractionResult Extract(string filePath)
+	{
+		CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"Extract started: {Path.GetFileName(filePath)}");
 
-        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-        {
-            CvImportDiagnosticsLogger.LogStep("ocr-pdf", "File not found");
-            return new CvTextExtractionResult(false, string.Empty, TranslationKeys.ImportErrorFileNotFound);
-        }
+		if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+		{
+			CvImportDiagnosticsLogger.LogStep("ocr-pdf", "File not found");
+			return new CvTextExtractionResult(false, string.Empty, TranslationKeys.ImportErrorFileNotFound);
+		}
 
-        CvImportDiagnosticsLogger.LogStep(
-            "ocr-pdf",
-            $"OCR engine: {ocrEngine.EngineName}, available={ocrEngine.IsAvailable}");
+		CvImportDiagnosticsLogger.LogStep(
+			"ocr-pdf",
+			$"OCR engine: {ocrEngine.EngineName}, available={ocrEngine.IsAvailable}");
 
-        if (!ocrEngine.IsAvailable)
-        {
-            CvImportDiagnosticsLogger.LogStep("ocr-pdf", "OCR engine not available");
-            return OcrExtractionSupport.Unavailable();
-        }
+		if (!ocrEngine.IsAvailable)
+		{
+			CvImportDiagnosticsLogger.LogStep("ocr-pdf", "OCR engine not available");
+			return OcrExtractionSupport.Unavailable();
+		}
 
-        CvImportProgress.Report(TranslationKeys.ImportRunningOcr);
+		CvImportProgress.Report(TranslationKeys.ImportRunningOcr);
 
-        IReadOnlyList<SixLabors.ImageSharp.Image> pages;
-        try
-        {
-            CvImportDiagnosticsLogger.LogStep(
-                "ocr-pdf",
-                $"Rendering PDF pages at {OcrLimits.DefaultRenderDpi} DPI (max {OcrLimits.MaxPageCount} pages)");
-            pages = pageRenderer.RenderPages(filePath, OcrLimits.DefaultRenderDpi);
-            CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"Rendered {pages.Count} page(s)");
-        }
-        catch (Exception ex) when (IsPasswordProtected(ex))
-        {
-            CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"Password-protected PDF: {ex.GetType().Name}");
-            return new CvTextExtractionResult(false, string.Empty, TranslationKeys.ImportErrorPasswordProtected);
-        }
-        catch (Exception ex)
-        {
-            CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"PDF render failed: {ex.GetType().Name}: {ex.Message}");
-            return new CvTextExtractionResult(false, string.Empty, TranslationKeys.ImportErrorUnreadableDocument);
-        }
+		IReadOnlyList<SixLabors.ImageSharp.Image> pages;
+		try
+		{
+			CvImportDiagnosticsLogger.LogStep(
+				"ocr-pdf",
+				$"Rendering PDF pages at {OcrLimits.DefaultRenderDpi} DPI (max {OcrLimits.MaxPageCount} pages)");
+			pages = pageRenderer.RenderPages(filePath, OcrLimits.DefaultRenderDpi);
+			CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"Rendered {pages.Count} page(s)");
+		}
+		catch (Exception ex) when (IsPasswordProtected(ex))
+		{
+			CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"Password-protected PDF: {ex.GetType().Name}");
+			return new CvTextExtractionResult(false, string.Empty, TranslationKeys.ImportErrorPasswordProtected);
+		}
+		catch (Exception ex)
+		{
+			CvImportDiagnosticsLogger.LogStep("ocr-pdf", $"PDF render failed: {ex.GetType().Name}: {ex.Message}");
+			return new CvTextExtractionResult(false, string.Empty, TranslationKeys.ImportErrorUnreadableDocument);
+		}
 
-        if (pages.Count == 0)
-        {
-            CvImportDiagnosticsLogger.LogStep("ocr-pdf", "No pages rendered — OCR failed");
-            return OcrExtractionSupport.Failed();
-        }
+		if (pages.Count == 0)
+		{
+			CvImportDiagnosticsLogger.LogStep("ocr-pdf", "No pages rendered — OCR failed");
+			return OcrExtractionSupport.Failed();
+		}
 
-        var options = CreateOptions();
-        var text = OcrExtractionSupport.RecognizePages(pages, ocrEngine, options, "ocr-pdf");
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            CvImportDiagnosticsLogger.LogStep("ocr-pdf", "OCR returned empty text");
-            return OcrExtractionSupport.Failed();
-        }
+		var options = CreateOptions();
+		var text = OcrExtractionSupport.RecognizePages(pages, ocrEngine, options, "ocr-pdf");
+		if (string.IsNullOrWhiteSpace(text))
+		{
+			CvImportDiagnosticsLogger.LogStep("ocr-pdf", "OCR returned empty text");
+			return OcrExtractionSupport.Failed();
+		}
 
-        CvImportDiagnosticsLogger.LogStep(
-            "ocr-pdf",
-            $"OCR success: {text.Length} chars, {text.Count(c => !char.IsWhiteSpace(c))} non-whitespace");
+		CvImportDiagnosticsLogger.LogStep(
+			"ocr-pdf",
+			$"OCR success: {text.Length} chars, {text.Count(c => !char.IsWhiteSpace(c))} non-whitespace");
 
-        return OcrExtractionSupport.BuildSuccess(text, pages.Count, ocrEngine, options);
-    }
+		return OcrExtractionSupport.BuildSuccess(text, pages.Count, ocrEngine, options);
+	}
 
-    private static bool IsPasswordProtected(Exception exception)
-    {
-        var message = exception.Message;
-        return message.Contains("password", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("encrypted", StringComparison.OrdinalIgnoreCase);
-    }
+	private static bool IsPasswordProtected(Exception exception)
+	{
+		var message = exception.Message;
+		return message.Contains("password", StringComparison.OrdinalIgnoreCase)
+			|| message.Contains("encrypted", StringComparison.OrdinalIgnoreCase);
+	}
 }

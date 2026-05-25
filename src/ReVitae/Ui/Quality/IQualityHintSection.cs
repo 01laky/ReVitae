@@ -7,10 +7,10 @@ namespace ReVitae.Ui.Quality;
 
 public interface IQualityHintSection
 {
-    void ApplyQualityHints(
-        IReadOnlyList<CvQualityHint> sectionHints,
-        AppLocalizer localizer,
-        Func<CvQualityHint, bool>? navigateToHint,
-        Action<CvQualityHint>? dismissHint,
-        Action? flyoutOpened);
+	void ApplyQualityHints(
+		IReadOnlyList<CvQualityHint> sectionHints,
+		AppLocalizer localizer,
+		Func<CvQualityHint, bool>? navigateToHint,
+		Action<CvQualityHint>? dismissHint,
+		Action? flyoutOpened);
 }

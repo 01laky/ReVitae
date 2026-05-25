@@ -1,50 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.4" />
+		<PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\ReVitae.Core\ReVitae.Core.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\ReVitae.Core\ReVitae.Core.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="Import\Fixtures\Pdf\*.pdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>Import\Fixtures\Pdf\%(Filename)%(Extension)</Link>
-    </None>
-    <None Include="Import\Fixtures\JohnDoeStressCv.pdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>Import\Fixtures\JohnDoeStressCv.pdf</Link>
-    </None>
-    <None Include="Import\Fixtures\ReVitaeExportedSidebarCv.pdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>Import\Fixtures\ReVitaeExportedSidebarCv.pdf</Link>
-    </None>
-    <None Include="Import\Fixtures\Ocr\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>Import\Fixtures\Ocr\%(Filename)%(Extension)</Link>
-    </None>
-    <None Include="..\..\src\ReVitae\tessdata\eng.traineddata">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>tessdata\eng.traineddata</Link>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="Import\Fixtures\Pdf\*.pdf">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>Import\Fixtures\Pdf\%(Filename)%(Extension)</Link>
+		</None>
+		<None Include="Import\Fixtures\JohnDoeStressCv.pdf">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>Import\Fixtures\JohnDoeStressCv.pdf</Link>
+		</None>
+		<None Include="Import\Fixtures\ReVitaeExportedSidebarCv.pdf">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>Import\Fixtures\ReVitaeExportedSidebarCv.pdf</Link>
+		</None>
+		<None Include="Import\Fixtures\Ocr\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>Import\Fixtures\Ocr\%(Filename)%(Extension)</Link>
+		</None>
+		<None Include="..\..\src\ReVitae\tessdata\eng.traineddata">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>tessdata\eng.traineddata</Link>
+		</None>
+	</ItemGroup>
 
 </Project>

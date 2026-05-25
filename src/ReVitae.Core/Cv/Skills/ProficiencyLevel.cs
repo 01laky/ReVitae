@@ -2,8 +2,8 @@ namespace ReVitae.Core.Cv.Skills;
 
 public enum ProficiencyLevel
 {
-    Beginner,
-    Intermediate,
-    Advanced,
-    Expert
+	Beginner,
+	Intermediate,
+	Advanced,
+	Expert
 }

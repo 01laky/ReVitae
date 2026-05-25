@@ -5,59 +5,59 @@ namespace ReVitae.Core.Ai.Ollama;
 
 public interface IOllamaRuntimeProbe
 {
-    Task<OllamaRuntimeStatus> ProbeAsync(CancellationToken cancellationToken = default);
+	Task<OllamaRuntimeStatus> ProbeAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed class OllamaRuntimeProbe : IOllamaRuntimeProbe
 {
-    private readonly HttpClient _httpClient;
+	private readonly HttpClient _httpClient;
 
-    public OllamaRuntimeProbe()
-        : this(new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
-    {
-    }
+	public OllamaRuntimeProbe()
+		: this(new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
+	{
+	}
 
-    public OllamaRuntimeProbe(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
+	public OllamaRuntimeProbe(HttpClient httpClient)
+	{
+		_httpClient = httpClient;
+	}
 
-    public async Task<OllamaRuntimeStatus> ProbeAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            using var response = await _httpClient
-                .GetAsync(OllamaHost.TagsUri, cancellationToken)
-                .ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                return new OllamaRuntimeStatus(false, []);
-            }
+	public async Task<OllamaRuntimeStatus> ProbeAsync(CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			using var response = await _httpClient
+				.GetAsync(OllamaHost.TagsUri, cancellationToken)
+				.ConfigureAwait(false);
+			if (!response.IsSuccessStatusCode)
+			{
+				return new OllamaRuntimeStatus(false, []);
+			}
 
-            var payload = await response.Content.ReadFromJsonAsync<OllamaTagsResponse>(
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+			var payload = await response.Content.ReadFromJsonAsync<OllamaTagsResponse>(
+				cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            var tags = payload?.Models?
-                .Select(model => model.Name)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .Select(name => name!)
-                .ToArray() ?? [];
+			var tags = payload?.Models?
+				.Select(model => model.Name)
+				.Where(name => !string.IsNullOrWhiteSpace(name))
+				.Select(name => name!)
+				.ToArray() ?? [];
 
-            return new OllamaRuntimeStatus(true, tags);
-        }
-        catch
-        {
-            return new OllamaRuntimeStatus(false, []);
-        }
-    }
+			return new OllamaRuntimeStatus(true, tags);
+		}
+		catch
+		{
+			return new OllamaRuntimeStatus(false, []);
+		}
+	}
 
-    private sealed class OllamaTagsResponse
-    {
-        public List<OllamaTagModel>? Models { get; init; }
-    }
+	private sealed class OllamaTagsResponse
+	{
+		public List<OllamaTagModel>? Models { get; init; }
+	}
 
-    private sealed class OllamaTagModel
-    {
-        public string? Name { get; init; }
-    }
+	private sealed class OllamaTagModel
+	{
+		public string? Name { get; init; }
+	}
 }

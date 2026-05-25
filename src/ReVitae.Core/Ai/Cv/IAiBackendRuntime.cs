@@ -5,11 +5,11 @@ namespace ReVitae.Core.Ai.Cv;
 
 public interface IAiBackendRuntime
 {
-    AiBackendKind Kind { get; }
+	AiBackendKind Kind { get; }
 
-    string DescribeActiveBackend(AppLocalizer localizer);
+	string DescribeActiveBackend(AppLocalizer localizer);
 
-    Task<AiChatCompletionResult> CompleteAsync(
-        AiCvPromptMessages messages,
-        CancellationToken cancellationToken = default);
+	Task<AiChatCompletionResult> CompleteAsync(
+		AiCvPromptMessages messages,
+		CancellationToken cancellationToken = default);
 }

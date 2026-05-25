@@ -7,30 +7,30 @@ namespace ReVitae.Tests.Import;
 
 public sealed class CvTextNormalizerTests
 {
-    [Fact]
-    public void Normalize_CollapsesCarriageReturnsAndBlankLines()
-    {
-        var result = CvTextNormalizer.Normalize("Line one\r\n\r\n\r\nLine two");
+	[Fact]
+	public void Normalize_CollapsesCarriageReturnsAndBlankLines()
+	{
+		var result = CvTextNormalizer.Normalize("Line one\r\n\r\n\r\nLine two");
 
-        Assert.Equal("Line one\n\nLine two", result);
-    }
+		Assert.Equal("Line one\n\nLine two", result);
+	}
 
-    [Fact]
-    public void Normalize_NormalizesBulletPrefixes()
-    {
-        var result = CvTextNormalizer.Normalize("• Item one\n* Item two");
+	[Fact]
+	public void Normalize_NormalizesBulletPrefixes()
+	{
+		var result = CvTextNormalizer.Normalize("• Item one\n* Item two");
 
-        Assert.Contains("- Item one", result, StringComparison.Ordinal);
-        Assert.Contains("- Item two", result, StringComparison.Ordinal);
-    }
+		Assert.Contains("- Item one", result, StringComparison.Ordinal);
+		Assert.Contains("- Item two", result, StringComparison.Ordinal);
+	}
 }
 
 public sealed class CvSectionSegmenterTests
 {
-    [Fact]
-    public void Segment_DetectsWorkExperienceAndEducationHeaders()
-    {
-        const string text = """
+	[Fact]
+	public void Segment_DetectsWorkExperienceAndEducationHeaders()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
 
@@ -45,55 +45,55 @@ public sealed class CvSectionSegmenterTests
             BA Design
             """;
 
-        var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
+		var result = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
 
-        Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Summary));
-        Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.WorkExperience));
-        Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Education));
-    }
+		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Summary));
+		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.WorkExperience));
+		Assert.True(result.SectionBodies.ContainsKey(CvImportSectionId.Education));
+	}
 
-    [Fact]
-    public void Segment_AddsWarningWhenNoHeadersFound()
-    {
-        var result = CvSectionSegmenter.Segment("Just some free text without headers.");
+	[Fact]
+	public void Segment_AddsWarningWhenNoHeadersFound()
+	{
+		var result = CvSectionSegmenter.Segment("Just some free text without headers.");
 
-        Assert.Contains(result.Warnings, warning => warning.MessageKey == TranslationKeys.ImportWarningNoSectionsDetected);
-    }
+		Assert.Contains(result.Warnings, warning => warning.MessageKey == TranslationKeys.ImportWarningNoSectionsDetected);
+	}
 }
 
 public sealed class DateRangeParserTests
 {
-    [Theory]
-    [InlineData("01/2020 - 03/2024", 1, 2020, 3, 2024, false)]
-    [InlineData("2020 - Present", null, 2020, null, null, true)]
-    [InlineData("06/2006", 6, 2006, null, null, false)]
-    [InlineData("09 / 2002 - 06 / 2006", 9, 2002, 6, 2006, false)]
-    [InlineData("01 / 2024 - 05 / 2026", 1, 2024, 5, 2026, false)]
-    public void TryParse_ParsesCommonFormats(
-        string input,
-        int? startMonth,
-        int startYear,
-        int? endMonth,
-        int? endYear,
-        bool isPresent)
-    {
-        var parsed = DateRangeParser.TryParse(input, out var range);
+	[Theory]
+	[InlineData("01/2020 - 03/2024", 1, 2020, 3, 2024, false)]
+	[InlineData("2020 - Present", null, 2020, null, null, true)]
+	[InlineData("06/2006", 6, 2006, null, null, false)]
+	[InlineData("09 / 2002 - 06 / 2006", 9, 2002, 6, 2006, false)]
+	[InlineData("01 / 2024 - 05 / 2026", 1, 2024, 5, 2026, false)]
+	public void TryParse_ParsesCommonFormats(
+		string input,
+		int? startMonth,
+		int startYear,
+		int? endMonth,
+		int? endYear,
+		bool isPresent)
+	{
+		var parsed = DateRangeParser.TryParse(input, out var range);
 
-        Assert.True(parsed);
-        Assert.Equal(startMonth, range.StartMonth);
-        Assert.Equal(startYear, range.StartYear);
-        Assert.Equal(endMonth, range.EndMonth);
-        Assert.Equal(endYear, range.EndYear);
-        Assert.Equal(isPresent, range.IsPresent);
-    }
+		Assert.True(parsed);
+		Assert.Equal(startMonth, range.StartMonth);
+		Assert.Equal(startYear, range.StartYear);
+		Assert.Equal(endMonth, range.EndMonth);
+		Assert.Equal(endYear, range.EndYear);
+		Assert.Equal(isPresent, range.IsPresent);
+	}
 }
 
 public sealed class CvImportFieldExtractorTests
 {
-    [Fact]
-    public void Extract_ParsesEmailAndLinkedInFromHeader()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesEmailAndLinkedInFromHeader()
+	{
+		const string text = """
             Jane Doe
             Frontend Developer
             jane.doe@example.com
@@ -104,18 +104,18 @@ public sealed class CvImportFieldExtractorTests
             2020 - 2024
             """;
 
-        var segmentation = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
-        var result = CvImportFieldExtractor.Extract(segmentation);
+		var segmentation = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
+		var result = CvImportFieldExtractor.Extract(segmentation);
 
-        Assert.Equal("jane.doe@example.com", result.Personal.Email);
-        Assert.Contains("linkedin.com", result.Personal.LinkedInUrl, StringComparison.OrdinalIgnoreCase);
-        Assert.Single(result.WorkExperienceEntries);
-    }
+		Assert.Equal("jane.doe@example.com", result.Personal.Email);
+		Assert.Contains("linkedin.com", result.Personal.LinkedInUrl, StringComparison.OrdinalIgnoreCase);
+		Assert.Single(result.WorkExperienceEntries);
+	}
 
-    [Fact]
-    public void Extract_ParsesSkillsCommaList()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_ParsesSkillsCommaList()
+	{
+		const string text = """
             Name
             email@test.com
 
@@ -123,17 +123,17 @@ public sealed class CvImportFieldExtractorTests
             C#, .NET, SQL
             """;
 
-        var segmentation = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
-        var result = CvImportFieldExtractor.Extract(segmentation);
+		var segmentation = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
+		var result = CvImportFieldExtractor.Extract(segmentation);
 
-        Assert.Single(result.SkillsGroups);
-        Assert.Equal(3, result.SkillsGroups[0].Skills.Count);
-    }
+		Assert.Single(result.SkillsGroups);
+		Assert.Equal(3, result.SkillsGroups[0].Skills.Count);
+	}
 
-    [Fact]
-    public void Extract_SkipsDuplicatePersonalUrlsInLinks()
-    {
-        const string text = """
+	[Fact]
+	public void Extract_SkipsDuplicatePersonalUrlsInLinks()
+	{
+		const string text = """
             Jane Doe
             jane@example.com
             https://github.com/janedoe
@@ -143,39 +143,39 @@ public sealed class CvImportFieldExtractorTests
             https://behance.net/jane
             """;
 
-        var segmentation = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
-        var result = CvImportFieldExtractor.Extract(segmentation);
+		var segmentation = CvSectionSegmenter.Segment(CvTextNormalizer.Normalize(text));
+		var result = CvImportFieldExtractor.Extract(segmentation);
 
-        Assert.Single(result.LinkEntries);
-        Assert.Contains(result.Warnings, warning => warning.MessageKey == TranslationKeys.ImportWarningPersonalLinksDuplicatedSkipped);
-    }
+		Assert.Single(result.LinkEntries);
+		Assert.Contains(result.Warnings, warning => warning.MessageKey == TranslationKeys.ImportWarningPersonalLinksDuplicatedSkipped);
+	}
 }
 
 public sealed class CvPdfImporterTests
 {
-    public CvPdfImporterTests()
-    {
-        ImportPdfFixtureFactory.EnsureFixturesExist();
-    }
+	public CvPdfImporterTests()
+	{
+		ImportPdfFixtureFactory.EnsureFixturesExist();
+	}
 
-    [Fact]
-    public void ImportFromText_ParsesFixtureLikeEnglishCv()
-    {
-        var text = string.Join('\n', ImportPdfFixtureFactory.EnglishBasicLines);
-        var importer = new CvPdfImporter();
+	[Fact]
+	public void ImportFromText_ParsesFixtureLikeEnglishCv()
+	{
+		var text = string.Join('\n', ImportPdfFixtureFactory.EnglishBasicLines);
+		var importer = new CvPdfImporter();
 
-        var result = importer.ImportFromText(text);
+		var result = importer.ImportFromText(text);
 
-        Assert.True(result.Success);
-        Assert.Equal("jane.doe@example.com", result.Personal.Email);
-        Assert.NotEmpty(result.WorkExperienceEntries);
-        Assert.True(result.SectionHasData[CvImportSectionId.WorkExperience]);
-    }
+		Assert.True(result.Success);
+		Assert.Equal("jane.doe@example.com", result.Personal.Email);
+		Assert.NotEmpty(result.WorkExperienceEntries);
+		Assert.True(result.SectionHasData[CvImportSectionId.WorkExperience]);
+	}
 
-    [Fact]
-    public void ImportFromText_ParsesTwoColumnExtractedCvText()
-    {
-        const string text = """
+	[Fact]
+	public void ImportFromText_ParsesTwoColumnExtractedCvText()
+	{
+		const string text = """
             Ladislav
             Kostolný
             Senior Full Stack Developer
@@ -211,112 +211,112 @@ public sealed class CvPdfImporterTests
             Nizna, Slovakia
             High School of Electrical Engineering
             """;
-        var importer = new CvPdfImporter();
+		var importer = new CvPdfImporter();
 
-        var result = importer.ImportFromText(text);
+		var result = importer.ImportFromText(text);
 
-        Assert.True(result.Success);
-        Assert.Equal("Ladislav", result.Personal.FirstName);
-        Assert.Equal("Kostolný", result.Personal.LastName);
-        Assert.Equal("Senior Full Stack Developer", result.Personal.ProfessionalTitle);
-        Assert.Equal("01laky@gmail.com", result.Personal.Email);
-        Assert.Equal("(+421) 944159982", result.Personal.Phone);
-        Assert.Equal("Turček, Slovakia 03848", result.Personal.Location);
-        Assert.Equal(3, result.WorkExperienceEntries.Count);
+		Assert.True(result.Success);
+		Assert.Equal("Ladislav", result.Personal.FirstName);
+		Assert.Equal("Kostolný", result.Personal.LastName);
+		Assert.Equal("Senior Full Stack Developer", result.Personal.ProfessionalTitle);
+		Assert.Equal("01laky@gmail.com", result.Personal.Email);
+		Assert.Equal("(+421) 944159982", result.Personal.Phone);
+		Assert.Equal("Turček, Slovakia 03848", result.Personal.Location);
+		Assert.Equal(3, result.WorkExperienceEntries.Count);
 
-        var excalibur = result.WorkExperienceEntries[0];
-        Assert.Equal("Senior full stack developer", excalibur.JobTitle);
-        Assert.Equal("Excalibur s.r.o.", excalibur.Company);
-        Assert.Equal("Kosice, Slovakia", excalibur.Location);
-        Assert.Equal(1, excalibur.StartMonth);
-        Assert.Equal(2024, excalibur.StartYear);
-        Assert.Equal(5, excalibur.EndMonth);
-        Assert.Equal(2026, excalibur.EndYear);
-        Assert.Contains("Developed backend services", excalibur.Description, StringComparison.Ordinal);
+		var excalibur = result.WorkExperienceEntries[0];
+		Assert.Equal("Senior full stack developer", excalibur.JobTitle);
+		Assert.Equal("Excalibur s.r.o.", excalibur.Company);
+		Assert.Equal("Kosice, Slovakia", excalibur.Location);
+		Assert.Equal(1, excalibur.StartMonth);
+		Assert.Equal(2024, excalibur.StartYear);
+		Assert.Equal(5, excalibur.EndMonth);
+		Assert.Equal(2026, excalibur.EndYear);
+		Assert.Contains("Developed backend services", excalibur.Description, StringComparison.Ordinal);
 
-        var devcity = result.WorkExperienceEntries[1];
-        Assert.Equal("Prague, Czechia", devcity.Location);
-        Assert.Equal(3, devcity.StartMonth);
-        Assert.Equal(2023, devcity.StartYear);
-        Assert.Equal(1, devcity.EndMonth);
-        Assert.Equal(2024, devcity.EndYear);
-        Assert.Contains("web application development", devcity.Description, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("PostgreSQL", devcity.Description, StringComparison.Ordinal);
+		var devcity = result.WorkExperienceEntries[1];
+		Assert.Equal("Prague, Czechia", devcity.Location);
+		Assert.Equal(3, devcity.StartMonth);
+		Assert.Equal(2023, devcity.StartYear);
+		Assert.Equal(1, devcity.EndMonth);
+		Assert.Equal(2024, devcity.EndYear);
+		Assert.Contains("web application development", devcity.Description, StringComparison.OrdinalIgnoreCase);
+		Assert.DoesNotContain("PostgreSQL", devcity.Description, StringComparison.Ordinal);
 
-        var merkatos = result.WorkExperienceEntries[2];
-        Assert.Equal("ReactJS, TypeScript, .NET Core", merkatos.Technologies);
-        Assert.Equal("Project www.vinisto.cz", merkatos.Description);
+		var merkatos = result.WorkExperienceEntries[2];
+		Assert.Equal("ReactJS, TypeScript, .NET Core", merkatos.Technologies);
+		Assert.Equal("Project www.vinisto.cz", merkatos.Description);
 
-        Assert.Single(result.EducationEntries);
-        var education = result.EducationEntries[0];
-        Assert.Equal("High School", education.Degree);
-        Assert.Equal("High School of Electrical Engineering", education.Institution);
-        Assert.Equal("Nizna, Slovakia", education.Location);
-        Assert.Equal(DegreeType.HighSchool, education.DegreeType);
-        Assert.Equal(9, education.StartMonth);
-        Assert.Equal(2002, education.StartYear);
-        Assert.Equal(6, education.EndMonth);
-        Assert.Equal(2006, education.EndYear);
-    }
+		Assert.Single(result.EducationEntries);
+		var education = result.EducationEntries[0];
+		Assert.Equal("High School", education.Degree);
+		Assert.Equal("High School of Electrical Engineering", education.Institution);
+		Assert.Equal("Nizna, Slovakia", education.Location);
+		Assert.Equal(DegreeType.HighSchool, education.DegreeType);
+		Assert.Equal(9, education.StartMonth);
+		Assert.Equal(2002, education.StartYear);
+		Assert.Equal(6, education.EndMonth);
+		Assert.Equal(2006, education.EndYear);
+	}
 
-    [Fact]
-    public void ImportFromPdf_ParsesEnglishBasicFixture()
-    {
-        var importer = new CvPdfImporter();
-        var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-en-basic.pdf");
+	[Fact]
+	public void ImportFromPdf_ParsesEnglishBasicFixture()
+	{
+		var importer = new CvPdfImporter();
+		var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-en-basic.pdf");
 
-        var result = importer.ImportFromPdf(path);
+		var result = importer.ImportFromPdf(path);
 
-        Assert.True(result.Success);
-        Assert.Equal("jane.doe@example.com", result.Personal.Email);
-        Assert.NotEmpty(result.WorkExperienceEntries);
-    }
+		Assert.True(result.Success);
+		Assert.Equal("jane.doe@example.com", result.Personal.Email);
+		Assert.NotEmpty(result.WorkExperienceEntries);
+	}
 
-    [Fact]
-    public void ImportFromPdf_ParsesSlovakBasicFixture()
-    {
-        var importer = new CvPdfImporter();
-        var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-sk-basic.pdf");
+	[Fact]
+	public void ImportFromPdf_ParsesSlovakBasicFixture()
+	{
+		var importer = new CvPdfImporter();
+		var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-sk-basic.pdf");
 
-        var result = importer.ImportFromPdf(path);
+		var result = importer.ImportFromPdf(path);
 
-        Assert.True(result.Success);
-        Assert.Equal("peter.novak@example.com", result.Personal.Email);
-        Assert.NotEmpty(result.LanguageEntries);
-    }
+		Assert.True(result.Success);
+		Assert.Equal("peter.novak@example.com", result.Personal.Email);
+		Assert.NotEmpty(result.LanguageEntries);
+	}
 
-    [Fact]
-    public void ImportFromPdf_ParsesMessyFixtureWithLowConfidenceFields()
-    {
-        var importer = new CvPdfImporter();
-        var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-en-messy.pdf");
+	[Fact]
+	public void ImportFromPdf_ParsesMessyFixtureWithLowConfidenceFields()
+	{
+		var importer = new CvPdfImporter();
+		var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-en-messy.pdf");
 
-        var result = importer.ImportFromPdf(path);
+		var result = importer.ImportFromPdf(path);
 
-        Assert.True(result.Success);
-        Assert.Equal("alex@example.com", result.Personal.Email);
-        Assert.NotEmpty(result.FieldConfidences);
-    }
+		Assert.True(result.Success);
+		Assert.Equal("alex@example.com", result.Personal.Email);
+		Assert.NotEmpty(result.FieldConfidences);
+	}
 }
 
 public sealed class PdfPigTextExtractorTests
 {
-    public PdfPigTextExtractorTests()
-    {
-        ImportPdfFixtureFactory.EnsureFixturesExist();
-    }
+	public PdfPigTextExtractorTests()
+	{
+		ImportPdfFixtureFactory.EnsureFixturesExist();
+	}
 
-    [Fact]
-    public void Extract_ReturnsNonEmptyTextForEnglishBasicFixture()
-    {
-        var extractor = new ReVitae.Core.Import.Pdf.PdfPigTextExtractor();
-        var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-en-basic.pdf");
+	[Fact]
+	public void Extract_ReturnsNonEmptyTextForEnglishBasicFixture()
+	{
+		var extractor = new ReVitae.Core.Import.Pdf.PdfPigTextExtractor();
+		var path = ImportPdfFixtureFactory.GetFixturePath("sample-cv-en-basic.pdf");
 
-        var result = extractor.Extract(path);
+		var result = extractor.Extract(path);
 
-        Assert.True(result.Success);
-        Assert.Equal(1, result.PageCount);
-        Assert.Contains("jane.doe@example.com", result.Text, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Work Experience", result.Text, StringComparison.Ordinal);
-    }
+		Assert.True(result.Success);
+		Assert.Equal(1, result.PageCount);
+		Assert.Contains("jane.doe@example.com", result.Text, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("Work Experience", result.Text, StringComparison.Ordinal);
+	}
 }

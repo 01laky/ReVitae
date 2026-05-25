@@ -1,23 +1,23 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ReVitae.Controls.ExpandableSection">
-    <StackPanel Spacing="10">
-        <Grid Classes="re-vitae-section-header"
-              ColumnDefinitions="Auto,*,Auto">
-            <Button x:Name="ToggleButton"
-                    Grid.Column="0"
-                    Classes="re-vitae-expand-toggle"
-                    Click="OnToggleClicked" />
-            <TextBlock x:Name="TitleTextBlock"
-                       Grid.Column="1"
-                       Classes="re-vitae-section-title"
-                       VerticalAlignment="Center"
-                       TextWrapping="Wrap" />
-            <ContentPresenter x:Name="HeaderActionsPresenter"
-                              Grid.Column="2"
-                              VerticalAlignment="Center" />
-        </Grid>
+						 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						 x:Class="ReVitae.Controls.ExpandableSection">
+	<StackPanel Spacing="10">
+		<Grid Classes="re-vitae-section-header"
+							ColumnDefinitions="Auto,*,Auto">
+			<Button x:Name="ToggleButton"
+					Grid.Column="0"
+					Classes="re-vitae-expand-toggle"
+					Click="OnToggleClicked" />
+			<TextBlock x:Name="TitleTextBlock"
+											 Grid.Column="1"
+											 Classes="re-vitae-section-title"
+											 VerticalAlignment="Center"
+											 TextWrapping="Wrap" />
+			<ContentPresenter x:Name="HeaderActionsPresenter"
+															Grid.Column="2"
+															VerticalAlignment="Center" />
+		</Grid>
 
-        <ContentPresenter x:Name="BodyPresenter" />
-    </StackPanel>
+		<ContentPresenter x:Name="BodyPresenter" />
+	</StackPanel>
 </UserControl>

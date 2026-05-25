@@ -7,12 +7,12 @@ using SixLabors.ImageSharp.Processing;
 
 var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
 var fixtureDirectory = Path.Combine(
-    repoRoot,
-    "tests",
-    "ReVitae.Tests",
-    "Import",
-    "Fixtures",
-    "Ocr");
+	repoRoot,
+	"tests",
+	"ReVitae.Tests",
+	"Import",
+	"Fixtures",
+	"Ocr");
 Directory.CreateDirectory(fixtureDirectory);
 
 var emptyPdfPath = Path.Combine(fixtureDirectory, "MinimalCvEmptyText.pdf");
@@ -21,7 +21,7 @@ await File.WriteAllBytesAsync(emptyPdfPath, MinimalPdfWriter.CreateFromLines([])
 var scanPngPath = Path.Combine(fixtureDirectory, "MinimalCvScan.png");
 await using (var stream = File.Create(scanPngPath))
 {
-    CreateScanPng().SaveAsPng(stream);
+	CreateScanPng().SaveAsPng(stream);
 }
 
 Console.WriteLine($"Generated: {emptyPdfPath}");
@@ -29,14 +29,14 @@ Console.WriteLine($"Generated: {scanPngPath}");
 
 static Image<Rgba32> CreateScanPng()
 {
-    const int width = 800;
-    const int height = 1100;
-    var image = new Image<Rgba32>(width, height, Color.White);
-    var family = SystemFonts.Get("Arial");
-    var font = family.CreateFont(28, FontStyle.Regular);
-    var brush = Brushes.Solid(Color.Black);
-    var lines =
-        """
+	const int width = 800;
+	const int height = 1100;
+	var image = new Image<Rgba32>(width, height, Color.White);
+	var family = SystemFonts.Get("Arial");
+	var font = family.CreateFont(28, FontStyle.Regular);
+	var brush = Brushes.Solid(Color.Black);
+	var lines =
+		"""
         Jane Doe
         jane@example.com
         +1 555 0100
@@ -56,88 +56,88 @@ static Image<Rgba32> CreateScanPng()
         Figma, Sketch, UX Research
         """.Split('\n');
 
-    var y = 80f;
-    foreach (var line in lines)
-    {
-        image.Mutate(ctx => ctx.DrawText(line, font, brush, new PointF(60, y)));
-        y += 36;
-    }
+	var y = 80f;
+	foreach (var line in lines)
+	{
+		image.Mutate(ctx => ctx.DrawText(line, font, brush, new PointF(60, y)));
+		y += 36;
+	}
 
-    return image;
+	return image;
 }
 
 internal static class MinimalPdfWriter
 {
-    public static byte[] CreateFromLines(IReadOnlyList<string> lines)
-    {
-        var content = new StringBuilder();
-        content.AppendLine("BT");
-        content.AppendLine("/F1 11 Tf");
-        content.AppendLine("72 760 Td");
+	public static byte[] CreateFromLines(IReadOnlyList<string> lines)
+	{
+		var content = new StringBuilder();
+		content.AppendLine("BT");
+		content.AppendLine("/F1 11 Tf");
+		content.AppendLine("72 760 Td");
 
-        for (var index = 0; index < lines.Count; index++)
-        {
-            if (index > 0)
-            {
-                content.AppendLine("0 -14 Td");
-            }
+		for (var index = 0; index < lines.Count; index++)
+		{
+			if (index > 0)
+			{
+				content.AppendLine("0 -14 Td");
+			}
 
-            content.Append('(');
-            content.Append(EscapePdfText(lines[index] + '\n'));
-            content.AppendLine(") Tj");
-        }
+			content.Append('(');
+			content.Append(EscapePdfText(lines[index] + '\n'));
+			content.AppendLine(") Tj");
+		}
 
-        content.AppendLine("ET");
+		content.AppendLine("ET");
 
-        var contentText = content.ToString();
-        var objects = new[]
-        {
-            "<< /Type /Catalog /Pages 2 0 R >>",
-            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-            $"<< /Length {Encoding.ASCII.GetByteCount(contentText)} >>\nstream\n{contentText}endstream"
-        };
+		var contentText = content.ToString();
+		var objects = new[]
+		{
+			"<< /Type /Catalog /Pages 2 0 R >>",
+			"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+			"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+			"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+			$"<< /Length {Encoding.ASCII.GetByteCount(contentText)} >>\nstream\n{contentText}endstream"
+		};
 
-        using var stream = new MemoryStream();
-        using var writer = new StreamWriter(stream, Encoding.ASCII, leaveOpen: true);
-        var offsets = new List<long> { 0 };
+		using var stream = new MemoryStream();
+		using var writer = new StreamWriter(stream, Encoding.ASCII, leaveOpen: true);
+		var offsets = new List<long> { 0 };
 
-        writer.WriteLine("%PDF-1.4");
+		writer.WriteLine("%PDF-1.4");
 
-        for (var index = 0; index < objects.Length; index++)
-        {
-            writer.Flush();
-            offsets.Add(stream.Position);
-            writer.WriteLine($"{index + 1} 0 obj");
-            writer.WriteLine(objects[index]);
-            writer.WriteLine("endobj");
-        }
+		for (var index = 0; index < objects.Length; index++)
+		{
+			writer.Flush();
+			offsets.Add(stream.Position);
+			writer.WriteLine($"{index + 1} 0 obj");
+			writer.WriteLine(objects[index]);
+			writer.WriteLine("endobj");
+		}
 
-        writer.Flush();
-        var xrefOffset = stream.Position;
+		writer.Flush();
+		var xrefOffset = stream.Position;
 
-        writer.WriteLine("xref");
-        writer.WriteLine($"0 {objects.Length + 1}");
-        writer.WriteLine("0000000000 65535 f ");
+		writer.WriteLine("xref");
+		writer.WriteLine($"0 {objects.Length + 1}");
+		writer.WriteLine("0000000000 65535 f ");
 
-        for (var index = 1; index < offsets.Count; index++)
-        {
-            writer.WriteLine($"{offsets[index]:D10} 00000 n ");
-        }
+		for (var index = 1; index < offsets.Count; index++)
+		{
+			writer.WriteLine($"{offsets[index]:D10} 00000 n ");
+		}
 
-        writer.WriteLine("trailer");
-        writer.WriteLine($"<< /Size {objects.Length + 1} /Root 1 0 R >>");
-        writer.WriteLine("startxref");
-        writer.WriteLine(xrefOffset);
-        writer.WriteLine("%%EOF");
-        writer.Flush();
+		writer.WriteLine("trailer");
+		writer.WriteLine($"<< /Size {objects.Length + 1} /Root 1 0 R >>");
+		writer.WriteLine("startxref");
+		writer.WriteLine(xrefOffset);
+		writer.WriteLine("%%EOF");
+		writer.Flush();
 
-        return stream.ToArray();
-    }
+		return stream.ToArray();
+	}
 
-    private static string EscapePdfText(string text) =>
-        text.Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("(", "\\(", StringComparison.Ordinal)
-            .Replace(")", "\\)", StringComparison.Ordinal);
+	private static string EscapePdfText(string text) =>
+		text.Replace("\\", "\\\\", StringComparison.Ordinal)
+			.Replace("(", "\\(", StringComparison.Ordinal)
+			.Replace(")", "\\)", StringComparison.Ordinal);
 }

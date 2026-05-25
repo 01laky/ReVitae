@@ -9,36 +9,36 @@ namespace ReVitae.Ui.Validation;
 
 public static class FormValidationService
 {
-    public static void ApplyExportFailure(
-        FieldValidationResult validationResult,
-        ValidationTouchTracker touchTracker)
-    {
-        touchTracker.MarkExportAttemptWithInvalidForm(
-            ValidationNavigationPlanner.CollectInvalidKeys(validationResult.Errors));
-    }
+	public static void ApplyExportFailure(
+		FieldValidationResult validationResult,
+		ValidationTouchTracker touchTracker)
+	{
+		touchTracker.MarkExportAttemptWithInvalidForm(
+			ValidationNavigationPlanner.CollectInvalidKeys(validationResult.Errors));
+	}
 
-    public static string? GetFirstInvalidFieldKey(
-        IReadOnlyList<string> orderedFieldKeys,
-        FieldValidationResult validationResult) =>
-        ValidationNavigationPlanner.GetFirstInvalidFieldKey(
-            orderedFieldKeys,
-            ValidationNavigationPlanner.CollectInvalidKeys(validationResult.Errors));
+	public static string? GetFirstInvalidFieldKey(
+		IReadOnlyList<string> orderedFieldKeys,
+		FieldValidationResult validationResult) =>
+		ValidationNavigationPlanner.GetFirstInvalidFieldKey(
+			orderedFieldKeys,
+			ValidationNavigationPlanner.CollectInvalidKeys(validationResult.Errors));
 
-    public static void UpdateSectionErrorBadge(
-        StackPanel badgePanel,
-        TextBlock badgeTextBlock,
-        int errorCount,
-        bool isSectionCollapsed,
-        AppLocalizer localizer,
-        string countMessageKey,
-        Action? expandSection = null)
-    {
-        ValidationErrorBadgeFactory.Update(
-            badgePanel,
-            badgeTextBlock,
-            errorCount,
-            isSectionCollapsed,
-            localizer.Format(countMessageKey, errorCount),
-            expandSection);
-    }
+	public static void UpdateSectionErrorBadge(
+		StackPanel badgePanel,
+		TextBlock badgeTextBlock,
+		int errorCount,
+		bool isSectionCollapsed,
+		AppLocalizer localizer,
+		string countMessageKey,
+		Action? expandSection = null)
+	{
+		ValidationErrorBadgeFactory.Update(
+			badgePanel,
+			badgeTextBlock,
+			errorCount,
+			isSectionCollapsed,
+			localizer.Format(countMessageKey, errorCount),
+			expandSection);
+	}
 }
