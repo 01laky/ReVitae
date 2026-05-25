@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-25
+
 ### Added
 
 - **OCR and image CV import (completion):** bundled `eng.traineddata` in app
@@ -14,7 +16,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   **Import as scan (OCR)** retry on failed PDF imports without reopening the file
   picker; dedicated **Images** file-picker group; Slovak OCR strings; committed
   fixtures under `tests/.../Fixtures/Ocr/` and generator
-  `scripts/GenerateOcrImportFixtures/`; edge-case and `OcrIntegration` tests.
+  `scripts/GenerateOcrImportFixtures/`; edge-case and `OcrIntegration` tests
+  (**1428** total).
+
+### Changed
+
+- **README:** visitor-focused copy — benefit-led intro, format table, simplified
+  feature sections, and developer import notes moved to a dedicated subsection.
 
 ## [0.2.0] - 2026-05-25
 
@@ -191,6 +199,7 @@ First formally versioned ReVitae release baseline.
 - Improved two-column PDF import parsing for contact details, education dates,
   sidebar skill bleed filtering, and work-experience technology detection.
 
-[Unreleased]: https://github.com/01laky/ReVitae/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/01laky/ReVitae/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/01laky/ReVitae/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/01laky/ReVitae/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/ReVitae/releases/tag/v0.1.0

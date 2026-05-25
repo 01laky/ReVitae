@@ -1,6 +1,6 @@
 # ReVitae
 
-[![App](https://img.shields.io/badge/app-0.2.0-blue)](https://github.com/01laky/ReVitae/releases)
+[![App](https://img.shields.io/badge/app-0.2.1-blue)](https://github.com/01laky/ReVitae/releases)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
@@ -228,7 +228,7 @@ stay highlighted until you confirm them.
 
 ## Product status
 
-ReVitae is an **early-stage desktop app** (v0.2.0) under active development. The
+ReVitae is an **early-stage desktop app** (v0.2.1) under active development. The
 core loop works today: build or import a CV, preview with templates, validate,
 save locally, and export in many formats. Local and online AI setup, AI-assisted
 import, OCR for scans, and ReVitae PDF round-trip are in place.
@@ -240,9 +240,9 @@ the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
 
 ReVitae uses three different version concepts:
 
-- **App version** (`0.2.0`): the ReVitae product release shown in the **About**
+- **App version** (`0.2.1`): the ReVitae product release shown in the **About**
   modal (toolbar icon), README app badge, `Version.props`, and Git tags such as
-  `v0.2.0`.
+  `v0.2.1`.
 - **Tech-stack badges**: framework/platform versions such as `.NET 10` and
   `Avalonia 12`.
 - **Dependency package versions**: NuGet package versions declared in `.csproj`

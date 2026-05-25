@@ -143,7 +143,7 @@ Each QuestPDF export writes PDF Info metadata readable by PdfPig:
 | Key        | Example                  |
 | ---------- | ------------------------ |
 | `Producer` | `ReVitae`                |
-| `Creator`  | `ReVitae/0.2.0`          |
+| `Creator`  | `ReVitae/0.2.1`          |
 | `Keywords` | `template:ModernSidebar` |
 
 Import uses metadata first, then layout heuristics (`ReVitaePdfExportHints`,
