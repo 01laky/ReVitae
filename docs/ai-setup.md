@@ -47,11 +47,11 @@ overlay. The wizard is skippable at any step (Escape or **Skip for now**).
 
 Preferences are stored in `%LocalAppData%/ReVitae/app-settings.json` (schema v2):
 
-| Field | Purpose |
-| ----- | ------- |
-| `firstLaunchAiWizardStatus` | `NotStarted`, `RemindLater`, `Completed`, or `DeclinedOffline` |
-| `hideAiPromotionsInUi` | When true (offline-only path), AI promotion buttons are hidden until a backend is activated |
-| `firstLaunchAiWizardCompletedAtUtc` | Timestamp when the user finished or skipped |
+| Field                               | Purpose                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------- |
+| `firstLaunchAiWizardStatus`         | `NotStarted`, `RemindLater`, `Completed`, or `DeclinedOffline`                              |
+| `hideAiPromotionsInUi`              | When true (offline-only path), AI promotion buttons are hidden until a backend is activated |
+| `firstLaunchAiWizardCompletedAtUtc` | Timestamp when the user finished or skipped                                                 |
 
 **Upgrade migration:** existing installs with an active AI backend in
 `ai-settings.json`, or a resumable entry in `ai-download-job.json`, are treated

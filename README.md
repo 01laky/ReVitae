@@ -345,15 +345,15 @@ CI runs the same lint and test pipeline on every push to `main` (see
 
 ### Test categories and CI
 
-| Category | Local `npm run lint` | Ubuntu/macOS CI | Windows CI | Ubuntu `import-matrix` |
-| -------- | -------------------- | --------------- | ---------- | ---------------------- |
-| Default suite | yes | yes | yes | no |
-| `ImportPdfReimport` | yes | yes | no | flake guard (3× stress) |
-| `OcrIntegration` | yes | yes | no | no |
-| `ImportMatrix` (51 variants) | yes | no | no | yes |
-| `Projects` | yes | yes | yes | no |
-| `Ollama` | yes | yes | yes | no |
-| `ImportExtraction` / `ImportExtractionFuzz` | yes | yes | yes | no |
+| Category                                    | Local `npm run lint` | Ubuntu/macOS CI | Windows CI | Ubuntu `import-matrix`  |
+| ------------------------------------------- | -------------------- | --------------- | ---------- | ----------------------- |
+| Default suite                               | yes                  | yes             | yes        | no                      |
+| `ImportPdfReimport`                         | yes                  | yes             | no         | flake guard (3× stress) |
+| `OcrIntegration`                            | yes                  | yes             | no         | no                      |
+| `ImportMatrix` (51 variants)                | yes                  | no              | no         | yes                     |
+| `Projects`                                  | yes                  | yes             | yes        | no                      |
+| `Ollama`                                    | yes                  | yes             | yes        | no                      |
+| `ImportExtraction` / `ImportExtractionFuzz` | yes                  | yes             | yes        | no                      |
 
 Windows CI skips PDF re-import and OCR integration tests (PdfPig geometry and Tesseract
 differ on runners); Ubuntu covers them. `dotnet format` and markdown lint run on Ubuntu
