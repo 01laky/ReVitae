@@ -22,7 +22,7 @@ using System.Linq;
 
 namespace ReVitae.Skills;
 
-public sealed class SkillsSectionView : UserControl, IValidationNavigableSection, IQualityHintSection
+public sealed class SkillsSectionView : UserControl, IValidationNavigableSection, IQualityHintSection, IAiAdvisorSection
 {
 	private readonly ExpandableSection _section;
 	private readonly SectionHeaderBadges _headerBadges;
@@ -102,6 +102,12 @@ public sealed class SkillsSectionView : UserControl, IValidationNavigableSection
 			card.ApplyLocalization(_localizer);
 		}
 	}
+
+	public void ConfigureAdvisor(Action onClick, string tooltip) =>
+		_headerBadges.ConfigureAdvisor(onClick, tooltip);
+
+	public void SetAdvisorVisible(bool visible) =>
+		_headerBadges.SetAdvisorVisible(visible);
 
 	public void ApplyQualityHints(
 		IReadOnlyList<CvQualityHint> sectionHints,

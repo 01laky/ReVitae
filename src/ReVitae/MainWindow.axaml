@@ -1895,6 +1895,99 @@
 			</Border>
 		</Grid>
 
+		<Grid x:Name="AiAdvisorModalOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border Classes="re-vitae-modal-panel"
+					MaxWidth="760"
+					MaxHeight="680"
+					MinWidth="420"
+					MinHeight="320"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,Auto,*,Auto">
+					<Grid Grid.Row="0"
+											ColumnDefinitions="*,Auto"
+											ColumnSpacing="16">
+						<TextBlock x:Name="AiAdvisorTitleTextBlock"
+												 Classes="re-vitae-app-title"
+												 FontSize="22"
+												 Text="AI tips"
+												 VerticalAlignment="Center" />
+						<Button Grid.Column="1"
+								Classes="re-vitae-expand-toggle"
+								Click="OnCloseAiAdvisorModalClicked"
+								ToolTip.Tip="Close"
+								AutomationProperties.Name="Close">
+							<materialIcons:MaterialIcon Kind="Close"
+														Width="22"
+														Height="22" />
+						</Button>
+					</Grid>
+
+					<StackPanel Grid.Row="1"
+								Margin="0,12,0,0"
+								Spacing="8">
+						<TextBox x:Name="AiAdvisorTargetRoleTextBox"
+										 PlaceholderText="Target role (optional)"
+										 TextChanged="OnAiAdvisorTargetContextChanged" />
+						<TextBox x:Name="AiAdvisorTargetJobDescTextBox"
+										 AcceptsReturn="True"
+										 TextWrapping="Wrap"
+										 MinHeight="48"
+										 MaxHeight="96"
+										 PlaceholderText="Paste a job description (optional)"
+										 TextChanged="OnAiAdvisorTargetContextChanged" />
+					</StackPanel>
+
+					<ScrollViewer Grid.Row="2"
+											  Margin="0,16,0,16"
+											  VerticalScrollBarVisibility="Auto">
+						<StackPanel Spacing="12">
+							<StackPanel x:Name="AiAdvisorLoadingPanel"
+										Spacing="12"
+										IsVisible="False">
+								<ProgressBar IsIndeterminate="True"
+													 Height="6" />
+								<TextBlock Text="Generating suggestion…"
+													 Classes="re-vitae-secondary" />
+							</StackPanel>
+							<StackPanel x:Name="AiAdvisorSuggestionsPanel"
+										Spacing="14" />
+							<TextBlock x:Name="AiAdvisorErrorTextBlock"
+													 TextWrapping="Wrap"
+													 Foreground="#C62828"
+													 IsVisible="False" />
+						</StackPanel>
+					</ScrollViewer>
+
+					<Grid Grid.Row="3"
+										ColumnDefinitions="*,Auto"
+										ColumnSpacing="12">
+						<TextBlock x:Name="AiAdvisorBackendTextBlock"
+												 Classes="re-vitae-secondary"
+												 FontSize="13"
+												 VerticalAlignment="Center"
+												 TextWrapping="Wrap" />
+						<StackPanel Grid.Column="1"
+									Orientation="Horizontal"
+									Spacing="12"
+									HorizontalAlignment="Right">
+							<Button x:Name="AiAdvisorRefreshButton"
+									Classes="re-vitae-secondary"
+									Content="Refresh"
+									Click="OnAiAdvisorRefreshClicked" />
+							<Button x:Name="AiAdvisorCloseButton"
+									Classes="re-vitae-primary"
+									Content="Close"
+									Click="OnCloseAiAdvisorModalClicked" />
+						</StackPanel>
+					</Grid>
+				</Grid>
+			</Border>
+		</Grid>
+
 		<Border x:Name="QualityHintSnackbarBorder"
 				Grid.Row="1"
 				VerticalAlignment="Bottom"
@@ -1907,6 +2000,26 @@
 											 FontSize="15"
 											 LineHeight="22"
 											 MaxWidth="720" />
+		</Border>
+
+		<Border x:Name="AiCvUndoBar"
+				Grid.Row="1"
+				VerticalAlignment="Bottom"
+				HorizontalAlignment="Center"
+				Margin="0,0,0,16"
+				Padding="20,10"
+				IsVisible="False">
+			<StackPanel Orientation="Horizontal"
+						Spacing="16"
+						VerticalAlignment="Center">
+				<TextBlock x:Name="AiCvUndoTextBlock"
+										 VerticalAlignment="Center"
+										 FontSize="14" />
+				<Button x:Name="AiCvUndoButton"
+						Classes="re-vitae-secondary"
+						Content="Undo"
+						Click="OnAiCvUndoClicked" />
+			</StackPanel>
 		</Border>
 
 		<Grid x:Name="AiImportProgressOverlay"

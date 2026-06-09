@@ -56,6 +56,7 @@ public partial class MainWindow
 
 	private void UpdateQualityHints()
 	{
+		RefreshAdvisorVisibility();
 		var snapshot = BuildExportSourceData();
 		var options = new CvQualityAnalysisOptions(
 			_lastImportConfidences,

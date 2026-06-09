@@ -72,6 +72,7 @@ public partial class MainWindow : Window
 		InitializeFirstLaunchAiWizard();
 		InitializeAiProviders();
 		InitializeAiCvCompletion();
+		InitializeAiAdvisor();
 		InitializeQualityHintsUi();
 		InitializeProjectsUi();
 		InitializePersonalValidation();

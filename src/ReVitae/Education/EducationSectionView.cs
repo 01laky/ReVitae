@@ -21,7 +21,7 @@ using System.Linq;
 
 namespace ReVitae.Education;
 
-public sealed class EducationSectionView : UserControl, IValidationNavigableSection, IQualityHintSection
+public sealed class EducationSectionView : UserControl, IValidationNavigableSection, IQualityHintSection, IAiAdvisorSection
 {
 	private readonly ExpandableSection _section;
 	private readonly StackPanel _contentPanel;
@@ -104,6 +104,12 @@ public sealed class EducationSectionView : UserControl, IValidationNavigableSect
 			card.ApplyLocalization(_localizer);
 		}
 	}
+
+	public void ConfigureAdvisor(Action onClick, string tooltip) =>
+		_headerBadges.ConfigureAdvisor(onClick, tooltip);
+
+	public void SetAdvisorVisible(bool visible) =>
+		_headerBadges.SetAdvisorVisible(visible);
 
 	public void ApplyQualityHints(
 		IReadOnlyList<CvQualityHint> sectionHints,

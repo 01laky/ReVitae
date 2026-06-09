@@ -174,6 +174,7 @@ public sealed class AiCvCompletionService
 		CvImportSectionId section,
 		string uiCulture,
 		AiCvTargetContext? targetContext = null,
+		bool forceRefresh = false,
 		CancellationToken cancellationToken = default)
 	{
 		var content = AiCvSectionContent.Describe(section, snapshot);
@@ -186,7 +187,7 @@ public sealed class AiCvCompletionService
 			SectionIsEmpty: isEmpty,
 			TargetContext: targetContext);
 
-		return RunAdviceTaskAsync(AiCvTaskKind.SectionAdvisor, section, context, uiCulture, useCache: true, cancellationToken);
+		return RunAdviceTaskAsync(AiCvTaskKind.SectionAdvisor, section, context, uiCulture, useCache: true, forceRefresh, cancellationToken);
 	}
 
 	private async Task<AiCvAdvisorResult> RunAdviceTaskAsync(
@@ -195,6 +196,16 @@ public sealed class AiCvCompletionService
 		AiCvCompletionContext context,
 		string uiCulture,
 		bool useCache,
+		CancellationToken cancellationToken)
+		=> await RunAdviceTaskAsync(task, section, context, uiCulture, useCache, forceRefresh: false, cancellationToken).ConfigureAwait(false);
+
+	private async Task<AiCvAdvisorResult> RunAdviceTaskAsync(
+		AiCvTaskKind task,
+		CvImportSectionId section,
+		AiCvCompletionContext context,
+		string uiCulture,
+		bool useCache,
+		bool forceRefresh,
 		CancellationToken cancellationToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
@@ -207,7 +218,7 @@ public sealed class AiCvCompletionService
 			? AiCvAdvisorCache.ComputeKey(section, content, context.TargetContext, uiCulture)
 			: null;
 
-		if (cacheKey is not null && _advisorCache.TryGet(cacheKey, out var cached))
+		if (cacheKey is not null && !forceRefresh && _advisorCache.TryGet(cacheKey, out var cached))
 		{
 			AiCvDiagnosticsLogger.LogAdvisor(section, "cache", content.Length, context.TargetContext?.HasValue ?? false, uiCulture, cacheHit: true);
 			return cached;

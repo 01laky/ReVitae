@@ -30,6 +30,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
     (rewrites stay in the CV language, tips in UI language), per-suggestion rationale,
     one-level `AiCvApplyUndoBuffer`, session LRU `AiCvAdvisorCache`, and sanitized
     `AiCvDiagnosticsLogger` (`ai-advisor` / `ai-repair` steps).
+  - **UI:** per-section **Ask AI for tips** buttons (Work, Education, Skills,
+    Languages, Projects) via shared `SectionHeaderBadges`; dedicated advisor modal
+    with rationale lines, cached indicator, Refresh, and online-send confirm; session
+    target-role / job-description inputs; one-level **Undo** bar; entity-guard warning
+    and broadened advice-list hints routed through the suggestion modal. The
+    **Enhance with AI** import banner now fires on partial (3–4 section) and
+    low-confidence parses via the new trigger flags.
   - **EN + SK** localization for all new strings; **1959** total tests (+104).
 
 ### Changed
