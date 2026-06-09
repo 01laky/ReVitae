@@ -40,13 +40,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   - **Fix fields with AI** — import banner button + per-field before→after review
     modal (with cap "N more" disclosure) and one-level undo, wired for resolvable
     low-confidence **personal-information** fields; unresolvable fields are skipped.
-  - **EN + SK** localization for all new strings; **1959** total tests (+104).
+  - **EN + SK** localization for all new strings; **2081** total tests (+226),
+    including an extensive edge-case layer across every new component (entity guard,
+    content-language detector, advisor cache/gate/undo, advice parsing, repair
+    planner/parser/prompt/service, trigger evaluator, advisor service).
 
 ### Changed
 
 - `AiCvCompletionService.CompleteForQualityHintAsync` now accepts an optional
   `AiCvTargetContext` and returns an `EntityGuard` payload for rewrite tasks.
-- **Version** bumped to **0.2.12**; test-count baseline raised to **1959**.
+- **Version** bumped to **0.2.12**; test-count baseline raised to **2081**.
 
 ## [0.2.11] - 2026-05-21
 

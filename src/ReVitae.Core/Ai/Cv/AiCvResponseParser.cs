@@ -87,9 +87,11 @@ public static class AiCvResponseParser
 
 	internal static string StripBullet(string line)
 	{
-		if (line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("* ", StringComparison.Ordinal))
+		// Leading bullet markers ("-", "*", "•"), with or without a trailing space —
+		// a lone marker collapses to an empty string and is dropped by the caller.
+		if (line.Length > 0 && (line[0] == '-' || line[0] == '*' || line[0] == '•'))
 		{
-			return line[2..].Trim();
+			return line[1..].Trim();
 		}
 
 		// Numbered prefixes like "1. " / "2) ".

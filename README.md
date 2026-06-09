@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1959%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-2081%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 [![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
@@ -302,7 +302,7 @@ To cut a release:
 
 - AI section advice & proactive import assist (v0.2.12) — per-section advisor,
   broadened hint coverage, targeted import field repair, entity guard, target-role
-  context, **1959** tests (+104) — [`docs/ai-setup.md`](docs/ai-setup.md), [`docs/ai-import.md`](docs/ai-import.md)
+  context, **2081** tests (+226) — [`docs/ai-setup.md`](docs/ai-setup.md), [`docs/ai-import.md`](docs/ai-import.md)
 - Refactoring & edge-case audit (v0.2.11) — project lifecycle service, import
   extraction split, Ollama abstractions, **1845** tests (+244)
 - Technical debt hardening (v0.2.4) — PDF import stability, NU1903 pin, CI gates
@@ -388,7 +388,7 @@ match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` o
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **1959+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **2081+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash
