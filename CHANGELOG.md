@@ -7,6 +7,37 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-06-10
+
+### Added
+
+- **Prompt 045 — AI section advice & proactive import assist:**
+  - **Broadened AI advice** beyond the original five hints: `personal.summary-too-long`
+    → `ShortenProfessionalSummary`; `skills.single-large-group` → `SuggestSkillGrouping`;
+    `skills.section-empty` → `DraftSkillsFromContext`; `education.section-empty` /
+    `languages.section-empty` → advice-only tasks (never fabricate degrees/levels).
+  - **Per-section advisor** (`AiCvCompletionService.AdviseSectionAsync`) — proactive
+    1–4 review-only suggestions for Summary, Work, Skills, Education, Languages, Projects,
+    even with no static hint; `AiCvSectionContent` + `AiCvAdvisorGate` min-content gate.
+  - **Targeted import field repair** (`AiCvImportFieldRepairService`) — corrects only
+    low-confidence fields (`AiImportFieldRepairPlanner`, cap **25**, lowest-confidence
+    first, transparent "N more" disclosure) instead of a full re-extract; adds/removes
+    no entries; preserves photos/ids.
+  - **Broader import triggers** — `DeterministicPartial` (3–4 sections) and
+    `DeterministicHasLowFields` flags on `AiCvImportTriggerEvaluator`.
+  - **Relevance & safety guards:** optional target-role/JD context (`AiCvTargetContext`),
+    `AiCvEntityGuard` anti-hallucination post-check on rewrites, `AiCvContentLanguageDetector`
+    (rewrites stay in the CV language, tips in UI language), per-suggestion rationale,
+    one-level `AiCvApplyUndoBuffer`, session LRU `AiCvAdvisorCache`, and sanitized
+    `AiCvDiagnosticsLogger` (`ai-advisor` / `ai-repair` steps).
+  - **EN + SK** localization for all new strings; **1959** total tests (+104).
+
+### Changed
+
+- `AiCvCompletionService.CompleteForQualityHintAsync` now accepts an optional
+  `AiCvTargetContext` and returns an `EntityGuard` payload for rewrite tasks.
+- **Version** bumped to **0.2.12**; test-count baseline raised to **1959**.
+
 ## [0.2.11] - 2026-05-21
 
 ### Added

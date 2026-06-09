@@ -25,4 +25,6 @@ public sealed record AiCvCompletionResult(
 	string? SuggestedText,
 	string? ErrorMessageKey,
 	AiCvBackendDescriptor? BackendUsed,
-	bool Cancelled = false);
+	bool Cancelled = false,
+	// 045 C.3 — non-null for rewrite tasks; flags facts the model may have added.
+	AiCvEntityGuardResult? EntityGuard = null);

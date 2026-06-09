@@ -126,6 +126,13 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
 - **Static CV quality hints** — deterministic rules in Core (`CvQualityAnalyzer`),
   section badges with a **large in-window modal**, session dismiss, import-aware
   review hints, export-area summary; optional **Improve with AI** on supported hints.
+- **AI section advice & proactive import assist (v0.2.12, prompt 045)** — broadened
+  AI coverage across more sections, a proactive **per-section advisor** (Ask AI for
+  tips), optional **target-role context**, an **entity guard** against hallucinated
+  facts, CV-content-language-aware rewrites, one-level undo, and **targeted import
+  field repair** for low-confidence fields. AI remains assistant-not-author: nothing
+  auto-applies, everything is reviewed first. See [`ai-setup.md`](ai-setup.md) and
+  [`ai-import.md`](ai-import.md).
 
 ![Section validation errors and quality-hint badges](img/main-editor-validation-suggestions.png)
 
@@ -135,7 +142,7 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
   folder delivery; page range; size estimate; export progress; opaque white background.
 - **John Doe import regression matrix** — **51** generated stress CVs assert parser
   fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`).
-- **Core-first test strategy (v0.2.11):** business logic extracted to Core services
+- **Core-first test strategy (v0.2.11+):** business logic extracted to Core services
   (`CvProjectLifecycleService`, `FirstLaunchAiWizardController`, import section
   extractors under `Import/Extraction/`). Avalonia UI remains thin wiring; **1845**
   automated tests with drift guard (`scripts/verify-test-count.sh`). UI section views
@@ -246,6 +253,12 @@ Initial import formats should include:
 - TXT or another simple text-based format.
 
 ### AI Recommendations
+
+**Implemented (v0.2.12, prompt 045):** the per-section advisor and broadened
+hint coverage deliver this — measurable-results prompts, skill grouping, empty-section
+guidance, and tailored tips via optional target-role context. AI acts as an assistant,
+not an author: suggestions are review-only, every write is undoable, and an entity guard
+flags facts the model adds that are not in the CV.
 
 AI should act as an assistant, not as an automatic author.
 

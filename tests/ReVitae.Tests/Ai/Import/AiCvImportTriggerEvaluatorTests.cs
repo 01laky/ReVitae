@@ -99,4 +99,45 @@ public sealed class AiCvImportTriggerEvaluatorTests
 			new string('x', 200));
 		Assert.True(AiCvImportTriggerEvaluator.ShouldOfferAi(attempt, AiCvImportTriggerFlags.UserRequested));
 	}
+
+	[Theory]
+	[InlineData(3)]
+	[InlineData(4)]
+	public void Evaluate_PartialSuccessThreeOrFourSections_SetsPartialFlag(int sectionCount)
+	{
+		var deterministic = AiImportTestHelpers.ThinSuccess(new string('x', 300), sectionCount);
+		var attempt = AiImportTestHelpers.CreateAttempt(deterministic, new string('x', 300));
+		var flags = AiCvImportTriggerEvaluator.Evaluate(attempt);
+		Assert.True(flags.HasFlag(AiCvImportTriggerFlags.DeterministicPartial));
+	}
+
+	[Fact]
+	public void Evaluate_OneLowConfidenceField_SetsHasLowFieldsFlag()
+	{
+		var flags = Enum.GetValues<CvImportSectionId>().Take(3).ToDictionary(id => id, _ => true);
+		foreach (var id in Enum.GetValues<CvImportSectionId>().Skip(3))
+		{
+			flags[id] = false;
+		}
+
+		var result = new CvImportResult
+		{
+			Success = true,
+			SectionHasData = flags,
+			FieldConfidences = [new ImportedFieldConfidence("personal.firstName", CvImportConfidence.Low)],
+		};
+		var attempt = AiImportTestHelpers.CreateAttempt(result, new string('x', 300));
+		var evaluated = AiCvImportTriggerEvaluator.Evaluate(attempt);
+		Assert.True(evaluated.HasFlag(AiCvImportTriggerFlags.DeterministicHasLowFields));
+	}
+
+	[Fact]
+	public void Evaluate_FivePlusSections_DoesNotSetPartialOrLowFields()
+	{
+		var flags = Enum.GetValues<CvImportSectionId>().ToDictionary(id => id, _ => true);
+		var result = new CvImportResult { Success = true, SectionHasData = flags };
+		var attempt = AiImportTestHelpers.CreateAttempt(result, new string('x', 500));
+		var evaluated = AiCvImportTriggerEvaluator.Evaluate(attempt);
+		Assert.False(evaluated.HasFlag(AiCvImportTriggerFlags.DeterministicPartial));
+	}
 }

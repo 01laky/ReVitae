@@ -5,10 +5,10 @@ namespace ReVitae.Tests;
 public sealed class TestCountBaselineTests
 {
 	/// <summary>
-	/// Documented minimum test count for prompt 044 drift guard.
+	/// Documented minimum test count for the drift guard (raised in prompt 045).
 	/// Update when adding suites; must stay in sync with README badge.
 	/// </summary>
-	public const int MinimumTestCount = 1855;
+	public const int MinimumTestCount = 1959;
 
 	[Fact]
 	public void MinimumTestCount_MeetsPrompt044Baseline()

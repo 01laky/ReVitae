@@ -1,10 +1,10 @@
 # ReVitae
 
-[![App](https://img.shields.io/badge/app-0.2.11-blue)](https://github.com/01laky/ReVitae/releases)
+[![App](https://img.shields.io/badge/app-0.2.12-blue)](https://github.com/01laky/ReVitae/releases)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-1855%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-1959%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 [![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
@@ -154,6 +154,13 @@ from **Setup** (gear icon) → **Show AI setup wizard again**, or open the heade
 you a review step before anything is applied. Details: [`docs/ai-setup.md`](docs/ai-setup.md)
 and [`docs/ai-import.md`](docs/ai-import.md).
 
+**Section advice (v0.2.12).** When a backend is active, each editable section offers
+**Ask AI for tips** — 1–4 review-only suggestions (each with a short "why"), even when no
+static hint fired. You can paste an optional **target role / job description** to tailor
+suggestions, every AI write is **undoable**, rewrites stay in your CV's language, and an
+**entity guard** flags any detail the model adds that is not in your CV. Empty sections get
+guidance, never fabricated degrees or levels.
+
 ![AI setup — online provider configuration](docs/img/ai-setup-online-providers.png)
 
 ### CV import — bring what you already have
@@ -253,11 +260,13 @@ stay highlighted until you confirm them.
 
 ## Product status
 
-ReVitae is an **early-stage desktop app** (v0.2.11) under active development. The
+ReVitae is an **early-stage desktop app** (v0.2.12) under active development. The
 core loop works today: build or import a CV, preview with templates, validate,
 save locally, and export in many formats. First-launch AI wizard, local and online
 AI setup, resumable Ollama downloads, AI-assisted import, OCR for scans, and
-ReVitae PDF round-trip are in place.
+ReVitae PDF round-trip are in place. **AI now advises across more CV sections
+(proactive per-section tips) and assists imports more readily** — enhancing partial
+parses and surgically repairing low-confidence fields.
 
 **Coming next:** installers for macOS, Windows, and Linux, plus more templates beyond
 the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
@@ -266,9 +275,9 @@ the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
 
 ReVitae uses three different version concepts:
 
-- **App version** (`0.2.11`): the ReVitae product release shown in the **About**
+- **App version** (`0.2.12`): the ReVitae product release shown in the **About**
   modal (toolbar icon), README app badge, `Version.props`, and Git tags such as
-  `v0.2.11`.
+  `v0.2.12`.
 - **Tech-stack badges**: framework/platform versions such as `.NET 10` and
   `Avalonia 12`.
 - **Dependency package versions**: NuGet package versions declared in `.csproj`
@@ -291,6 +300,9 @@ To cut a release:
 
 **Recently shipped** ([`CHANGELOG.md`](CHANGELOG.md)):
 
+- AI section advice & proactive import assist (v0.2.12) — per-section advisor,
+  broadened hint coverage, targeted import field repair, entity guard, target-role
+  context, **1959** tests (+104) — [`docs/ai-setup.md`](docs/ai-setup.md), [`docs/ai-import.md`](docs/ai-import.md)
 - Refactoring & edge-case audit (v0.2.11) — project lifecycle service, import
   extraction split, Ollama abstractions, **1845** tests (+244)
 - Technical debt hardening (v0.2.4) — PDF import stability, NU1903 pin, CI gates
@@ -376,7 +388,7 @@ match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` o
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **1855+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **1959+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash
