@@ -92,6 +92,11 @@ flowchart LR
   the review modal shows **“N more uncertain fields not included.”** — never a silent cut.
 - **Review before apply** — a per-field **before → after** table; nothing is written until
   you confirm.
+- **Scope (v0.2.12 UI):** the **Fix fields with AI** action currently repairs resolvable
+  low-confidence **personal-information** fields (name, title, contact, links, summary),
+  which is where most uncertain fields land. Fields that cannot be resolved to a current
+  value are skipped. The Core repair service is format-agnostic; broader section coverage
+  is incremental.
 
 ## Model batching
 

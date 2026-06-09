@@ -350,6 +350,11 @@
 									Classes="re-vitae-secondary"
 									Content="Enhance with AI"
 									Click="OnImportAiEnhanceClicked" />
+							<Button x:Name="ImportAiFixFieldsButton"
+									Classes="re-vitae-secondary"
+									Content="Fix uncertain fields with AI"
+									IsVisible="False"
+									Click="OnImportAiFixFieldsClicked" />
 						</StackPanel>
 
 						<StackPanel x:Name="ExportPostActionPanel"
@@ -2116,6 +2121,55 @@
 								Click="OnAiImportReviewApplyClicked" />
 					</StackPanel>
 				</StackPanel>
+			</Border>
+		</Grid>
+
+		<Grid x:Name="AiRepairReviewOverlay"
+							Grid.RowSpan="2"
+							Classes="re-vitae-modal-overlay"
+							IsVisible="False">
+			<Border Classes="re-vitae-modal-panel"
+					MaxWidth="760"
+					MaxHeight="640"
+					MinWidth="420"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+					<TextBlock Grid.Row="0"
+											 x:Name="AiRepairReviewTitleTextBlock"
+											 Classes="re-vitae-app-title"
+											 FontSize="22"
+											 Text="Review AI field fixes" />
+					<TextBlock Grid.Row="1"
+											 x:Name="AiRepairReviewBackendTextBlock"
+											 Margin="0,4,0,0"
+											 Classes="re-vitae-secondary" />
+					<ScrollViewer Grid.Row="2"
+											  Margin="0,12,0,12"
+											  VerticalScrollBarVisibility="Auto">
+						<StackPanel x:Name="AiRepairReviewRowsPanel"
+									Spacing="8" />
+					</ScrollViewer>
+					<TextBlock Grid.Row="3"
+											 x:Name="AiRepairReviewMoreTextBlock"
+											 TextWrapping="Wrap"
+											 Classes="re-vitae-secondary"
+											 IsVisible="False" />
+					<StackPanel Grid.Row="4"
+								Orientation="Horizontal"
+								Spacing="12"
+								Margin="0,12,0,0"
+								HorizontalAlignment="Right">
+						<Button x:Name="AiRepairReviewCancelButton"
+								Classes="re-vitae-secondary"
+								Content="Cancel"
+								Click="OnAiRepairReviewCancelClicked" />
+						<Button x:Name="AiRepairReviewApplyButton"
+								Classes="re-vitae-primary"
+								Content="Apply to form"
+								Click="OnAiRepairReviewApplyClicked" />
+					</StackPanel>
+				</Grid>
 			</Border>
 		</Grid>
 

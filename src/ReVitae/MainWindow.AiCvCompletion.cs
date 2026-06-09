@@ -347,9 +347,8 @@ public partial class MainWindow
 	{
 		switch (target.Section)
 		{
-			case CvImportSectionId.PersonalInformation
-				when target.FieldKey == MainPersonalInformationFieldKeys.ShortSummary:
-				ShortSummaryTextBox.Text = text;
+			case CvImportSectionId.PersonalInformation:
+				TryApplyPersonalField(target.FieldKey, text);
 				break;
 			case CvImportSectionId.WorkExperience:
 				WorkExperienceSection.TryApplyFieldText(target.FieldKey, text);

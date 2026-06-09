@@ -354,9 +354,14 @@ public partial class MainWindow
 
 		ImportAiEnhanceBannerTextBlock.Text = _localizer.Get(TranslationKeys.ImportAiBannerIncomplete);
 		ImportAiEnhancePanel.IsVisible = true;
+		UpdateFixFieldsButtonVisibility(attempt);
 	}
 
-	private void HideImportAiEnhancePanel() => ImportAiEnhancePanel.IsVisible = false;
+	private void HideImportAiEnhancePanel()
+	{
+		ImportAiEnhancePanel.IsVisible = false;
+		ImportAiFixFieldsButton.IsVisible = false;
+	}
 
 	private void ApplyImportAiLocalization()
 	{
@@ -364,6 +369,10 @@ public partial class MainWindow
 		ReplaceImportTryAiButton.Content = _localizer.Get(TranslationKeys.ReplaceImportTryAi);
 		ImportAiEnhanceButton.Content = _localizer.Get(TranslationKeys.ImportAiEnhanceButton);
 		ImportAiEnhanceBannerTextBlock.Text = _localizer.Get(TranslationKeys.ImportAiBannerIncomplete);
+		ImportAiFixFieldsButton.Content = _localizer.Get(TranslationKeys.AiImportFixFields);
+		AiRepairReviewTitleTextBlock.Text = _localizer.Get(TranslationKeys.AiImportRepairReviewTitle);
+		AiRepairReviewApplyButton.Content = _localizer.Get(TranslationKeys.ImportAiReviewApply);
+		AiRepairReviewCancelButton.Content = _localizer.Get(TranslationKeys.ImportAiReviewCancel);
 		AiImportProgressTitleTextBlock.Text = _localizer.Get(TranslationKeys.ImportAiProgressTitle);
 		AiImportProgressCancelButton.Content = _localizer.Get(TranslationKeys.Cancel);
 		AiImportReviewTitleTextBlock.Text = _localizer.Get(TranslationKeys.ImportAiReviewTitle);

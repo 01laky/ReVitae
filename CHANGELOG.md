@@ -37,6 +37,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
     and broadened advice-list hints routed through the suggestion modal. The
     **Enhance with AI** import banner now fires on partial (3–4 section) and
     low-confidence parses via the new trigger flags.
+  - **Fix fields with AI** — import banner button + per-field before→after review
+    modal (with cap "N more" disclosure) and one-level undo, wired for resolvable
+    low-confidence **personal-information** fields; unresolvable fields are skipped.
   - **EN + SK** localization for all new strings; **1959** total tests (+104).
 
 ### Changed
