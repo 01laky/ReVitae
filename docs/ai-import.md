@@ -55,10 +55,48 @@ All of the following must hold:
 | Deterministic failed | Import error “no structured data” but OCR/text was acquired  |
 | Thin draft           | Import succeeded but **≤ 2** sections populated              |
 | Low confidence       | OCR used or many low-confidence fields with **≤ 4** sections |
+| Partial parse (045)  | Import succeeded with **3–4** sections — offers **Enhance**  |
+| Has low fields (045) | **≥ 1** low-confidence field — offers **Fix fields with AI** |
 | User requested       | You click **Try AI import** or **Enhance with AI**           |
 
 **Not offered** when the file is too short, unreadable with no text, or a
 structured format already imported successfully with enough sections.
+
+ReVitae picks the **least-invasive** default action: failed/thin → **Try AI import**
+(replace all); partial (3–4 sections) → **Enhance with AI** (fill empty only when the
+form is dirty); success with only uncertain fields → **Fix fields with AI** (targeted
+repair, below).
+
+## Targeted field repair (v0.2.12)
+
+When a parse succeeds but some fields are low-confidence, **Fix fields with AI** repairs
+**only those fields** instead of re-extracting whole sections.
+
+```mermaid
+flowchart LR
+    low["Low-confidence fields\n(FieldConfidences)"]
+    join["Join with parsed doc\n→ repair targets"]
+    cap["Cap at 25, lowest\nconfidence first"]
+    batch["Per-section batches\n(source window)"]
+    parse["Parse N: value"]
+    review["Review before→after"]
+    apply["Apply only targeted fields"]
+
+    low --> join --> cap --> batch --> parse --> review --> apply
+```
+
+- **No new entries** — repair only rewrites the value of fields the deterministic parser
+  already produced; it never adds or removes entries, and never touches photos or ids.
+- A field the model leaves unchanged or empty **keeps its current value**.
+- **Cap (C.9):** at most **25** fields per run, lowest confidence first; when more exist,
+  the review modal shows **“N more uncertain fields not included.”** — never a silent cut.
+- **Review before apply** — a per-field **before → after** table; nothing is written until
+  you confirm.
+- **Scope (v0.2.12 UI):** the **Fix fields with AI** action currently repairs resolvable
+  low-confidence **personal-information** fields (name, title, contact, links, summary),
+  which is where most uncertain fields land. Fields that cannot be resolved to a current
+  value are skipped. The Core repair service is format-agnostic; broader section coverage
+  is incremental.
 
 ## Model batching
 
@@ -151,13 +189,18 @@ export REVITAE_IMPORT_DEBUG_LOG=/tmp/revitae-import-debug.log
 
 Logged: phase, batch index, char counts, parse success, duration — **not** full CV
 text or email addresses. AI batch lines use the `ai-import` step prefix alongside
-existing `CvImportDiagnosticsLogger` import traces.
+existing `CvImportDiagnosticsLogger` import traces. The **section advisor** and
+**field repair** (045) add `ai-advisor` and `ai-repair` step prefixes, logging task
+kind, section, char/field counts, entity-guard hits, cache hit/miss, and duration —
+again **never** CV text, emails, or model output bodies.
 
-When debug is enabled, the review modal shows an optional **Details** expander with
-sanitized parse errors.
+When debug is enabled, the review modals show an optional **Details** expander with
+sanitized parse and guard notes.
 
 ## Related prompts
 
 - **032** — OCR text feeds AI import when heuristics fail
 - **039** — shared backend, online confirm, `uiCulture` in prompts
 - **041** — dirty-project guard on Enhance replace
+- **045** — section advisor, broadened hints, target-role context, entity guard,
+  targeted field repair, broadened import triggers

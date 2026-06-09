@@ -21,7 +21,7 @@ using System.Linq;
 
 namespace ReVitae.WorkExperience;
 
-public sealed class WorkExperienceSectionView : UserControl, IValidationNavigableSection, IQualityHintSection
+public sealed class WorkExperienceSectionView : UserControl, IValidationNavigableSection, IQualityHintSection, IAiAdvisorSection
 {
 	private readonly ExpandableSection _section;
 	private readonly StackPanel _contentPanel;
@@ -107,6 +107,12 @@ public sealed class WorkExperienceSectionView : UserControl, IValidationNavigabl
 
 		UpdateSectionErrorBadge();
 	}
+
+	public void ConfigureAdvisor(Action onClick, string tooltip) =>
+		_headerBadges.ConfigureAdvisor(onClick, tooltip);
+
+	public void SetAdvisorVisible(bool visible) =>
+		_headerBadges.SetAdvisorVisible(visible);
 
 	public void ApplyQualityHints(
 		IReadOnlyList<CvQualityHint> sectionHints,

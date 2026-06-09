@@ -845,6 +845,26 @@ public static class TranslationKeys
 	public const string AiCvResponseTooLong = "aiCv.responseTooLong";
 	public const string AiCvTaskFailed = "aiCv.taskFailed";
 
+	// 045 — section advice & proactive import assist.
+	public const string AiCvAskForTips = "aiCv.askForTips";
+	public const string AiCvAdvisorTitle = "aiCv.advisorTitle";
+	public const string AiCvAdvisorApply = "aiCv.advisorApply";
+	public const string AiCvAdvisorClose = "aiCv.advisorClose";
+	public const string AiCvAdvisorEmpty = "aiCv.advisorEmpty";
+	public const string AiCvTargetRoleLabel = "aiCv.targetRoleLabel";
+	public const string AiCvTargetJobDescLabel = "aiCv.targetJobDescLabel";
+	public const string AiCvMeasurableResults = "aiCv.measurableResults";
+	public const string AiCvEntityGuardWarning = "aiCv.entityGuardWarning";
+	public const string AiCvAdvisorRationalePrefix = "aiCv.advisorRationalePrefix";
+	public const string AiCvApplyUndo = "aiCv.applyUndo";
+	public const string AiCvAdvisorCached = "aiCv.advisorCached";
+	public const string AiCvAdvisorRefresh = "aiCv.advisorRefresh";
+	public const string AiImportEnhancePartial = "import.ai.enhancePartial";
+	public const string AiImportFixFields = "import.ai.fixFields";
+	public const string AiImportRepairReviewTitle = "import.ai.repairReviewTitle";
+	public const string AiImportRepairField = "import.ai.repairField";
+	public const string AiImportRepairMore = "import.ai.repairMore";
+
 	private static readonly string[] ThemedTemplateRequiredKeys = CvThemedTemplateRegistry.All
 		.SelectMany(theme => new[] { theme.NameKey, theme.DescriptionKey })
 		.ToArray();
@@ -1678,6 +1698,24 @@ public static class TranslationKeys
 		AiCvEmptyResponse,
 		AiCvResponseTooLong,
 		AiCvTaskFailed,
+		AiCvAskForTips,
+		AiCvAdvisorTitle,
+		AiCvAdvisorApply,
+		AiCvAdvisorClose,
+		AiCvAdvisorEmpty,
+		AiCvTargetRoleLabel,
+		AiCvTargetJobDescLabel,
+		AiCvMeasurableResults,
+		AiCvEntityGuardWarning,
+		AiCvAdvisorRationalePrefix,
+		AiCvApplyUndo,
+		AiCvAdvisorCached,
+		AiCvAdvisorRefresh,
+		AiImportEnhancePartial,
+		AiImportFixFields,
+		AiImportRepairReviewTitle,
+		AiImportRepairField,
+		AiImportRepairMore,
 		..ThemedTemplateRequiredKeys
 	];
 }

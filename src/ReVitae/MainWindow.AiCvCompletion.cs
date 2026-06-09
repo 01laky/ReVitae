@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,21 @@ public partial class MainWindow
 	private CvQualityHint? _pendingAiCvHint;
 	private AiCvFieldTarget? _pendingAiFieldTarget;
 	private string? _currentAiSuggestedText;
+
+	// 045 C.1 — optional, session-only target-role/JD bias applied to all AI CV tasks.
+	private AiCvTargetContext? _aiCvTargetContext;
+
+	// 045 C.6 — single-level undo buffer for AI writes (advisor / improve / repair).
+	private readonly AiCvApplyUndoBuffer _aiCvUndoBuffer = new();
+
+	/// <summary>Sets the session target context (045 C.1); null/empty clears it.</summary>
+	internal void SetAiCvTargetContext(string? role, string? jobDescription)
+	{
+		var context = new AiCvTargetContext(
+			string.IsNullOrWhiteSpace(role) ? null : role.Trim(),
+			string.IsNullOrWhiteSpace(jobDescription) ? null : jobDescription.Trim());
+		_aiCvTargetContext = context.HasValue ? context : null;
+	}
 
 	private AiCvCompletionService AiCvCompletion =>
 		_aiCvCompletionService ??= new AiCvCompletionService(
@@ -98,6 +114,14 @@ public partial class MainWindow
 
 	private async Task RunAiCvImprovementAsync(CvQualityHint hint)
 	{
+		// 045 A.3 — advice-list hints (skills/education/languages) have no single field
+		// target; route them to the advisor flow instead of CompleteForQualityHint.
+		if (AiCvCompletion.IsAdviceQualityHint(hint.Id))
+		{
+			await RunAiCvAdviceForHintAsync(hint).ConfigureAwait(true);
+			return;
+		}
+
 		_aiCvCompletionInFlight = true;
 		_aiCvCompletionCts?.Cancel();
 		_aiCvCompletionCts?.Dispose();
@@ -116,6 +140,7 @@ public partial class MainWindow
 				snapshot,
 				hint,
 				_localizer.LanguageCode,
+				_aiCvTargetContext,
 				_aiCvCompletionCts.Token).ConfigureAwait(true);
 
 			if (result.Cancelled)
@@ -126,7 +151,9 @@ public partial class MainWindow
 
 			if (result.Succeeded && !string.IsNullOrWhiteSpace(result.SuggestedText))
 			{
-				ShowAiSuggestionSuccessState(result.SuggestedText, result.BackendUsed?.Label);
+				ShowAiSuggestionSuccessState(
+					result.SuggestedText,
+					ComposeBackendLabel(result.BackendUsed?.Label, result.EntityGuard));
 				return;
 			}
 
@@ -136,6 +163,76 @@ public partial class MainWindow
 		{
 			_aiCvCompletionInFlight = false;
 		}
+	}
+
+	// 045 A.3 — runs the advice-list flow for a supported hint, reusing the suggestion modal.
+	private async Task RunAiCvAdviceForHintAsync(CvQualityHint hint)
+	{
+		_aiCvCompletionInFlight = true;
+		_aiCvCompletionCts?.Cancel();
+		_aiCvCompletionCts?.Dispose();
+		_aiCvCompletionCts = new CancellationTokenSource();
+
+		_pendingAiFieldTarget = null; // advice-only — Accept/Edit are no-ops, just close
+		_currentAiSuggestedText = null;
+
+		SetAiSuggestionModalVisible(true);
+		ShowAiSuggestionLoadingState();
+
+		try
+		{
+			var snapshot = BuildExportSourceData();
+			var result = await AiCvCompletion.AdviseForQualityHintAsync(
+				snapshot,
+				hint,
+				_localizer.LanguageCode,
+				_aiCvTargetContext,
+				_aiCvCompletionCts.Token).ConfigureAwait(true);
+
+			if (result.Cancelled)
+			{
+				SetAiSuggestionModalVisible(false);
+				return;
+			}
+
+			if (result.Succeeded && result.Suggestions.Count > 0)
+			{
+				ShowAiSuggestionSuccessState(FormatAdvice(result.Suggestions), result.BackendUsed?.Label);
+				return;
+			}
+
+			ShowAiSuggestionErrorState(
+				result.ErrorMessageKey ?? TranslationKeys.AiCvAdvisorEmpty,
+				result.BackendUsed?.Label);
+		}
+		finally
+		{
+			_aiCvCompletionInFlight = false;
+		}
+	}
+
+	private string FormatAdvice(IReadOnlyList<AiCvAdvisorSuggestion> suggestions)
+	{
+		var whyLabel = _localizer.Get(TranslationKeys.AiCvAdvisorRationalePrefix);
+		var lines = suggestions.Select(s =>
+			string.IsNullOrWhiteSpace(s.Rationale)
+				? $"• {s.Text}"
+				: $"• {s.Text}\n   {whyLabel} {s.Rationale}");
+		return string.Join("\n\n", lines);
+	}
+
+	// 045 C.3 — append a non-blocking entity-guard warning to the backend label line.
+	private string? ComposeBackendLabel(string? backendLabel, AiCvEntityGuardResult? guard)
+	{
+		if (guard is null || !guard.HasUnsupportedEntities)
+		{
+			return backendLabel;
+		}
+
+		var warning = _localizer.Format(
+			TranslationKeys.AiCvEntityGuardWarning,
+			string.Join(", ", guard.UnsupportedEntities));
+		return string.IsNullOrWhiteSpace(backendLabel) ? $"⚠ {warning}" : $"{backendLabel}   ⚠ {warning}";
 	}
 
 	private void ShowAiSuggestionLoadingState()
@@ -250,9 +347,8 @@ public partial class MainWindow
 	{
 		switch (target.Section)
 		{
-			case CvImportSectionId.PersonalInformation
-				when target.FieldKey == MainPersonalInformationFieldKeys.ShortSummary:
-				ShortSummaryTextBox.Text = text;
+			case CvImportSectionId.PersonalInformation:
+				TryApplyPersonalField(target.FieldKey, text);
 				break;
 			case CvImportSectionId.WorkExperience:
 				WorkExperienceSection.TryApplyFieldText(target.FieldKey, text);

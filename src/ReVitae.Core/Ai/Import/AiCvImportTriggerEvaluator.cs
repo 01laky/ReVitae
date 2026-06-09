@@ -11,6 +11,10 @@ public enum AiCvImportTriggerFlags
 	DeterministicThin = 1 << 1,
 	DeterministicLowConfidence = 1 << 2,
 	UserRequested = 1 << 3,
+
+	// 045 B.1 — broadened, less-conservative offers.
+	DeterministicPartial = 1 << 4,
+	DeterministicHasLowFields = 1 << 5,
 }
 
 public static class AiCvImportTriggerEvaluator
@@ -48,6 +52,18 @@ public static class AiCvImportTriggerEvaluator
 			(lowConfidenceCount >= 5 || (ocrUsed && sectionCount <= 4)))
 		{
 			flags |= AiCvImportTriggerFlags.DeterministicLowConfidence;
+		}
+
+		// 045 B.1 — partial parse (3–4 populated sections) is now worth an Enhance offer.
+		if (deterministic.Success && sectionCount is >= 3 and <= 4)
+		{
+			flags |= AiCvImportTriggerFlags.DeterministicPartial;
+		}
+
+		// 045 B.1 — any low-confidence field enables the targeted Fix-fields offer (B.2).
+		if (deterministic.Success && lowConfidenceCount >= 1)
+		{
+			flags |= AiCvImportTriggerFlags.DeterministicHasLowFields;
 		}
 
 		return flags;

@@ -22,7 +22,7 @@ using System.Linq;
 
 namespace ReVitae.Languages;
 
-public sealed class LanguagesSectionView : UserControl, IValidationNavigableSection, IQualityHintSection
+public sealed class LanguagesSectionView : UserControl, IValidationNavigableSection, IQualityHintSection, IAiAdvisorSection
 {
 	private static readonly string[] EntryFieldOrder =
 	[
@@ -104,6 +104,12 @@ public sealed class LanguagesSectionView : UserControl, IValidationNavigableSect
 			card.ApplyLocalization(_localizer);
 		}
 	}
+
+	public void ConfigureAdvisor(Action onClick, string tooltip) =>
+		_headerBadges.ConfigureAdvisor(onClick, tooltip);
+
+	public void SetAdvisorVisible(bool visible) =>
+		_headerBadges.SetAdvisorVisible(visible);
 
 	public void ApplyQualityHints(
 		IReadOnlyList<CvQualityHint> sectionHints,

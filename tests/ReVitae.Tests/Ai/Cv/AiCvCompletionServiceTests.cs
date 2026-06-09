@@ -74,7 +74,7 @@ public sealed class AiCvCompletionServiceTests
 		var hint = CreateWorkHint("entry1");
 		var snapshot = CreateSnapshot("entry1", "Text");
 
-		var result = await service.CompleteForQualityHintAsync(snapshot, hint, "en", cts.Token);
+		var result = await service.CompleteForQualityHintAsync(snapshot, hint, "en", cancellationToken: cts.Token);
 
 		Assert.False(result.Succeeded);
 		Assert.True(result.Cancelled);

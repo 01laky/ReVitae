@@ -442,6 +442,52 @@ validation rules or remove hints automatically. Export remains blocked only by
 
 See also [`concept.md`](concept.md) (Phase 2).
 
+### Section advisor (v0.2.12)
+
+Beyond the original hints, every editable section in scope — **Professional summary,
+Work experience, Skills, Education, Languages, Projects** — exposes **Ask AI for tips**
+when a backend is active. The advisor is **proactive**: it works even when no static
+hint fired (e.g. a populated-but-weak Skills section).
+
+```mermaid
+flowchart LR
+    btn["Section header\nAsk AI for tips"]
+    gate{"Enough content?\n(min-content gate)"}
+    cache{"Cached for this\ncontent + role?"}
+    model["Active backend\n1–4 suggestions"]
+    modal["Advisor modal\nadvice + why (rationale)"]
+    apply["Apply (only where\na concrete value exists)"]
+    undo["Undo (one level)"]
+
+    btn --> gate
+    gate -->|no| draft["Route to draft / advice task"]
+    gate -->|yes| cache
+    cache -->|hit| modal
+    cache -->|miss| model --> modal
+    modal --> apply --> undo
+```
+
+- **Advice, not author** — suggestions are review-only; **Apply** appears only when a
+  suggestion carries a concrete value. Empty sections get **guidance** (what to add and
+  how), never fabricated degrees, institutions, dates, or language levels.
+- **Per-suggestion rationale** — each tip may include a short **Why:** line.
+- **Target role context (optional)** — paste a **target role** and/or **job description**
+  to bias every AI task toward relevance. It is **session-only**, never saved to the CV,
+  and never copies skills/titles/employers from the job description into your CV as if
+  they were your own.
+- **Entity guard** — for rewrite tasks (improve/shorten), a deterministic post-check
+  flags any number, year, percentage, email, or name the model added that is **not in
+  your CV**. The warning is non-blocking — you can still accept, but you are told.
+- **CV-content language** — rewritten field text stays in the **CV's own language**
+  (detected from the field), while the advice text follows your **UI language**.
+- **Undo** — every AI write (advisor Apply, Improve-with-AI Accept, import field repair)
+  is reversible once.
+- **Caching** — repeating **Ask AI for tips** on unchanged content returns instantly from
+  a session cache; use **Refresh** to force a new call.
+
+Online sends honor the same first-send session confirm as Improve with AI; local Ollama
+stays on-device.
+
 ### Model tier and import batch size
 
 **AI-assisted import** reuses the same active backend but sends **many small
