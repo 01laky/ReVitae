@@ -25,6 +25,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   copies across the section views with a single generic, unit-tested
   `SectionEntryReorder` helper (`MoveToIndex<T>` + `FindIndexById<T>`; 19 edge-case tests), replacing six + four byte-identical copies. Test total **2104**.
 
+- **Refactor (047 T6 — template scaffold):** added `CvPdfRenderHelper.RenderPage` (the shared
+  `Generate → Page → ConfigureA4Page` scaffold) and routed all 16 base templates plus the
+  themed renderer through it, removing the repeated boilerplate. Pixel-identical render
+  (verified via PNG hash, incl. non-white backgrounds) and golden oracle unchanged.
+
 ### Fixed
 
 - **Template sidebar bands now span the full page height on every page.** Previously a

@@ -9,39 +9,35 @@ internal static class BlueAccentSummaryPdfTemplate
 
 	public static byte[] Render(CvExportDocument document)
 	{
-		return CvPdfRenderHelper.Generate(document, container =>
+		return CvPdfRenderHelper.RenderPage(document, page =>
 		{
-			container.Page(page =>
+			page.Content().Column(root =>
 			{
-				CvPdfLayoutHelpers.ConfigureA4Page(page);
-				page.Content().Column(root =>
+				root.Spacing(10);
+				root.Item().Row(header =>
 				{
-					root.Spacing(10);
-					root.Item().Row(header =>
+					header.ConstantItem(12).Height(12).Background(Blue);
+					header.RelativeItem().PaddingLeft(8).Column(title =>
 					{
-						header.ConstantItem(12).Height(12).Background(Blue);
-						header.RelativeItem().PaddingLeft(8).Column(title =>
-						{
-							title.Item().Text(document.FullName).FontSize(24).Bold();
-							title.Item().Text($"{document.Phone} // {document.Email}").FontSize(CvPdfLayoutHelpers.BaseFontSize);
-						});
-						header.ConstantItem(72).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Blue, CvPdfPalette.White));
+						title.Item().Text(document.FullName).FontSize(24).Bold();
+						title.Item().Text($"{document.Phone} // {document.Email}").FontSize(CvPdfLayoutHelpers.BaseFontSize);
 					});
-					root.Item().Border(1).BorderColor(Blue).Padding(12)
-						.Text(CvExportPreviewContentBuilder.BuildSummary(document));
-					root.Item().Row(body =>
+					header.ConstantItem(72).Element(c =>
+						CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Blue, CvPdfPalette.White));
+				});
+				root.Item().Border(1).BorderColor(Blue).Padding(12)
+					.Text(CvExportPreviewContentBuilder.BuildSummary(document));
+				root.Item().Row(body =>
+				{
+					body.RelativeItem(34).Column(left =>
 					{
-						body.RelativeItem(34).Column(left =>
-						{
-							CvPdfLayoutHelpers.ComposeSection(left, document.Labels.PreviewSkills,
-								CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document), Blue);
-							CvPdfSectionContent.ComposeEducationPublic(left, document);
-						});
-						body.RelativeItem(66).PaddingLeft(10).Column(right =>
-						{
-							CvPdfSectionContent.ComposeWorkExperienceOnly(right, document);
-						});
+						CvPdfLayoutHelpers.ComposeSection(left, document.Labels.PreviewSkills,
+							CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document), Blue);
+						CvPdfSectionContent.ComposeEducationPublic(left, document);
+					});
+					body.RelativeItem(66).PaddingLeft(10).Column(right =>
+					{
+						CvPdfSectionContent.ComposeWorkExperienceOnly(right, document);
 					});
 				});
 			});

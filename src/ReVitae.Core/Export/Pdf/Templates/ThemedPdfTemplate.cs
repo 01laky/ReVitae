@@ -412,12 +412,5 @@ internal static class ThemedPdfTemplate
 	}
 
 	private static byte[] Generate(CvExportDocument document, Action<PageDescriptor> composePage) =>
-		CvPdfRenderHelper.Generate(document, container =>
-		{
-			container.Page(page =>
-			{
-				CvPdfLayoutHelpers.ConfigureA4Page(page);
-				composePage(page);
-			});
-		});
+		CvPdfRenderHelper.RenderPage(document, composePage);
 }

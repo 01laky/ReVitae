@@ -9,45 +9,41 @@ internal static class OrangeTimelinePdfTemplate
 
 	public static byte[] Render(CvExportDocument document)
 	{
-		return CvPdfRenderHelper.Generate(document, container =>
+		return CvPdfRenderHelper.RenderPage(document, page =>
 		{
-			container.Page(page =>
+			page.Content().Column(root =>
 			{
-				CvPdfLayoutHelpers.ConfigureA4Page(page);
-				page.Content().Column(root =>
+				root.Spacing(10);
+				root.Item().Row(header =>
 				{
-					root.Spacing(10);
-					root.Item().Row(header =>
+					header.ConstantItem(72).Element(c =>
+						CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Orange, CvPdfPalette.White));
+					header.RelativeItem().PaddingLeft(10).Column(info =>
 					{
-						header.ConstantItem(72).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Orange, CvPdfPalette.White));
-						header.RelativeItem().PaddingLeft(10).Column(info =>
+						info.Item().Text(text =>
 						{
-							info.Item().Text(text =>
-							{
-								text.Span(document.FirstName.ToUpperInvariant() + " ").FontSize(22).Bold();
-								text.Span(document.LastName.ToUpperInvariant()).FontSize(22).Bold().FontColor(Orange);
-							});
-							CvPdfExtendedHelpers.ComposeContactLine(info.Item(), document);
+							text.Span(document.FirstName.ToUpperInvariant() + " ").FontSize(22).Bold();
+							text.Span(document.LastName.ToUpperInvariant()).FontSize(22).Bold().FontColor(Orange);
 						});
+						CvPdfExtendedHelpers.ComposeContactLine(info.Item(), document);
 					});
-					root.Item().Row(timeline =>
+				});
+				root.Item().Row(timeline =>
+				{
+					timeline.ConstantItem(16).Column(line =>
 					{
-						timeline.ConstantItem(16).Column(line =>
-						{
-							line.Item().Width(2).Background(Orange);
-						});
-						timeline.RelativeItem().PaddingLeft(8).Column(content =>
-						{
-							ComposeTimelineSection(content, document.Labels.Summary,
-								CvExportPreviewContentBuilder.BuildSummary(document));
-							ComposeTimelineSection(content, document.Labels.PreviewSkills,
-								CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document));
-							ComposeTimelineSection(content, document.Labels.PreviewWorkExperience,
-								CvExportPreviewContentBuilder.BuildWorkExperiencePreviewContent(document));
-							ComposeTimelineSection(content, document.Labels.PreviewEducation,
-								CvExportPreviewContentBuilder.BuildEducationPreviewContent(document));
-						});
+						line.Item().Width(2).Background(Orange);
+					});
+					timeline.RelativeItem().PaddingLeft(8).Column(content =>
+					{
+						ComposeTimelineSection(content, document.Labels.Summary,
+							CvExportPreviewContentBuilder.BuildSummary(document));
+						ComposeTimelineSection(content, document.Labels.PreviewSkills,
+							CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document));
+						ComposeTimelineSection(content, document.Labels.PreviewWorkExperience,
+							CvExportPreviewContentBuilder.BuildWorkExperiencePreviewContent(document));
+						ComposeTimelineSection(content, document.Labels.PreviewEducation,
+							CvExportPreviewContentBuilder.BuildEducationPreviewContent(document));
 					});
 				});
 			});

@@ -10,41 +10,37 @@ internal static class ExecutiveBlueSidebarPdfTemplate
 
 	public static byte[] Render(CvExportDocument document)
 	{
-		return CvPdfRenderHelper.Generate(document, container =>
+		return CvPdfRenderHelper.RenderPage(document, page =>
 		{
-			container.Page(page =>
+
+			// Full-height grey sidebar band via page background so it reaches the bottom of every page.
+			page.Margin(0);
+			page.Background().Row(bg =>
 			{
-				CvPdfLayoutHelpers.ConfigureA4Page(page);
+				bg.RelativeItem(34).Background("#E5E5E5");
+				bg.RelativeItem(66);
+			});
 
-				// Full-height grey sidebar band via page background so it reaches the bottom of every page.
-				page.Margin(0);
-				page.Background().Row(bg =>
+			page.Content().Row(row =>
+			{
+				row.RelativeItem(34).Column(sidebar =>
 				{
-					bg.RelativeItem(34).Background("#E5E5E5");
-					bg.RelativeItem(66);
+					sidebar.Item().Height(8).Background(Navy);
+					sidebar.Item().Padding(14).Column(sidebarBody =>
+					{
+						sidebarBody.Spacing(12);
+						sidebarBody.Item().Text(document.FullName.ToUpperInvariant()).FontSize(16).Bold().FontColor(Navy);
+						sidebarBody.Item().Element(c =>
+							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 72, Navy, Colors.White));
+						CvPdfLayoutHelpers.ComposeSection(sidebarBody, document.Labels.Contact,
+							CvExportPreviewContentBuilder.BuildContactLines(document), Navy);
+						CvPdfExtendedHelpers.ComposeOptionalSection(sidebarBody, document.Labels.PreviewLanguages,
+							CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document), false);
+					});
 				});
-
-				page.Content().Row(row =>
+				row.RelativeItem(66).PaddingVertical(24).PaddingLeft(16).PaddingRight(24).Column(main =>
 				{
-					row.RelativeItem(34).Column(sidebar =>
-					{
-						sidebar.Item().Height(8).Background(Navy);
-						sidebar.Item().Padding(14).Column(sidebarBody =>
-						{
-							sidebarBody.Spacing(12);
-							sidebarBody.Item().Text(document.FullName.ToUpperInvariant()).FontSize(16).Bold().FontColor(Navy);
-							sidebarBody.Item().Element(c =>
-								CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 72, Navy, Colors.White));
-							CvPdfLayoutHelpers.ComposeSection(sidebarBody, document.Labels.Contact,
-								CvExportPreviewContentBuilder.BuildContactLines(document), Navy);
-							CvPdfExtendedHelpers.ComposeOptionalSection(sidebarBody, document.Labels.PreviewLanguages,
-								CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document), false);
-						});
-					});
-					row.RelativeItem(66).PaddingVertical(24).PaddingLeft(16).PaddingRight(24).Column(main =>
-					{
-						CvPdfExtendedHelpers.ComposeMainSections(main, document, document.Labels.Summary);
-					});
+					CvPdfExtendedHelpers.ComposeMainSections(main, document, document.Labels.Summary);
 				});
 			});
 		});
