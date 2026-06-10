@@ -56,9 +56,12 @@ public sealed class AtsReadabilityTests
 	/// <summary>
 	/// The Projects section is rendered by every themed template (fixed in 0.2.13), but a
 	/// known set of legacy <c>*PdfTemplate.cs</c> templates omit it. Rewriting legacy
-	/// templates is an explicit non-goal of prompt 049, so this test pins the exact gap:
-	/// it fails loudly if a NEW or themed template regresses, while documenting the legacy
-	/// shortfall rather than hiding it.
+	/// templates is an explicit non-goal of prompt 049, so this test guards the gap: no
+	/// template OUTSIDE the known legacy set may drop projects (a new/themed regression
+	/// fails loudly). It asserts a subset rather than exact-set equality because PdfPig's
+	/// per-template text extraction differs across platforms for borderline templates — a
+	/// legacy template that happens to extract its project name on one runner only shrinks
+	/// the detected set, which must stay within the documented legacy gap.
 	/// </summary>
 	[Fact]
 	public void Projects_RenderedByAllTemplates_ExceptKnownLegacyGap()
@@ -80,7 +83,10 @@ public sealed class AtsReadabilityTests
 			.Where(id => !RenderText(id).Compact.Contains("ReVitae", StringComparison.Ordinal))
 			.ToHashSet();
 
-		Assert.Equal(knownLegacyGap, missingProjects);
+		var unexpected = missingProjects.Except(knownLegacyGap).ToArray();
+		Assert.True(
+			unexpected.Length == 0,
+			$"Template(s) outside the known legacy gap dropped the Projects section: {string.Join(", ", unexpected)}");
 	}
 
 	[Theory]
