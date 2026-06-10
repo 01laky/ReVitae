@@ -7,6 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Changed
+
+- **Refactor foundation (047):** enforced a **warning-free build** via
+  `TreatWarningsAsErrors` (and cleared the residual nullable warnings); added a **golden
+  render oracle** (`CvTemplateRenderSignature` with `CvTemplateRenderGoldenTests`) that pins
+  every template's deterministic layout signature so future rendering refactors are provably
+  behaviour-preserving; added `docs/architecture.md` module map. Test total **2085**.
+
 ### Fixed
 
 - **Template sidebar bands now span the full page height on every page.** Previously a

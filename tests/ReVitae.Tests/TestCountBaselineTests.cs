@@ -8,7 +8,7 @@ public sealed class TestCountBaselineTests
 	/// Documented minimum test count for the drift guard (raised in prompt 045).
 	/// Update when adding suites; must stay in sync with README badge.
 	/// </summary>
-	public const int MinimumTestCount = 2081;
+	public const int MinimumTestCount = 2085;
 
 	[Fact]
 	public void MinimumTestCount_MeetsPrompt044Baseline()
