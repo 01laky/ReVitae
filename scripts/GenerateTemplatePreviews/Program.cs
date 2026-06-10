@@ -9,6 +9,28 @@ using SixLabors.ImageSharp;
 // Usage: dotnet run --project scripts/GenerateTemplatePreviews [outputDir] [templateFilter]
 
 var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
+
+// --signatures [outFile]: print/write the deterministic layout signature per template (047 QG1).
+if (args.Length > 0 && args[0] == "--signatures")
+{
+	var lines = CvTemplateRenderSignature.ComputeAll()
+		.Select(s => $"{s.TemplateId}={s.Signature}")
+		.ToList();
+	if (args.Length > 1)
+	{
+		File.WriteAllLines(args[1], lines);
+		Console.WriteLine($"Wrote {lines.Count} signatures to {args[1]}");
+	}
+	else
+	{
+		foreach (var line in lines)
+		{
+			Console.WriteLine(line);
+		}
+	}
+
+	return;
+}
 var outputDir = args.Length > 0 ? args[0] : Path.Combine(repoRoot, "template-previews");
 var filter = args.Length > 1 ? args[1] : null;
 Directory.CreateDirectory(outputDir);

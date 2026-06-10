@@ -213,13 +213,13 @@ public sealed class CvProjectSerializerTests : IDisposable
 				LinkedInUrl = document.LinkedInUrl,
 				PortfolioUrl = document.PortfolioUrl,
 				GitHubUrl = document.GitHubUrl,
-				ShortSummary = document.ShortSummary
+				ShortSummary = document.ShortSummary ?? string.Empty
 			},
 			document.WorkExperienceEntries.Select(entry => new WorkExperienceEntry
 			{
 				JobTitle = entry.JobTitle,
 				Company = entry.Company,
-				Description = entry.Description
+				Description = entry.Description ?? string.Empty
 			}),
 			document.EducationEntries.Select(entry => new EducationEntry
 			{

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -425,7 +426,7 @@ public static class JsonResumeMapper
 		};
 	}
 
-	private static bool TryGetString(JsonElement obj, string property, out string? value)
+	private static bool TryGetString(JsonElement obj, string property, [NotNullWhen(true)] out string? value)
 	{
 		value = null;
 		if (!obj.TryGetProperty(property, out var node))
