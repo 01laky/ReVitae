@@ -1,13 +1,16 @@
 using ReVitae.Core.Export;
+using ReVitae.Tests.Import;
 
 namespace ReVitae.Tests.Export;
 
 /// <summary>
-/// 047 QG1 — golden layout-signature guard. Every template's deterministic render signature
-/// (text + rounded word positions, see <see cref="CvTemplateRenderSignature"/>) must match the
-/// committed golden. A behaviour-preserving refactor keeps every signature unchanged; an
-/// intentional layout change updates the golden file in the same reviewed commit.
+/// 047 QG1 — golden content-signature guard. Every template's deterministic render signature
+/// (raw text content, position-free for cross-platform stability — see
+/// <see cref="CvTemplateRenderSignature"/>) must match the committed golden. A behaviour-preserving
+/// refactor keeps every signature unchanged; an intentional content change updates the golden file
+/// in the same reviewed commit.
 /// </summary>
+[Collection(nameof(ImportPdfSerialCollection))]
 public sealed class CvTemplateRenderGoldenTests
 {
 	private const string GoldenRelativePath = "tests/ReVitae.Tests/Export/Goldens/template-render-signatures.txt";
