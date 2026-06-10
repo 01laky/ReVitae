@@ -25,6 +25,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   copies across the section views with a single generic, unit-tested
   `SectionEntryReorder` helper (`MoveToIndex<T>` + `FindIndexById<T>`; 19 edge-case tests), replacing six + four byte-identical copies. Test total **2104**.
 
+- **Refactor (047 T5 — orphan-key audit):** added `TranslationKeyOrphanAuditTests` that
+  flags `TranslationKeys` constants unreferenced by production source. The current 45
+  unreferenced keys (month/year field labels, reserved AI labels, legacy strings) are an
+  explicit allow-list; the test fails on any **new** orphan so dead strings cannot accumulate.
+  Removal of the existing ones is deferred (some are reserved for imminent UI use).
 - **Refactor (047 T4 + QG5):** extracted the preview content hash into a tested
   `CvExportDocumentHash.Compute` (Core) used by the preview cache; added `.editorconfig`
   code-quality guardrails (unused using/member, static-able member, readonly, brace style)
