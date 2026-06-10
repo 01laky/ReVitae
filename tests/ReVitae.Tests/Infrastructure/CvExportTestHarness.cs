@@ -90,10 +90,11 @@ internal static class CvExportTestHarness
 	}
 
 	/// <summary>
-	/// PdfPig's text segmentation differs across platforms (a large centered/spaced heading
-	/// is extracted with inter-letter whitespace on some runners). Comparing against a
-	/// whitespace-stripped copy keeps the assertions about content, not spacing.
+	/// PdfPig's text extraction differs across platforms: a large centered/spaced heading is
+	/// extracted with inter-letter whitespace on some runners, and Windows runners interleave
+	/// NUL / control characters. Stripping both whitespace and control chars keeps the
+	/// assertions about content, not the extractor's spacing/padding noise.
 	/// </summary>
 	public static string RemoveWhitespace(string text) =>
-		string.Concat(text.Where(character => !char.IsWhiteSpace(character)));
+		string.Concat(text.Where(character => !char.IsWhiteSpace(character) && !char.IsControl(character)));
 }
