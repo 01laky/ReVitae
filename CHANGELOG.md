@@ -21,6 +21,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - **Refactor (047 T8):** centralized the reused neutral PDF colours (`White`, `Black`,
   `MutedOnDark`, `AvatarNeutral`) into `CvPdfPalette`, replacing inlined hex literals across
   10 template files. Same hex values → **pixel-identical** render (verified via PNG hash).
+- **Refactor (047 T2 — drag-reorder):** replaced six byte-identical `MoveEntryToIndex`
+  copies across the section views with a single generic, unit-tested
+  `SectionEntryReorder.MoveToIndex<T>` helper (13 edge-case tests). Test total **2098**.
 
 ### Fixed
 
