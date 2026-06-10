@@ -11,5 +11,21 @@ public enum CvThemedTemplateLayoutKind
 	TimelineRight,
 	PhotoLeftAccent,
 	FullSidebarDark,
-	AccentBarLeft
+	AccentBarLeft,
+
+	// Prompt 048 — new structural archetypes.
+	MonogramHeaderTwoColumn,
+	BannerContactStrip,
+	AsymmetricCornerBars,
+	SkillChipSidebar,
+	CardSectionsBody,
+	DualToneFullSplit,
+	ModernistHeaderRule,
+	CenteredMonogram,
+	RibbonHeaderCentered,
+	HeaderTwoEqualColumns,
+	AccentFooterBar,
+	BoxedHeaderSidebar,
+	DuoBandHeader,
+	InitialsSidebarDark
 }

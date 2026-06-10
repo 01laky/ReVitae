@@ -7,11 +7,11 @@ namespace ReVitae.Tests.Export;
 public sealed class CvExportTemplateCatalogTests
 {
 	[Fact]
-	public void All_ContainsFiftySixTemplates()
+	public void All_ContainsEveryTemplate()
 	{
-		Assert.Equal(56, CvExportTemplateCatalog.All.Count);
+		Assert.Equal(106, CvExportTemplateCatalog.All.Count);
 		Assert.Equal(Enum.GetValues<CvExportTemplateId>().Length, CvExportTemplateCatalog.All.Count);
-		Assert.Equal(40, CvThemedTemplateRegistry.All.Count);
+		Assert.Equal(90, CvThemedTemplateRegistry.All.Count);
 	}
 
 	[Fact]

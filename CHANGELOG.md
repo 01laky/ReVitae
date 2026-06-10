@@ -7,6 +7,21 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- **50 new unique CV templates (v0.2.13, prompt 048)** — the export catalogue grows from
+  **56 to 106 templates**. Uniqueness comes from **14 new structural layout archetypes**
+  (`CvThemedTemplateLayoutKind`), not recolours: monogram-header two-column, full-width name
+  banner with contact strip, asymmetric corner bars, skill-chip sidebar, modular section cards,
+  full-height dual-tone split, modernist header rule, centered monogram, centered ribbon header,
+  header + two equal columns, accent footer bar, boxed-header sidebar, two-tone duo-band header,
+  and a dark initials sidebar. Each archetype renders over the existing section helpers (so
+  content stays complete and paginates) and is paired with distinct modern palettes (navy, slate,
+  teal, burgundy, indigo, and more). The new sidebar archetypes also **de-duplicate** the
+  skills/languages/certificates that older themed layouts repeat between sidebar and main column.
+  Rendering stays cross-platform-deterministic via the bundled Arimo font; all 106 golden
+  signatures regenerated. Test total **2252**.
+
 ### Changed
 
 - **Refactor foundation (047):** enforced a **warning-free build** via

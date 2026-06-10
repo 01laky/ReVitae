@@ -50,6 +50,20 @@ internal static class CvExportTemplateThumbnailFactory
 			CvThemedTemplateLayoutKind.PhotoLeftAccent => PhotoHeader(theme.AccentColor, theme.SidebarColor),
 			CvThemedTemplateLayoutKind.FullSidebarDark => DarkFullSidebar(theme.SidebarColor),
 			CvThemedTemplateLayoutKind.AccentBarLeft => OrangeTimeline(theme.AccentColor),
+			CvThemedTemplateLayoutKind.MonogramHeaderTwoColumn => ModernSidebar(),
+			CvThemedTemplateLayoutKind.BannerContactStrip => TopBand(theme.HeaderColor),
+			CvThemedTemplateLayoutKind.AsymmetricCornerBars => CornerBars(theme.AccentColor),
+			CvThemedTemplateLayoutKind.SkillChipSidebar => TwoColumn(theme.SidebarColor, "#FFFFFF", 36, 64),
+			CvThemedTemplateLayoutKind.CardSectionsBody => StackedBands(theme.SidebarColor, theme.AccentColor),
+			CvThemedTemplateLayoutKind.DualToneFullSplit => TwoColumn(theme.SidebarColor, "#FFFFFF", 38, 62),
+			CvThemedTemplateLayoutKind.ModernistHeaderRule => StackedBands("#FFFFFF", theme.AccentColor),
+			CvThemedTemplateLayoutKind.CenteredMonogram => StackedBands(theme.SidebarColor, theme.AccentColor),
+			CvThemedTemplateLayoutKind.RibbonHeaderCentered => StackedBands("#FFFFFF", theme.AccentColor),
+			CvThemedTemplateLayoutKind.HeaderTwoEqualColumns => HeaderTwoColumns(theme.HeaderColor),
+			CvThemedTemplateLayoutKind.AccentFooterBar => FooterBar(theme.AccentColor),
+			CvThemedTemplateLayoutKind.BoxedHeaderSidebar => TwoColumn("#FFFFFF", theme.SidebarColor, 64, 36),
+			CvThemedTemplateLayoutKind.DuoBandHeader => DuoBand(theme.HeaderColor, theme.AccentColor),
+			CvThemedTemplateLayoutKind.InitialsSidebarDark => DarkFullSidebar(theme.SidebarColor),
 			_ => TwoColumn(theme.SidebarColor, "#FFFFFF", 34, 66)
 		};
 	}
@@ -252,6 +266,60 @@ internal static class CvExportTemplateThumbnailFactory
 		var bottom = new Border { Background = Brushes.White };
 		Grid.SetRow(bottom, 1);
 		grid.Children.Add(bottom);
+		return grid;
+	}
+
+	private static Grid CornerBars(string accent)
+	{
+		var grid = new Grid { RowDefinitions = new RowDefinitions("10*,80*,10*") };
+		var top = new Border { Background = Brush.Parse(accent), HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right, Width = 36 };
+		grid.Children.Add(top);
+		var body = new Border { Background = Brushes.White };
+		Grid.SetRow(body, 1);
+		grid.Children.Add(body);
+		var bottom = new Border { Background = Brush.Parse(accent), HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left, Width = 36 };
+		Grid.SetRow(bottom, 2);
+		grid.Children.Add(bottom);
+		return grid;
+	}
+
+	private static Grid HeaderTwoColumns(string header)
+	{
+		var grid = new Grid { RowDefinitions = new RowDefinitions("32*,68*") };
+		grid.Children.Add(new Border { Background = Brush.Parse(header) });
+		var body = new Grid { ColumnDefinitions = new ColumnDefinitions("50*,50*") };
+		Grid.SetRow(body, 1);
+		body.Children.Add(new Border { Background = Brushes.White });
+		var right = new Border { Background = Brush.Parse("#F2F2F2") };
+		Grid.SetColumn(right, 1);
+		body.Children.Add(right);
+		grid.Children.Add(body);
+		return grid;
+	}
+
+	private static Grid FooterBar(string accent)
+	{
+		var grid = new Grid { RowDefinitions = new RowDefinitions("6*,86*,8*") };
+		grid.Children.Add(new Border { Background = Brush.Parse(accent) });
+		var body = new Border { Background = Brushes.White };
+		Grid.SetRow(body, 1);
+		grid.Children.Add(body);
+		var footer = new Border { Background = Brush.Parse(accent) };
+		Grid.SetRow(footer, 2);
+		grid.Children.Add(footer);
+		return grid;
+	}
+
+	private static Grid DuoBand(string header, string accent)
+	{
+		var grid = new Grid { RowDefinitions = new RowDefinitions("22*,12*,66*") };
+		grid.Children.Add(new Border { Background = Brush.Parse(header) });
+		var second = new Border { Background = Brush.Parse(accent) };
+		Grid.SetRow(second, 1);
+		grid.Children.Add(second);
+		var body = new Border { Background = Brushes.White };
+		Grid.SetRow(body, 2);
+		grid.Children.Add(body);
 		return grid;
 	}
 

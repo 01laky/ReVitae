@@ -1,10 +1,10 @@
 # ReVitae
 
-[![App](https://img.shields.io/badge/app-0.2.12-blue)](https://github.com/01laky/ReVitae/releases)
+[![App](https://img.shields.io/badge/app-0.2.13-blue)](https://github.com/01laky/ReVitae/releases)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-2152%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-2252%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 [![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
@@ -60,7 +60,7 @@ flowchart TD
 Most CV tools trap you in one layout. Change the design and you often lose control
 over the text. ReVitae treats **content and presentation as separate**:
 
-- **Write once, restyle anytime** — switch among 56 templates without retyping.
+- **Write once, restyle anytime** — switch among 106 templates without retyping.
 - **Import, then edit** — uploaded files become structured drafts you can fix, not frozen PDFs.
 - **Stay local** — core editing and import run on your computer; you choose if and when AI is used.
 - **Honest imports** — scanned PDFs and photos work via OCR, with a clear review step afterward.
@@ -218,7 +218,7 @@ Produces `John Doe (minimal architect).pdf` and `.txt` at the repo root.
 
 ### Templates and export
 
-Pick a look, keep your words. **56 built-in templates** — sidebar, minimal, executive,
+Pick a look, keep your words. **106 built-in templates** — sidebar, minimal, executive,
 photo-forward, and more — all driven by the same structured content. Switch anytime
 from the **Templates** toolbar icon; expand the preview for a full-size check. The live
 preview **renders the actual export PDF**, so what you see is exactly what you get.
@@ -240,7 +240,7 @@ Centered Minimal, Photo Left Band, Executive Blue Sidebar, Peach Designer, Navy 
 Forest Green Sidebar, Yellow Skill Dots, Royal Blue Sidebar, Orange Timeline, Blue Accent Summary,
 Pill Header Split, Navy Overlap Photo.
 
-![Template picker — 56 built-in QuestPDF layouts](docs/img/template-picker-modal.png)
+![Template picker — 106 built-in QuestPDF layouts](docs/img/template-picker-modal.png)
 
 ![Expanded preview — full-size CV modal](docs/img/expanded-preview-modal.png)
 
@@ -303,7 +303,7 @@ To cut a release:
 
 - Code-refactor pass — unified template rendering (preview rasterizes the export PDF),
   god-file split, shared section/PDF helpers, golden render oracle, bundled Arimo font for
-  cross-platform-deterministic PDF export, warning-free build, **2152** tests —
+  cross-platform-deterministic PDF export, warning-free build, **2252** tests —
   [`docs/architecture.md`](docs/architecture.md)
 - AI section advice & proactive import assist (v0.2.12) — per-section advisor,
   broadened hint coverage, targeted import field repair, entity guard, target-role
@@ -393,7 +393,7 @@ match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` o
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **2152+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **2252+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash
