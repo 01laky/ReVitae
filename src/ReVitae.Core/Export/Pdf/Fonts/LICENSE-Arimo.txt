@@ -1,0 +1,22 @@
+Arimo font (bundled with ReVitae for deterministic cross-platform PDF export)
+=============================================================================
+
+Family:   Arimo (Regular, Bold, Italic, Bold Italic)
+Source:   Croscore fonts (Chrome OS core fonts) — metric-compatible with Arial.
+Copyright: Digitized data copyright (c) 2010-2012 Google Corporation.
+License:  Apache License, Version 2.0
+
+These font files are redistributed unmodified under the Apache License, Version
+2.0. You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+Why bundled: ReVitae renders CV PDFs with QuestPDF. Referencing a host-installed
+"Arial" made rendering depend on the machine's fonts, so the same CV exported
+differently on Windows/macOS/Linux. Embedding Arimo (which shares Arial's
+metrics) makes export byte-identical on every platform.

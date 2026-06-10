@@ -10,6 +10,15 @@
 		<InternalsVisibleTo Include="ReVitae.Tests" />
 	</ItemGroup>
 
+	<!-- Bundled Arimo (Apache-2.0, metric-compatible with Arial) embedded so PDF export renders
+	     identically on every platform instead of depending on a host-installed "Arial". -->
+	<ItemGroup>
+		<EmbeddedResource Include="Export/Pdf/Fonts/Arimo-Regular.ttf" />
+		<EmbeddedResource Include="Export/Pdf/Fonts/Arimo-Bold.ttf" />
+		<EmbeddedResource Include="Export/Pdf/Fonts/Arimo-Italic.ttf" />
+		<EmbeddedResource Include="Export/Pdf/Fonts/Arimo-BoldItalic.ttf" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />

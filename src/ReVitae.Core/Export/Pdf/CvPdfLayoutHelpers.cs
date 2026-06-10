@@ -13,8 +13,9 @@ public static class CvPdfLayoutHelpers
 		page.Size(PageSizes.A4);
 		page.Margin(26);
 		page.PageColor(backgroundColor);
+		CvPdfFonts.EnsureRegistered();
 		page.DefaultTextStyle(style => style
-			.FontFamily("Arial")
+			.FontFamily(CvPdfFonts.FamilyName)
 			.FontSize(BaseFontSize)
 			.LineHeight(1.25f));
 	}

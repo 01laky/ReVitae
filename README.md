@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-2147%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-2152%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 [![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
@@ -302,8 +302,9 @@ To cut a release:
 **Recently shipped** ([`CHANGELOG.md`](CHANGELOG.md)):
 
 - Code-refactor pass — unified template rendering (preview rasterizes the export PDF),
-  god-file split, shared section/PDF helpers, golden render oracle, warning-free build,
-  **2147** tests — [`docs/architecture.md`](docs/architecture.md)
+  god-file split, shared section/PDF helpers, golden render oracle, bundled Arimo font for
+  cross-platform-deterministic PDF export, warning-free build, **2152** tests —
+  [`docs/architecture.md`](docs/architecture.md)
 - AI section advice & proactive import assist (v0.2.12) — per-section advisor,
   broadened hint coverage, targeted import field repair, entity guard, target-role
   context, **2081** tests (+226) — [`docs/ai-setup.md`](docs/ai-setup.md), [`docs/ai-import.md`](docs/ai-import.md)
@@ -392,7 +393,7 @@ match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` o
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **2147+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **2152+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash

@@ -8,6 +8,10 @@ public sealed class QuestPdfCvExporter : ICvPdfExporter
 	static QuestPdfCvExporter()
 	{
 		QuestPDF.Settings.License = LicenseType.Community;
+		// Missing glyphs (non-Latin user content) fall back rather than throw, preserving the
+		// pre-bundling behaviour for arbitrary text while Latin renders deterministically.
+		QuestPDF.Settings.CheckIfAllTextGlyphsAreAvailable = false;
+		CvPdfFonts.EnsureRegistered();
 	}
 
 	public byte[] Export(CvExportDocument document)

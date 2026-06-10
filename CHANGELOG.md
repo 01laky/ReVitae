@@ -54,6 +54,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- **Cross-platform PDF determinism (Linux CI):** PDF templates referenced the system font
+  family `"Arial"`, which the Linux CI runner has no copy of — SkiaSharp substituted a
+  different face, shifting text metrics, wrapping and pagination. The same CV therefore
+  exported differently per platform, which broke the 047 render golden (all 56 signatures)
+  and the PDF re-import round-trip (the import parser could no longer locate dates in the
+  reflowed `ClassicSidebar` layout). Bundled **Arimo** (Apache-2.0, metric-compatible with
+  Arial) as an embedded resource, registered it with QuestPDF (`CvPdfFonts`), and forced
+  every template onto it — export is now byte-deterministic across Windows/macOS/Linux.
+  Made the render signature position-free (raw text content) so it is robust to any residual
+  platform metric noise. Test total **2152**.
 - **Template sidebar bands now span the full page height on every page.** Previously a
   coloured sidebar paired with longer main content left a blank gap below the band on
   continuation pages. Added `CvPdfLayoutHelpers.ComposeFullHeightSidebarPage` (paints the
