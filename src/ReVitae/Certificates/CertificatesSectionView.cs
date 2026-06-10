@@ -359,27 +359,11 @@ public sealed class CertificatesSectionView : UserControl, IValidationNavigableS
 
 	private void MoveEntryToIndex(string? sourceEntryId, int targetIndex)
 	{
-		if (string.IsNullOrWhiteSpace(sourceEntryId))
+		if (SectionEntryReorder.MoveToIndex(_entries, entry => entry.Id, sourceEntryId, targetIndex))
 		{
-			return;
+			RebuildEntryCards();
+			NotifyEntriesChanged();
 		}
-
-		var sourceIndex = _entries.FindIndex(entry => entry.Id == sourceEntryId);
-		if (sourceIndex < 0 || sourceIndex == targetIndex)
-		{
-			return;
-		}
-
-		var entry = _entries[sourceIndex];
-		_entries.RemoveAt(sourceIndex);
-		if (targetIndex > sourceIndex)
-		{
-			targetIndex--;
-		}
-
-		_entries.Insert(Math.Clamp(targetIndex, 0, _entries.Count), entry);
-		RebuildEntryCards();
-		NotifyEntriesChanged();
 	}
 
 	private int? FindDropIndex(Point position)
@@ -396,18 +380,8 @@ public sealed class CertificatesSectionView : UserControl, IValidationNavigableS
 		return null;
 	}
 
-	private int? FindEntryIndexById(string entryId)
-	{
-		for (var index = 0; index < _entries.Count; index++)
-		{
-			if (_entries[index].Id == entryId)
-			{
-				return index;
-			}
-		}
-
-		return null;
-	}
+	private int? FindEntryIndexById(string entryId) =>
+		SectionEntryReorder.FindIndexById(_entries, entry => entry.Id, entryId);
 
 	private static Rect GetBoundsRelativeTo(Visual visual, Visual relativeTo)
 	{

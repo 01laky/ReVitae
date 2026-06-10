@@ -1,6 +1,11 @@
 <Project>
 	<Import Project="$(MSBuildThisFileDirectory)Version.props" Condition="Exists('$(MSBuildThisFileDirectory)Version.props')" />
 
+	<!-- 047 QG2: keep the build warning-free; any new warning fails the build. -->
+	<PropertyGroup>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
 	<ItemGroup Condition="'$(AuthorEmail)' != ''">
 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
 			<_Parameter1>AuthorEmail</_Parameter1>

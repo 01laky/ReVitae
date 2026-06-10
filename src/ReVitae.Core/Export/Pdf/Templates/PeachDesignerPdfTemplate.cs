@@ -9,38 +9,34 @@ internal static class PeachDesignerPdfTemplate
 
 	public static byte[] Render(CvExportDocument document)
 	{
-		return CvPdfRenderHelper.Generate(document, container =>
+		return CvPdfRenderHelper.RenderPage(document, page =>
 		{
-			container.Page(page =>
+			page.Content().Column(root =>
 			{
-				CvPdfLayoutHelpers.ConfigureA4Page(page);
-				page.Content().Column(root =>
+				root.Spacing(10);
+				root.Item().Row(header =>
 				{
-					root.Spacing(10);
-					root.Item().Row(header =>
+					header.ConstantItem(72).Element(c =>
+						CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Peach, CvPdfPalette.White, circular: true));
+					header.RelativeItem().Background(Peach).CornerRadius(16).Padding(14).Column(contact =>
 					{
-						header.ConstantItem(72).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Peach, "#FFFFFF", circular: true));
-						header.RelativeItem().Background(Peach).CornerRadius(16).Padding(14).Column(contact =>
-						{
-							contact.Item().Text(document.FullName.ToUpperInvariant()).FontSize(22).Bold();
-							CvPdfExtendedHelpers.ComposeContactLine(contact.Item(), document);
-						});
+						contact.Item().Text(document.FullName.ToUpperInvariant()).FontSize(22).Bold();
+						CvPdfExtendedHelpers.ComposeContactLine(contact.Item(), document);
 					});
-					root.Item().Row(body =>
+				});
+				root.Item().Row(body =>
+				{
+					body.RelativeItem(34).Background("#E5E5E5").CornerRadius(16).Padding(12).Column(sidebar =>
 					{
-						body.RelativeItem(34).Background("#E5E5E5").CornerRadius(16).Padding(12).Column(sidebar =>
-						{
-							CvPdfLayoutHelpers.ComposeSection(sidebar, document.Labels.Summary,
-								CvExportPreviewContentBuilder.BuildSummary(document));
-							CvPdfLayoutHelpers.ComposeSection(sidebar, document.Labels.PreviewSkills,
-								CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document));
-						});
-						body.RelativeItem(66).PaddingLeft(10).Column(main =>
-						{
-							CvPdfSectionContent.ComposeWorkExperienceOnly(main, document);
-							CvPdfSectionContent.ComposeEducationPublic(main, document);
-						});
+						CvPdfLayoutHelpers.ComposeSection(sidebar, document.Labels.Summary,
+							CvExportPreviewContentBuilder.BuildSummary(document));
+						CvPdfLayoutHelpers.ComposeSection(sidebar, document.Labels.PreviewSkills,
+							CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document));
+					});
+					body.RelativeItem(66).PaddingLeft(10).Column(main =>
+					{
+						CvPdfSectionContent.ComposeWorkExperienceOnly(main, document);
+						CvPdfSectionContent.ComposeEducationPublic(main, document);
 					});
 				});
 			});

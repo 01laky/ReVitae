@@ -81,34 +81,6 @@ public partial class MainWindow
 			.ToArray();
 	}
 
-	private Control BuildTemplatePreview()
-	{
-		var document = BuildExportDocument();
-
-		return _selectedTemplate switch
-		{
-			CvExportTemplateId.ClassicSidebar => BuildClassicSidebarTemplate(document),
-			CvExportTemplateId.ModernSidebar => BuildModernSidebarTemplate(document),
-			CvExportTemplateId.CleanTopHeader => BuildCleanTopHeaderTemplate(document),
-			CvExportTemplateId.DarkSidebarAccent => BuildDarkSidebarAccentTemplate(document),
-			CvExportTemplateId.CenteredMinimal => BuildCenteredMinimalTemplate(document),
-			CvExportTemplateId.PhotoLeftBand => BuildPhotoLeftBandTemplate(document),
-			CvExportTemplateId.ExecutiveBlueSidebar => BuildExecutiveBlueSidebarTemplate(document),
-			CvExportTemplateId.PeachDesigner => BuildPeachDesignerTemplate(document),
-			CvExportTemplateId.NavyProfileSplit => BuildNavyProfileSplitTemplate(document),
-			CvExportTemplateId.ForestGreenSidebar => BuildForestGreenSidebarTemplate(document),
-			CvExportTemplateId.YellowSkillDots => BuildYellowSkillDotsTemplate(document),
-			CvExportTemplateId.RoyalBlueSidebar => BuildRoyalBlueSidebarTemplate(document),
-			CvExportTemplateId.OrangeTimeline => BuildOrangeTimelineTemplate(document),
-			CvExportTemplateId.BlueAccentSummary => BuildBlueAccentSummaryTemplate(document),
-			CvExportTemplateId.PillHeaderSplit => BuildPillHeaderSplitTemplate(document),
-			CvExportTemplateId.NavyOverlapPhoto => BuildNavyOverlapPhotoTemplate(document),
-			_ when CvThemedTemplateRegistry.TryGet(_selectedTemplate, out var theme) =>
-				BuildThemedTemplate(document, theme),
-			_ => throw new ArgumentOutOfRangeException(nameof(_selectedTemplate))
-		};
-	}
-
 	private CvExportDocument BuildExportDocument()
 	{
 		return new CvExportDocument(

@@ -7,6 +7,51 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Changed
+
+- **Refactor foundation (047):** enforced a **warning-free build** via
+  `TreatWarningsAsErrors` (and cleared the residual nullable warnings); added a **golden
+  render oracle** (`CvTemplateRenderSignature` with `CvTemplateRenderGoldenTests`) that pins
+  every template's deterministic layout signature so future rendering refactors are provably
+  behaviour-preserving; added `docs/architecture.md` module map.
+- **Refactor (047 T3):** split the 2 477-line `ImportFieldExtractionCore` helpers god file
+  into five focused partial files (`ImportExtractionHelpers.{,.Education,.Merging,.WorkAndSkills,.Names}.cs`),
+  each ≤ ~620 LOC, behaviour-preserving (no call-site changes; guarded by the import matrix +
+  golden oracle). Test total **2085**.
+- **Refactor (047 T8):** centralized the reused neutral PDF colours (`White`, `Black`,
+  `MutedOnDark`, `AvatarNeutral`) into `CvPdfPalette`, replacing inlined hex literals across
+  10 template files. Same hex values → **pixel-identical** render (verified via PNG hash).
+- **Refactor (047 T2 — drag-reorder):** replaced six byte-identical `MoveEntryToIndex`
+  copies across the section views with a single generic, unit-tested
+  `SectionEntryReorder` helper (`MoveToIndex<T>` + `FindIndexById<T>`; 19 edge-case tests), replacing six + four byte-identical copies. Test total **2104**.
+
+- **Refactor (047) — extended edge-case tests:** added an extensive edge-case layer for every
+  047 component — `SectionEntryReorder` (duplicate ids, large lists, clamping, two-way swap,
+  case sensitivity), `CvExportDocumentHash` (whitespace/photo/reorder/summary/template
+  sensitivity, stability), `CvTemplateRenderSignature` (hex shape, PDF-bytes determinism,
+  content sensitivity, full-set coverage), and `CvTemplatePreviewImage` (all 56 templates
+  render valid PNGs, High-vs-Standard scale, A4 dimensions, page-count parity). Test total **2147**.
+- **Refactor (047 T5 — orphan-key audit):** added `TranslationKeyOrphanAuditTests` that
+  flags `TranslationKeys` constants unreferenced by production source. The current 45
+  unreferenced keys (month/year field labels, reserved AI labels, legacy strings) are an
+  explicit allow-list; the test fails on any **new** orphan so dead strings cannot accumulate.
+  Removal of the existing ones is deferred (some are reserved for imminent UI use).
+- **Refactor (047 T4 + QG5):** extracted the preview content hash into a tested
+  `CvExportDocumentHash.Compute` (Core) used by the preview cache; added `.editorconfig`
+  code-quality guardrails (unused using/member, static-able member, readonly, brace style)
+  so the smells this refactor removed do not silently return.
+- **Refactor (047 T1 — unified template rendering):** the live preview now rasterizes the
+  **actual export PDF** (`CvTemplatePreviewImage` → QuestPDF → Docnet raster → per-page PNG)
+  instead of a parallel Avalonia re-implementation of every template. Preview is now
+  **guaranteed to match the export**, updates are debounced (~220 ms) and run off the UI thread,
+  cached by document content hash, and serialized for pdfium safety. Removed the ~1 745-line
+  `MainWindow.TemplatePreviews.*` Avalonia layout duplication. **Needs interactive QA** of
+  preview responsiveness/appearance.
+- **Refactor (047 T6 — template scaffold):** added `CvPdfRenderHelper.RenderPage` (the shared
+  `Generate → Page → ConfigureA4Page` scaffold) and routed all 16 base templates plus the
+  themed renderer through it, removing the repeated boilerplate. Pixel-identical render
+  (verified via PNG hash, incl. non-white backgrounds) and golden oracle unchanged.
+
 ### Fixed
 
 - **Template sidebar bands now span the full page height on every page.** Previously a
