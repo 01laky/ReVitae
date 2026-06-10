@@ -102,12 +102,12 @@ Basic workflow:
 4. The user adjusts content or changes the template.
 5. The user exports the final CV to PDF.
 
-Future export formats may include:
+Beyond PDF, the app now also exports DOCX, ODT, RTF, TXT, Markdown, HTML, LaTeX,
+structured JSON / YAML / XML / CSV / TSV, and page images (PNG / JPEG / WebP) — 16
+formats in total (see [`docs/export-formats.md`](export-formats.md)).
 
-- HTML,
-- DOCX,
-- structured JSON,
-- multiple language versions of the same CV.
+Still open: multiple language versions of the same CV (CV **content** localization,
+distinct from the already-supported multi-language UI — see [Open Questions](#open-questions)).
 
 ## Current Implementation Status
 
@@ -281,13 +281,24 @@ The user must stay in control. AI suggestions should be presented as recommendat
 
 ## Open Questions
 
-- Which local AI models should be supported first?
-- Should the first AI version support multiple model sizes based on hardware?
-- Which online AI providers should be supported?
-- Should users be able to add custom HTML templates?
-- Should PDF export use an internal renderer or an HTML-to-PDF engine?
-- Should the application store each CV as a local project?
+Still open:
+
+- Should users be able to add custom HTML templates of their own?
 - Should CV version history be supported?
-- ~~Should the first version support one language or multiple languages?~~
-  Multiple UI languages are already supported; CV content localization remains
-  an open question.
+- Should the same CV support multiple **content** language versions (CV content
+  localization, beyond the already-supported multi-language UI)?
+
+Resolved:
+
+- ~~Which local AI models should be supported first?~~ A curated catalog of 11
+  Ollama instruct models with RAM-aware recommendations and disk-space checks.
+- ~~Should the first AI version support multiple model sizes based on hardware?~~
+  Yes — `SystemProfileDetector` drives the recommended model and the catalog spans sizes.
+- ~~Which online AI providers should be supported?~~ OpenAI, Anthropic, Gemini, Groq,
+  Azure OpenAI, Mistral, DeepSeek, OpenRouter, and a custom endpoint.
+- ~~Should PDF export use an internal renderer or an HTML-to-PDF engine?~~ An internal
+  renderer — QuestPDF, with the preview rasterizing the actual export PDF.
+- ~~Should the application store each CV as a local project?~~ Yes — native
+  `*.revitae.json` projects with Save / Save As / Open, recent projects, and autosave recovery.
+- ~~Should the first version support one language or multiple languages?~~ Multiple UI
+  languages are supported; CV content localization remains open (above).

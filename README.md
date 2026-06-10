@@ -235,10 +235,13 @@ After export: **Open file** or **Show in folder**. Full matrix:
 
 ![Export CV — choose PDF, documents, web formats, or page images](docs/img/export-cv-modal.png)
 
-**Template styles:** Classic Sidebar, Modern Sidebar, Clean Top Header, Dark Sidebar Accent,
-Centered Minimal, Photo Left Band, Executive Blue Sidebar, Peach Designer, Navy Profile Split,
-Forest Green Sidebar, Yellow Skill Dots, Royal Blue Sidebar, Orange Timeline, Blue Accent Summary,
-Pill Header Split, Navy Overlap Photo.
+**Layout archetypes** span single-column, sidebar, monogram headers, banner strips,
+asymmetric corner bars, skill chips, modular cards, dual-tone splits, modernist rules,
+centered, ribbon headers, two equal columns, accent footers, boxed headers, duo-band
+headers, and dark initials sidebars — each in several curated palettes for **106**
+templates in total. A few of the base styles: Classic Sidebar, Modern Sidebar, Clean
+Top Header, Dark Sidebar Accent, Centered Minimal, Photo Left Band, Executive Blue
+Sidebar, Navy Overlap Photo.
 
 ![Template picker — 106 built-in QuestPDF layouts](docs/img/template-picker-modal.png)
 
@@ -261,24 +264,24 @@ stay highlighted until you confirm them.
 
 ## Product status
 
-ReVitae is an **early-stage desktop app** (v0.2.12) under active development. The
-core loop works today: build or import a CV, preview with templates, validate,
-save locally, and export in many formats. First-launch AI wizard, local and online
-AI setup, resumable Ollama downloads, AI-assisted import, OCR for scans, and
-ReVitae PDF round-trip are in place. **AI now advises across more CV sections
-(proactive per-section tips) and assists imports more readily** — enhancing partial
-parses and surgically repairing low-confidence fields.
+ReVitae is an **early-stage desktop app** (v0.2.13) under active development. The
+core loop works today: build or import a CV, preview across **106 templates**,
+validate, save locally, and export in **16 formats**. First-launch AI wizard, local
+and online AI setup, resumable Ollama downloads, AI-assisted import, OCR for scans,
+and ReVitae PDF round-trip are all in place. AI advises across CV sections (proactive
+per-section tips) and assists imports — enhancing partial parses and surgically
+repairing low-confidence fields. Backed by **2395 automated tests**.
 
-**Coming next:** installers for macOS, Windows, and Linux, plus more templates beyond
-the current set. See [`CHANGELOG.md`](CHANGELOG.md) for recent releases.
+**Coming next:** native installers for macOS, Windows, and Linux. See
+[`CHANGELOG.md`](CHANGELOG.md) for recent releases.
 
 ### Versioning
 
 ReVitae uses three different version concepts:
 
-- **App version** (`0.2.12`): the ReVitae product release shown in the **About**
+- **App version** (`0.2.13`): the ReVitae product release shown in the **About**
   modal (toolbar icon), README app badge, `Version.props`, and Git tags such as
-  `v0.2.12`.
+  `v0.2.13`.
 - **Tech-stack badges**: framework/platform versions such as `.NET 10` and
   `Avalonia 12`.
 - **Dependency package versions**: NuGet package versions declared in `.csproj`
@@ -296,11 +299,20 @@ To cut a release:
 
 **Planned:**
 
-- Installers for macOS, Windows, and Linux
-- More QuestPDF templates
+- Native installers / packaged binaries for macOS, Windows, and Linux (the last
+  open item of Phase 1)
+
+**Exploring** (design-open — see [`docs/concept.md`](docs/concept.md#open-questions)):
+
+- User-supplied custom templates
+- CV version history
+- CV **content** localization (multiple language versions of the same CV)
 
 **Recently shipped** ([`CHANGELOG.md`](CHANGELOG.md)):
 
+- Template library expansion (v0.2.13) — **56 → 106 templates** across 14 new
+  structural layout archetypes, a content-completeness fix so every template renders
+  the full section set, and a Quality-subsystem edge-case test pass, **2395** tests
 - Code-refactor pass — unified template rendering (preview rasterizes the export PDF),
   god-file split, shared section/PDF helpers, golden render oracle, bundled Arimo font for
   cross-platform-deterministic PDF export, warning-free build, **2252** tests —
@@ -393,7 +405,7 @@ match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` o
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **2252+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **2395+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash
