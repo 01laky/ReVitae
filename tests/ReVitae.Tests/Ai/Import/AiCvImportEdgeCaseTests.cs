@@ -2,9 +2,14 @@ using System.Text.Json.Nodes;
 using ReVitae.Core.Ai.Import;
 using ReVitae.Core.Import;
 using ReVitae.Core.Localization;
+using ReVitae.Tests.Import;
 
 namespace ReVitae.Tests.Ai.Import;
 
+// Serialized: this class toggles the process-global REVITAE_IMPORT_DEBUG / _LOG environment
+// variables. Running it in parallel with other import tests cross-contaminates the shared debug
+// log (and vice versa). The serial collection (DisableParallelization) isolates the window.
+[Collection(nameof(ImportPdfSerialCollection))]
 public sealed class AiImportDiagnosticsLoggerTests
 {
 	[Fact]

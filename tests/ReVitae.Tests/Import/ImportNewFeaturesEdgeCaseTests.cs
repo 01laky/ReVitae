@@ -302,6 +302,11 @@ public sealed class PdfPigDeferredSidebarEdgeCaseTests
 	}
 }
 
+// Serialized: this test sets the process-global REVITAE_IMPORT_DEBUG / _LOG environment
+// variables, so any concurrent CvDocumentImporter.Import on another thread would write into the
+// shared debug log and corrupt the assertions. The serial collection (DisableParallelization)
+// guarantees no other import runs while these env vars are set.
+[Collection(nameof(ImportPdfSerialCollection))]
 public sealed class CvImportDiagnosticsLoggerEdgeCaseTests
 {
 	[Fact]

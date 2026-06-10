@@ -49,7 +49,10 @@ public sealed class QuestPdfCvExporterTests
 	}
 
 	private static string RemoveWhitespace(string text) =>
-		string.Concat(text.Where(character => !char.IsWhiteSpace(character)));
+		// Strip control characters as well as whitespace: Windows PdfPig runners interleave NUL
+		// into the extracted text layer for some templates, which would otherwise break the
+		// diacritic substring matches.
+		string.Concat(text.Where(character => !char.IsWhiteSpace(character) && !char.IsControl(character)));
 
 	[Fact]
 	public void Export_LongContentProducesMultiplePages()

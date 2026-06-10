@@ -5,11 +5,23 @@ All notable changes to ReVitae are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0]
 
 ### Added
 
-- **50 new unique CV templates (v0.2.13, prompt 048)** — the export catalogue grows from
+- **Test-coverage expansion (prompt 049)** — a zero-risk, test-only increment that grows the
+  automated suite from **2395 to 3037 tests (+642)** with no changes to `src/`, no new
+  dependencies, and no CI changes. New coverage: ATS-readability across all 106 templates
+  (extractable, ordered, control-char-clean PDF text layer), localized export in all 12 UI
+  languages, localization placeholder-arity parity, an encoding-detection matrix
+  (UTF-8/16, Windows-1250, ISO-8859-2, mojibake), output structural validity (DOCX OpenXML
+  schema, ODT/JSON/XML well-formedness), a round-trip diff harness proving the native JSON
+  round-trip is lossless, Unicode export torture, adversarial AI-parser fuzz, pseudo-localization,
+  security hardening (prompt-injection containment, XXE / billion-laughs rejection), AI provider
+  and Ollama network faults, project persistence + IO faults with concurrent-write atomicity, and
+  performance/allocation guards. Shared test infrastructure added (`CvExportTestHarness`,
+  `CvModelDiff`, `FakeHttpMessageHandler`). Test total **3037**.
+- **50 new unique CV templates (prompt 048)** — the export catalogue grows from
   **56 to 106 templates**. Uniqueness comes from **14 new structural layout archetypes**
   (`CvThemedTemplateLayoutKind`), not recolours: monogram-header two-column, full-width name
   banner with contact strip, asymmetric corner bars, skill-chip sidebar, modular section cards,
@@ -432,7 +444,7 @@ First formally versioned ReVitae release baseline.
 - Improved two-column PDF import parsing for contact details, education dates,
   sidebar skill bleed filtering, and work-experience technology detection.
 
-[Unreleased]: https://github.com/01laky/ReVitae/compare/v0.2.2...HEAD
+[0.3.0]: https://github.com/01laky/ReVitae/compare/v0.2.13...v0.3.0
 [0.2.2]: https://github.com/01laky/ReVitae/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/01laky/ReVitae/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/01laky/ReVitae/compare/v0.1.0...v0.2.0

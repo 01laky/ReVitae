@@ -28,11 +28,16 @@ public sealed class OllamaPullClientTests
             """);
 
 		var client = new OllamaPullClient(new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:11434/") });
-		var statuses = new List<OllamaPullProgress>();
+
+		// Synchronous IProgress, NOT Progress<T>: Progress<T> marshals its callback onto the
+		// thread pool when no SynchronizationContext is present, so reports can land after the
+		// await and mutate the list while the assertions enumerate it ("Collection was modified").
+		var progress = new SynchronousProgress<OllamaPullProgress>();
 		var result = await client.PullAsync(
 			"llama3.2:3b-instruct",
-			new Progress<OllamaPullProgress>(value => statuses.Add(value)),
+			progress,
 			CancellationToken.None);
+		var statuses = progress.Items;
 
 		Assert.Equal(OllamaPullOutcome.Succeeded, result.Outcome);
 		Assert.Contains(statuses, value =>
@@ -41,6 +46,13 @@ public sealed class OllamaPullClientTests
 			value.Total == 100);
 		Assert.Contains(statuses, value =>
 			string.Equals(value.Status, "success", StringComparison.Ordinal));
+	}
+
+	private sealed class SynchronousProgress<T> : IProgress<T>
+	{
+		public List<T> Items { get; } = [];
+
+		public void Report(T value) => Items.Add(value);
 	}
 
 	private sealed class FakeOllamaPullHandler(string body) : HttpMessageHandler
