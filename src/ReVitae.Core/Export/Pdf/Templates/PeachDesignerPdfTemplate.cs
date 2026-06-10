@@ -20,7 +20,7 @@ internal static class PeachDesignerPdfTemplate
 					root.Item().Row(header =>
 					{
 						header.ConstantItem(72).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Peach, "#FFFFFF", circular: true));
+							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Peach, CvPdfPalette.White, circular: true));
 						header.RelativeItem().Background(Peach).CornerRadius(16).Padding(14).Column(contact =>
 						{
 							contact.Item().Text(document.FullName.ToUpperInvariant()).FontSize(22).Bold();

@@ -18,14 +18,14 @@ internal static class PhotoLeftBandPdfTemplate
 					root.Item().Row(header =>
 					{
 						header.ConstantItem(96).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 88, "#E67E22", "#FFFFFF"));
+							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 88, "#E67E22", CvPdfPalette.White));
 						header.RelativeItem().PaddingLeft(12).Column(nameCol =>
 						{
 							nameCol.Item().Text(document.FullName).FontSize(24).Bold();
 							nameCol.Item().Text(document.ProfessionalTitle).FontSize(12).SemiBold();
 						});
 					});
-					root.Item().Background("#E8E8E8").Padding(12)
+					root.Item().Background(CvPdfPalette.MutedOnDark).Padding(12)
 						.Text(CvExportPreviewContentBuilder.BuildSummary(document));
 					root.Item().Row(body =>
 					{

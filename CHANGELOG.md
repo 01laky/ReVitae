@@ -18,6 +18,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   into five focused partial files (`ImportExtractionHelpers.{,.Education,.Merging,.WorkAndSkills,.Names}.cs`),
   each ≤ ~620 LOC, behaviour-preserving (no call-site changes; guarded by the import matrix +
   golden oracle). Test total **2085**.
+- **Refactor (047 T8):** centralized the reused neutral PDF colours (`White`, `Black`,
+  `MutedOnDark`, `AvatarNeutral`) into `CvPdfPalette`, replacing inlined hex literals across
+  10 template files. Same hex values → **pixel-identical** render (verified via PNG hash).
 
 ### Fixed
 

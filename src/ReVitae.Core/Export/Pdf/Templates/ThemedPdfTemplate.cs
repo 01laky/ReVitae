@@ -361,7 +361,7 @@ internal static class ThemedPdfTemplate
 					sidebar.Item().Element(c =>
 						CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 76, theme.AccentColor, Colors.White));
 					sidebar.Item().Text(document.FullName.ToUpperInvariant()).FontSize(16).Bold().FontColor(Colors.White);
-					sidebar.Item().Text(document.ProfessionalTitle).FontSize(11).FontColor("#E8E8E8");
+					sidebar.Item().Text(document.ProfessionalTitle).FontSize(11).FontColor(CvPdfPalette.MutedOnDark);
 					CvPdfLayoutHelpers.ComposeSection(
 						sidebar,
 						document.Labels.Contact,

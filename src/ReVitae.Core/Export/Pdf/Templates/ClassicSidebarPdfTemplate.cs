@@ -27,8 +27,8 @@ internal static class ClassicSidebarPdfTemplate
 								container,
 								document,
 								88,
-								"#B8B8B8",
-								"#FFFFFF"));
+								CvPdfPalette.AvatarNeutral,
+								CvPdfPalette.White));
 						sidebar.Item().Text(document.FirstName).FontSize(24).Bold();
 						sidebar.Item().Text(document.LastName).FontSize(24).Bold().FontColor("#F47C2C");
 

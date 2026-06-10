@@ -6,7 +6,7 @@ using QuestPDF.Infrastructure;
 
 public static class CvPdfExtendedHelpers
 {
-	public static void ComposeContactLine(IContainer container, CvExportDocument document, string textColor = "#000000")
+	public static void ComposeContactLine(IContainer container, CvExportDocument document, string textColor = CvPdfPalette.Black)
 	{
 		var parts = new List<string>();
 		if (!string.IsNullOrWhiteSpace(document.Phone))
@@ -32,12 +32,12 @@ public static class CvPdfExtendedHelpers
 		container.Text(string.Join("  ", parts)).FontSize(CvPdfLayoutHelpers.BaseFontSize).FontColor(textColor);
 	}
 
-	public static void ComposeCenteredSection(ColumnDescriptor column, string title, string content, string headingColor = "#000000")
+	public static void ComposeCenteredSection(ColumnDescriptor column, string title, string content, string headingColor = CvPdfPalette.Black)
 	{
 		column.Item().AlignCenter().Column(section =>
 		{
 			section.Item().AlignCenter().Text(title).FontSize(14).SemiBold().FontColor(headingColor);
-			section.Item().PaddingTop(4).LineHorizontal(1).LineColor("#B8B8B8");
+			section.Item().PaddingTop(4).LineHorizontal(1).LineColor(CvPdfPalette.AvatarNeutral);
 			section.Item().PaddingTop(6).AlignCenter().Text(content).FontSize(CvPdfLayoutHelpers.BaseFontSize);
 		});
 	}

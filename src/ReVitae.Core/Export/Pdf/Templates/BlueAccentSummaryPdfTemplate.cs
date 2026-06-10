@@ -26,7 +26,7 @@ internal static class BlueAccentSummaryPdfTemplate
 							title.Item().Text($"{document.Phone} // {document.Email}").FontSize(CvPdfLayoutHelpers.BaseFontSize);
 						});
 						header.ConstantItem(72).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Blue, "#FFFFFF"));
+							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Blue, CvPdfPalette.White));
 					});
 					root.Item().Border(1).BorderColor(Blue).Padding(12)
 						.Text(CvExportPreviewContentBuilder.BuildSummary(document));

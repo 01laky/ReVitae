@@ -20,7 +20,7 @@ internal static class OrangeTimelinePdfTemplate
 					root.Item().Row(header =>
 					{
 						header.ConstantItem(72).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Orange, "#FFFFFF"));
+							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, Orange, CvPdfPalette.White));
 						header.RelativeItem().PaddingLeft(10).Column(info =>
 						{
 							info.Item().Text(text =>

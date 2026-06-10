@@ -29,7 +29,7 @@ internal static class DarkSidebarAccentPdfTemplate
 								document,
 								88,
 								"#5B9BB0",
-								"#FFFFFF"));
+								CvPdfPalette.White));
 						sidebar.Item().Text(document.Labels.Contact.ToUpperInvariant()).FontSize(16).Bold().FontColor(Colors.White);
 						sidebar.Item().Text(CvExportPreviewContentBuilder.BuildContactLines(document)).FontColor(Colors.White);
 					},

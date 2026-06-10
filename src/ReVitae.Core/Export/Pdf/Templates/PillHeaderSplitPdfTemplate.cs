@@ -18,8 +18,8 @@ internal static class PillHeaderSplitPdfTemplate
 					root.Item().Row(header =>
 					{
 						header.ConstantItem(72).Element(c =>
-							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, "#E9967A", "#FFFFFF"));
-						header.RelativeItem().PaddingLeft(10).Background("#E8E8E8").CornerRadius(20).Padding(14).Column(pill =>
+							CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 68, "#E9967A", CvPdfPalette.White));
+						header.RelativeItem().PaddingLeft(10).Background(CvPdfPalette.MutedOnDark).CornerRadius(20).Padding(14).Column(pill =>
 						{
 							pill.Item().Text(document.FullName).FontSize(22).Bold();
 							pill.Item().Text($"{document.Phone}  {document.Email}  {document.LinkedInUrl}").FontColor("#E9967A");
@@ -28,7 +28,7 @@ internal static class PillHeaderSplitPdfTemplate
 					root.Item().Text(CvExportPreviewContentBuilder.BuildSummary(document));
 					root.Item().Row(body =>
 					{
-						body.RelativeItem(34).Background("#E8E8E8").CornerRadius(16).Padding(12).Column(left =>
+						body.RelativeItem(34).Background(CvPdfPalette.MutedOnDark).CornerRadius(16).Padding(12).Column(left =>
 						{
 							CvPdfLayoutHelpers.ComposeSection(left, document.Labels.PreviewSkills,
 								CvExportPreviewContentBuilder.BuildSkillsPreviewContent(document));

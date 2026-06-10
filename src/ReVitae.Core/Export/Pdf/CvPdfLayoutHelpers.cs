@@ -8,7 +8,7 @@ public static class CvPdfLayoutHelpers
 {
 	public const float BaseFontSize = 10.5f;
 
-	public static void ConfigureA4Page(PageDescriptor page, string backgroundColor = "#FFFFFF")
+	public static void ConfigureA4Page(PageDescriptor page, string backgroundColor = CvPdfPalette.White)
 	{
 		page.Size(PageSizes.A4);
 		page.Margin(26);
@@ -72,13 +72,13 @@ public static class CvPdfLayoutHelpers
 		ColumnDescriptor column,
 		string title,
 		string content,
-		string headingColor = "#000000")
+		string headingColor = CvPdfPalette.Black)
 	{
 		column.Item().Column(section =>
 		{
 			section.Spacing(5);
 			section.Item().Text(title).FontSize(14).SemiBold().FontColor(headingColor);
-			section.Item().LineHorizontal(1).LineColor("#B8B8B8");
+			section.Item().LineHorizontal(1).LineColor(CvPdfPalette.AvatarNeutral);
 			section.Item().Text(content).FontSize(BaseFontSize).FontColor(Colors.Black);
 		});
 	}
@@ -87,7 +87,7 @@ public static class CvPdfLayoutHelpers
 		ColumnDescriptor column,
 		string title,
 		string content,
-		string headingColor = "#000000")
+		string headingColor = CvPdfPalette.Black)
 	{
 		ComposeSection(column, title.ToUpperInvariant(), content, headingColor);
 	}
