@@ -107,4 +107,49 @@ public sealed class SectionEntryReorderTests
 		// Removing index 0 then inserting at adjusted index 0 keeps order — no visible swap.
 		Assert.Equal(new[] { "a", "b", "c" }, Ids(list));
 	}
+
+	[Fact]
+	public void FindIndexById_ExistingId_ReturnsIndex()
+	{
+		var list = Make("a", "b", "c");
+		Assert.Equal(1, SectionEntryReorder.FindIndexById(list, i => i.Id, "b"));
+		Assert.Equal(0, SectionEntryReorder.FindIndexById(list, i => i.Id, "a"));
+		Assert.Equal(2, SectionEntryReorder.FindIndexById(list, i => i.Id, "c"));
+	}
+
+	[Fact]
+	public void FindIndexById_UnknownId_ReturnsNull()
+	{
+		var list = Make("a", "b");
+		Assert.Null(SectionEntryReorder.FindIndexById(list, i => i.Id, "zzz"));
+	}
+
+	[Fact]
+	public void FindIndexById_NullId_ReturnsNull()
+	{
+		var list = Make("a", "b");
+		Assert.Null(SectionEntryReorder.FindIndexById(list, i => i.Id, null));
+	}
+
+	[Fact]
+	public void FindIndexById_EmptyList_ReturnsNull()
+	{
+		Assert.Null(SectionEntryReorder.FindIndexById(new List<Item>(), i => i.Id, "a"));
+	}
+
+	[Fact]
+	public void FindIndexById_FirstMatchWins()
+	{
+		var list = Make("dup", "dup", "x");
+		Assert.Equal(0, SectionEntryReorder.FindIndexById(list, i => i.Id, "dup"));
+	}
+
+	[Fact]
+	public void FindIndexById_NullArguments_Throw()
+	{
+		Assert.Throws<ArgumentNullException>(() =>
+			SectionEntryReorder.FindIndexById<Item>(null!, i => i.Id, "a"));
+		Assert.Throws<ArgumentNullException>(() =>
+			SectionEntryReorder.FindIndexById(Make("a"), null!, "a"));
+	}
 }

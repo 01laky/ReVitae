@@ -23,7 +23,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   10 template files. Same hex values → **pixel-identical** render (verified via PNG hash).
 - **Refactor (047 T2 — drag-reorder):** replaced six byte-identical `MoveEntryToIndex`
   copies across the section views with a single generic, unit-tested
-  `SectionEntryReorder.MoveToIndex<T>` helper (13 edge-case tests). Test total **2098**.
+  `SectionEntryReorder` helper (`MoveToIndex<T>` + `FindIndexById<T>`; 19 edge-case tests), replacing six + four byte-identical copies. Test total **2104**.
 
 ### Fixed
 

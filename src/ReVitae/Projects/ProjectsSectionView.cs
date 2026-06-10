@@ -401,18 +401,8 @@ public sealed class ProjectsSectionView : UserControl, IValidationNavigableSecti
 		return null;
 	}
 
-	private int? FindEntryIndexById(string entryId)
-	{
-		for (var index = 0; index < _entries.Count; index++)
-		{
-			if (_entries[index].Id == entryId)
-			{
-				return index;
-			}
-		}
-
-		return null;
-	}
+	private int? FindEntryIndexById(string entryId) =>
+		SectionEntryReorder.FindIndexById(_entries, entry => entry.Id, entryId);
 
 	private static Rect GetBoundsRelativeTo(Visual visual, Visual relativeTo)
 	{

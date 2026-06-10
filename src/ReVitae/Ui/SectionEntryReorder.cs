@@ -46,4 +46,24 @@ public static class SectionEntryReorder
 		entries.Insert(Math.Clamp(targetIndex, 0, entries.Count), entry);
 		return true;
 	}
+
+	/// <summary>
+	/// Returns the index of the entry whose id matches <paramref name="entryId"/>, or
+	/// <c>null</c> when none match. Shared by the section views' drag-drop index lookup.
+	/// </summary>
+	public static int? FindIndexById<T>(IReadOnlyList<T> entries, Func<T, string> idSelector, string? entryId)
+	{
+		ArgumentNullException.ThrowIfNull(entries);
+		ArgumentNullException.ThrowIfNull(idSelector);
+
+		for (var index = 0; index < entries.Count; index++)
+		{
+			if (idSelector(entries[index]) == entryId)
+			{
+				return index;
+			}
+		}
+
+		return null;
+	}
 }
