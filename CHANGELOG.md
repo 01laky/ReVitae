@@ -25,6 +25,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   copies across the section views with a single generic, unit-tested
   `SectionEntryReorder` helper (`MoveToIndex<T>` + `FindIndexById<T>`; 19 edge-case tests), replacing six + four byte-identical copies. Test total **2104**.
 
+- **Refactor (047 T4 + QG5):** extracted the preview content hash into a tested
+  `CvExportDocumentHash.Compute` (Core) used by the preview cache; added `.editorconfig`
+  code-quality guardrails (unused using/member, static-able member, readonly, brace style)
+  so the smells this refactor removed do not silently return.
 - **Refactor (047 T1 — unified template rendering):** the live preview now rasterizes the
   **actual export PDF** (`CvTemplatePreviewImage` → QuestPDF → Docnet raster → per-page PNG)
   instead of a parallel Avalonia re-implementation of every template. Preview is now

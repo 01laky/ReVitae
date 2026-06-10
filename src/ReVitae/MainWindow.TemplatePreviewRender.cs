@@ -50,7 +50,7 @@ public partial class MainWindow
 			}
 
 			var document = BuildExportDocument();
-			var key = ComputePreviewKey(document);
+			var key = CvExportDocumentHash.Compute(document);
 
 			IReadOnlyList<Bitmap> bitmaps;
 			if (key == _lastPreviewKey && _lastPreviewBitmaps is not null)
@@ -127,18 +127,4 @@ public partial class MainWindow
 		return stack;
 	}
 
-	private string ComputePreviewKey(CvExportDocument document)
-	{
-		try
-		{
-			var json = JsonSerializer.Serialize(document);
-			var hash = SHA256.HashData(Encoding.UTF8.GetBytes(json));
-			return Convert.ToHexString(hash);
-		}
-		catch (Exception)
-		{
-			// If the document cannot be serialized, fall back to always re-rendering.
-			return Guid.NewGuid().ToString("N");
-		}
-	}
 }
