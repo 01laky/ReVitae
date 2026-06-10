@@ -13,9 +13,13 @@ internal static class ClassicSidebarPdfTemplate
 			{
 				CvPdfLayoutHelpers.ConfigureA4Page(page);
 
-				page.Content().Row(row =>
-				{
-					row.RelativeItem(36).Background("#D8D8D8").Padding(14).Column(sidebar =>
+				CvPdfLayoutHelpers.ComposeFullHeightSidebarPage(
+					page,
+					36,
+					64,
+					"#D8D8D8",
+					sidebarOnLeft: true,
+					sidebar =>
 					{
 						sidebar.Spacing(14);
 						sidebar.Item().Element(container =>
@@ -32,9 +36,8 @@ internal static class ClassicSidebarPdfTemplate
 							sidebar,
 							document.Labels.Contact,
 							CvExportPreviewContentBuilder.BuildContactLines(document));
-					});
-
-					row.RelativeItem(64).PaddingLeft(14).Column(content =>
+					},
+					content =>
 					{
 						CvPdfSectionContent.ComposeAllSections(
 							content,
@@ -43,7 +46,6 @@ internal static class ClassicSidebarPdfTemplate
 							document.Labels.ContactLinks,
 							CvExportPreviewContentBuilder.BuildContactLinksLines(document));
 					});
-				});
 			});
 		});
 	}

@@ -19,6 +19,55 @@ public static class CvPdfLayoutHelpers
 			.LineHeight(1.25f));
 	}
 
+	/// <summary>
+	/// Renders a two-column page whose coloured sidebar band spans the <b>full height of every
+	/// page</b> (including continuation pages), fixing the gap left when a short sidebar is paired
+	/// with longer main content. The band is painted via <c>page.Background()</c> so it always
+	/// reaches the page edges; page margin is overridden to 0 and replaced by per-column padding
+	/// so the band aligns exactly with the sidebar content column.
+	/// </summary>
+	public static void ComposeFullHeightSidebarPage(
+		PageDescriptor page,
+		int sidebarWeight,
+		int mainWeight,
+		string sidebarColor,
+		bool sidebarOnLeft,
+		Action<ColumnDescriptor> composeSidebar,
+		Action<ColumnDescriptor> composeMain,
+		float sidebarPadding = 16f,
+		float mainPadding = 22f)
+	{
+		page.Margin(0);
+
+		page.Background().Row(bg =>
+		{
+			if (sidebarOnLeft)
+			{
+				bg.RelativeItem(sidebarWeight).Background(sidebarColor);
+				bg.RelativeItem(mainWeight);
+			}
+			else
+			{
+				bg.RelativeItem(mainWeight);
+				bg.RelativeItem(sidebarWeight).Background(sidebarColor);
+			}
+		});
+
+		page.Content().Row(row =>
+		{
+			if (sidebarOnLeft)
+			{
+				row.RelativeItem(sidebarWeight).Padding(sidebarPadding).Column(composeSidebar);
+				row.RelativeItem(mainWeight).Padding(mainPadding).Column(composeMain);
+			}
+			else
+			{
+				row.RelativeItem(mainWeight).Padding(mainPadding).Column(composeMain);
+				row.RelativeItem(sidebarWeight).Padding(sidebarPadding).Column(composeSidebar);
+			}
+		});
+	}
+
 	public static void ComposeSection(
 		ColumnDescriptor column,
 		string title,

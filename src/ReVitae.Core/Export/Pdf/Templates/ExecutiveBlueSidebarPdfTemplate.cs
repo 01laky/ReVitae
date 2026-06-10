@@ -15,9 +15,18 @@ internal static class ExecutiveBlueSidebarPdfTemplate
 			container.Page(page =>
 			{
 				CvPdfLayoutHelpers.ConfigureA4Page(page);
+
+				// Full-height grey sidebar band via page background so it reaches the bottom of every page.
+				page.Margin(0);
+				page.Background().Row(bg =>
+				{
+					bg.RelativeItem(34).Background("#E5E5E5");
+					bg.RelativeItem(66);
+				});
+
 				page.Content().Row(row =>
 				{
-					row.RelativeItem(34).Background("#E5E5E5").Column(sidebar =>
+					row.RelativeItem(34).Column(sidebar =>
 					{
 						sidebar.Item().Height(8).Background(Navy);
 						sidebar.Item().Padding(14).Column(sidebarBody =>
@@ -31,9 +40,8 @@ internal static class ExecutiveBlueSidebarPdfTemplate
 							CvPdfExtendedHelpers.ComposeOptionalSection(sidebarBody, document.Labels.PreviewLanguages,
 								CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document), false);
 						});
-						sidebar.Item().Height(8).Background(Navy);
 					});
-					row.RelativeItem(66).PaddingLeft(12).Column(main =>
+					row.RelativeItem(66).PaddingVertical(24).PaddingLeft(16).PaddingRight(24).Column(main =>
 					{
 						CvPdfExtendedHelpers.ComposeMainSections(main, document, document.Labels.Summary);
 					});
