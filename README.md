@@ -220,7 +220,8 @@ Produces `John Doe (minimal architect).pdf` and `.txt` at the repo root.
 
 Pick a look, keep your words. **56 built-in templates** — sidebar, minimal, executive,
 photo-forward, and more — all driven by the same structured content. Switch anytime
-from the **Templates** toolbar icon; expand the preview for a full-size check.
+from the **Templates** toolbar icon; expand the preview for a full-size check. The live
+preview **renders the actual export PDF**, so what you see is exactly what you get.
 
 **Export** opens a format picker, then saves locally:
 
@@ -300,6 +301,9 @@ To cut a release:
 
 **Recently shipped** ([`CHANGELOG.md`](CHANGELOG.md)):
 
+- Code-refactor pass — unified template rendering (preview rasterizes the export PDF),
+  god-file split, shared section/PDF helpers, golden render oracle, warning-free build,
+  **2147** tests — [`docs/architecture.md`](docs/architecture.md)
 - AI section advice & proactive import assist (v0.2.12) — per-section advisor,
   broadened hint coverage, targeted import field repair, entity guard, target-role
   context, **2081** tests (+226) — [`docs/ai-setup.md`](docs/ai-setup.md), [`docs/ai-import.md`](docs/ai-import.md)
@@ -436,7 +440,8 @@ tests/
   ReVitae.Tests/    Unit, import, AI, Ollama, and UI validation tests
 
 docs/
-  Product concept, export/import matrices, AI setup/import, native project JSON
+  Product concept, architecture map, export/import matrices, AI setup/import,
+  native project JSON
   img/              App screenshots for README and docs
 ```
 

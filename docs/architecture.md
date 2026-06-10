@@ -9,7 +9,7 @@ flowchart TB
     subgraph UI["ReVitae (Avalonia UI — thin)"]
         MW["MainWindow.*.cs partials\n(event handlers, modals)"]
         SEC["Section views\n(Skills/Work/Education/…)"]
-        PREV["Template previews\n(Avalonia controls)"]
+        PREV["Template preview\n(rasterized export PDF)"]
         UIGLUE["Ui/* glue\n(badges, validation presentation)"]
     end
     subgraph CORE["ReVitae.Core (logic — testable)"]
@@ -65,9 +65,11 @@ flowchart TB
   `IAiAdvisorSection`.
 - **`Ui/`** — shared UI glue: section header badges, validation-error presentation,
   quality-hint flyouts.
-- **`Preview/` + `MainWindow.TemplatePreviews.*`** — live template preview built with
-  Avalonia controls (note: a parallel implementation of the QuestPDF export layouts; see the
-  refactor backlog).
+- **`MainWindow.TemplatePreviewRender.cs` + `CvTemplatePreviewImage`** — the live preview
+  **rasterizes the actual export PDF** (QuestPDF → Docnet → per-page PNG), so the preview
+  always matches the export. Updates are debounced, run off the UI thread, and are cached by
+  document content hash (`CvExportDocumentHash`). `Preview/` holds the small template-picker
+  thumbnails.
 
 ## Where does new code go?
 
