@@ -7,6 +7,21 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- **50 new unique CV templates (v0.2.13, prompt 048)** — the export catalogue grows from
+  **56 to 106 templates**. Uniqueness comes from **14 new structural layout archetypes**
+  (`CvThemedTemplateLayoutKind`), not recolours: monogram-header two-column, full-width name
+  banner with contact strip, asymmetric corner bars, skill-chip sidebar, modular section cards,
+  full-height dual-tone split, modernist header rule, centered monogram, centered ribbon header,
+  header + two equal columns, accent footer bar, boxed-header sidebar, two-tone duo-band header,
+  and a dark initials sidebar. Each archetype renders over the existing section helpers (so
+  content stays complete and paginates) and is paired with distinct modern palettes (navy, slate,
+  teal, burgundy, indigo, and more). The new sidebar archetypes also **de-duplicate** the
+  skills/languages/certificates that older themed layouts repeat between sidebar and main column.
+  Rendering stays cross-platform-deterministic via the bundled Arimo font; all 106 golden
+  signatures regenerated. Test total **2252**.
+
 ### Changed
 
 - **Refactor foundation (047):** enforced a **warning-free build** via
@@ -54,6 +69,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- **New templates dropped the Links section and Custom Links (prompt 048 follow-up).**
+  30 of the 50 new templates (the 8 sidebar/manual archetypes — MonogramHeaderTwoColumn,
+  SkillChipSidebar, CardSectionsBody, DualToneFullSplit, CenteredMonogram,
+  HeaderTwoEqualColumns, BoxedHeaderSidebar, InitialsSidebarDark) composed sections
+  manually via `ComposePrimaryMain` and never rendered the **Links** section
+  (LinkedIn / GitHub / portfolio URLs) nor **Custom Links**, silently omitting them from
+  the exported PDF — the contact line only carries email / phone / location / portfolio.
+  Added custom-links and links rendering to `ComposePrimaryMain` and to the four
+  hand-composed layouts so every template now renders the complete section set, matching
+  the existing 56 templates. Also fixed **BoxedHeaderSidebar** rendering **Additional
+  Information twice** (main column and sidebar). Regenerated the 30 affected golden
+  signatures; the other 76 are unchanged.
 - **Cross-platform PDF determinism (Linux CI):** PDF templates referenced the system font
   family `"Arial"`, which the Linux CI runner has no copy of — SkiaSharp substituted a
   different face, shifting text metrics, wrapping and pagination. The same CV therefore
