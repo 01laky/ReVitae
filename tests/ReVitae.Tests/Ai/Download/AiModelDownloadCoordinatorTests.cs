@@ -193,6 +193,21 @@ public sealed class AiModelDownloadCoordinatorTests
 {
 	private static async Task WaitForActivePull(FakeOllamaPullClient fakePull)
 	{
+		// Poll rather than a hard WaitAsync deadline: a fixed wall-clock timeout is fragile on a
+		// loaded CI runner (thread-pool starvation can delay the coordinator's background task from
+		// reaching PullAsync), whereas each Task.Delay below naturally stretches under the same
+		// load — matching WaitForState / WaitUntilHangStartedAsync. Generous ceiling so it only
+		// trips on a genuine hang, never on scheduling latency.
+		for (var i = 0; i < 1000; i++)
+		{
+			if (fakePull.PullStarted.Task.IsCompleted)
+			{
+				return;
+			}
+
+			await Task.Delay(10);
+		}
+
 		await fakePull.PullStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 	}
 
