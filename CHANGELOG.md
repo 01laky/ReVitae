@@ -13,7 +13,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   `TreatWarningsAsErrors` (and cleared the residual nullable warnings); added a **golden
   render oracle** (`CvTemplateRenderSignature` with `CvTemplateRenderGoldenTests`) that pins
   every template's deterministic layout signature so future rendering refactors are provably
-  behaviour-preserving; added `docs/architecture.md` module map. Test total **2085**.
+  behaviour-preserving; added `docs/architecture.md` module map.
+- **Refactor (047 T3):** split the 2 477-line `ImportFieldExtractionCore` helpers god file
+  into five focused partial files (`ImportExtractionHelpers.{,.Education,.Merging,.WorkAndSkills,.Names}.cs`),
+  each ≤ ~620 LOC, behaviour-preserving (no call-site changes; guarded by the import matrix +
+  golden oracle). Test total **2085**.
 
 ### Fixed
 
