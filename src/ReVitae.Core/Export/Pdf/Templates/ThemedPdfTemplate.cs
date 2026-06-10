@@ -539,7 +539,9 @@ internal static class ThemedPdfTemplate
 						CvPdfSectionContent.ComposeWorkExperienceOnly(main, document);
 						CvPdfSectionContent.ComposeEducationPublic(main, document);
 						CvPdfSectionContent.ComposeProjectsPublic(main, document);
+						CvPdfSectionContent.ComposeCustomLinksPublic(main, document);
 						CvPdfSectionContent.ComposeAdditionalInformationPublic(main, document);
+						CvPdfSectionContent.ComposeLinksPublic(main, document);
 					});
 				});
 			});
@@ -566,7 +568,9 @@ internal static class ThemedPdfTemplate
 					ComposeCardSection(cards, document.Labels.PreviewLanguages, CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document), theme.AccentColor);
 					ComposeCardSection(cards, document.Labels.PreviewCertificates, CvExportPreviewContentBuilder.BuildCertificatesPreviewContent(document), theme.AccentColor);
 					ComposeCardSection(cards, document.Labels.PreviewProjects, CvExportPreviewContentBuilder.BuildProjectsPreviewContent(document), theme.AccentColor);
+					ComposeCardSection(cards, document.Labels.PreviewCustomLinks, CvExportPreviewContentBuilder.BuildCustomLinksPreviewContent(document), theme.AccentColor);
 					ComposeCardSection(cards, document.Labels.PreviewAdditionalInformation, CvExportPreviewContentBuilder.BuildAdditionalInformationPreviewContent(document), theme.AccentColor);
+					ComposeCardSection(cards, document.Labels.Links, CvExportPreviewContentBuilder.BuildLinksLines(document), theme.AccentColor);
 				});
 			});
 		});
@@ -649,7 +653,9 @@ internal static class ThemedPdfTemplate
 					ComposeCenteredEntry(sections, document.Labels.PreviewLanguages, CvExportPreviewContentBuilder.BuildLanguagesPreviewContent(document), theme.AccentColor);
 					ComposeCenteredEntry(sections, document.Labels.PreviewCertificates, CvExportPreviewContentBuilder.BuildCertificatesPreviewContent(document), theme.AccentColor);
 					ComposeCenteredEntry(sections, document.Labels.PreviewProjects, CvExportPreviewContentBuilder.BuildProjectsPreviewContent(document), theme.AccentColor);
+					ComposeCenteredEntry(sections, document.Labels.PreviewCustomLinks, CvExportPreviewContentBuilder.BuildCustomLinksPreviewContent(document), theme.AccentColor);
 					ComposeCenteredEntry(sections, document.Labels.PreviewAdditionalInformation, CvExportPreviewContentBuilder.BuildAdditionalInformationPreviewContent(document), theme.AccentColor);
+					ComposeCenteredEntry(sections, document.Labels.Links, CvExportPreviewContentBuilder.BuildLinksLines(document), theme.AccentColor);
 				});
 			});
 		});
@@ -702,7 +708,9 @@ internal static class ThemedPdfTemplate
 						CvPdfSectionContent.ComposeLanguagesPublic(right, document);
 						CvPdfSectionContent.ComposeCertificatesPublic(right, document);
 						CvPdfSectionContent.ComposeProjectsPublic(right, document);
+						CvPdfSectionContent.ComposeCustomLinksPublic(right, document);
 						CvPdfSectionContent.ComposeAdditionalInformationPublic(right, document);
+						CvPdfSectionContent.ComposeLinksPublic(right, document);
 					});
 				});
 			});
@@ -749,7 +757,6 @@ internal static class ThemedPdfTemplate
 					{
 						side.Spacing(12);
 						CvPdfExtendedHelpers.ComposeSidebarSections(side, document);
-						CvPdfSectionContent.ComposeAdditionalInformationPublic(side, document);
 					});
 				});
 			});
@@ -809,9 +816,12 @@ internal static class ThemedPdfTemplate
 
 	/// <summary>
 	/// Primary-column sections for a sidebar layout — summary, work, optional education, projects,
-	/// additional info. The supporting sections (skills / languages / certificates) live in the
-	/// sidebar, so they are deliberately omitted here to avoid the duplication the older themed
-	/// layouts show when they pair <c>ComposeSidebarSections</c> with <c>ComposeMainSections</c>.
+	/// custom links, additional info, and the personal links section. The supporting sections
+	/// (skills / languages / certificates) live in the sidebar, so they are deliberately omitted
+	/// here to avoid the duplication the older themed layouts show when they pair
+	/// <c>ComposeSidebarSections</c> with <c>ComposeMainSections</c>. Links and custom links are
+	/// always rendered here so no template silently drops the user's LinkedIn / GitHub / portfolio
+	/// URLs (the contact line only carries email / phone / location / portfolio).
 	/// </summary>
 	private static void ComposePrimaryMain(ColumnDescriptor column, CvExportDocument document, string summaryTitle, bool includeEducation)
 	{
@@ -824,7 +834,9 @@ internal static class ThemedPdfTemplate
 		}
 
 		CvPdfSectionContent.ComposeProjectsPublic(column, document);
+		CvPdfSectionContent.ComposeCustomLinksPublic(column, document);
 		CvPdfSectionContent.ComposeAdditionalInformationPublic(column, document);
+		CvPdfSectionContent.ComposeLinksPublic(column, document);
 	}
 
 	private static void ComposeCardSection(ColumnDescriptor column, string title, string content, string accent)

@@ -69,6 +69,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
+- **New templates dropped the Links section and Custom Links (prompt 048 follow-up).**
+  30 of the 50 new templates (the 8 sidebar/manual archetypes — MonogramHeaderTwoColumn,
+  SkillChipSidebar, CardSectionsBody, DualToneFullSplit, CenteredMonogram,
+  HeaderTwoEqualColumns, BoxedHeaderSidebar, InitialsSidebarDark) composed sections
+  manually via `ComposePrimaryMain` and never rendered the **Links** section
+  (LinkedIn / GitHub / portfolio URLs) nor **Custom Links**, silently omitting them from
+  the exported PDF — the contact line only carries email / phone / location / portfolio.
+  Added custom-links and links rendering to `ComposePrimaryMain` and to the four
+  hand-composed layouts so every template now renders the complete section set, matching
+  the existing 56 templates. Also fixed **BoxedHeaderSidebar** rendering **Additional
+  Information twice** (main column and sidebar). Regenerated the 30 affected golden
+  signatures; the other 76 are unchanged.
 - **Cross-platform PDF determinism (Linux CI):** PDF templates referenced the system font
   family `"Arial"`, which the Linux CI runner has no copy of — SkiaSharp substituted a
   different face, shifting text metrics, wrapping and pagination. The same CV therefore
