@@ -25,6 +25,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   copies across the section views with a single generic, unit-tested
   `SectionEntryReorder` helper (`MoveToIndex<T>` + `FindIndexById<T>`; 19 edge-case tests), replacing six + four byte-identical copies. Test total **2104**.
 
+- **Refactor (047 T1 — unified template rendering):** the live preview now rasterizes the
+  **actual export PDF** (`CvTemplatePreviewImage` → QuestPDF → Docnet raster → per-page PNG)
+  instead of a parallel Avalonia re-implementation of every template. Preview is now
+  **guaranteed to match the export**, updates are debounced (~220 ms) and run off the UI thread,
+  cached by document content hash, and serialized for pdfium safety. Removed the ~1 745-line
+  `MainWindow.TemplatePreviews.*` Avalonia layout duplication. **Needs interactive QA** of
+  preview responsiveness/appearance.
 - **Refactor (047 T6 — template scaffold):** added `CvPdfRenderHelper.RenderPage` (the shared
   `Generate → Page → ConfigureA4Page` scaffold) and routed all 16 base templates plus the
   themed renderer through it, removing the repeated boilerplate. Pixel-identical render

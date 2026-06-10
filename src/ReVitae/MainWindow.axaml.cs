@@ -1502,12 +1502,6 @@ public partial class MainWindow : Window
 		RefreshIntroRecentProjects();
 	}
 
-	private void UpdatePreview()
-	{
-		PreviewContentControl.Content = BuildTemplatePreview();
-		PreviewExpandContentControl.Content = BuildTemplatePreview();
-	}
-
 	private void SelectTemplate(CvExportTemplateId templateId)
 	{
 		if (_selectedTemplate != templateId)

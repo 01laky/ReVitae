@@ -4,7 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Avalonia](https://img.shields.io/badge/Avalonia-12.0-blue)](https://avaloniaui.net/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/01laky/ReVitae)
-[![Tests](https://img.shields.io/badge/tests-2104%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
+[![Tests](https://img.shields.io/badge/tests-2110%20passing-brightgreen)](https://github.com/01laky/ReVitae/releases)
 [![CI](https://github.com/01laky/ReVitae/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/ReVitae/actions/workflows/ci.yml)
 
 ReVitae is a **desktop CV builder** that keeps your content editable, your templates
@@ -388,7 +388,7 @@ match the actual `dotnet test` total. CI runs `./scripts/verify-test-count.sh` o
 
 ### Fast pre-commit (optional)
 
-Full pre-commit runs all **2104+** tests including the 51-variant matrix. For intermediate
+Full pre-commit runs all **2110+** tests including the 51-variant matrix. For intermediate
 commits:
 
 ```bash
