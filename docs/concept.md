@@ -145,7 +145,7 @@ As of mid‑2026, the desktop app covers most Phase 1 builder scope plus expan
   fidelity and post-import form validation (`JohnDoeImportRegressionMatrixTests`).
 - **Core-first test strategy (v0.2.11+):** business logic extracted to Core services
   (`CvProjectLifecycleService`, `FirstLaunchAiWizardController`, import section
-  extractors under `Import/Extraction/`). Avalonia UI remains thin wiring; **2927**
+  extractors under `Import/Extraction/`). Avalonia UI remains thin wiring; **2990**
   automated tests with drift guard (`scripts/verify-test-count.sh`). UI section views
   are not headless-tested — extend Core before adding UI tests.
 - **Code-refactor pass (prompt 047):** unified template rendering (preview rasterizes the
