@@ -14,9 +14,13 @@ internal static class DarkSidebarAccentPdfTemplate
 			{
 				CvPdfLayoutHelpers.ConfigureA4Page(page, "#F2F2F2");
 
-				page.Content().Row(row =>
-				{
-					row.RelativeItem(34).Background("#2F3A45").Padding(16).Column(sidebar =>
+				CvPdfLayoutHelpers.ComposeFullHeightSidebarPage(
+					page,
+					34,
+					66,
+					"#2F3A45",
+					sidebarOnLeft: true,
+					sidebar =>
 					{
 						sidebar.Spacing(10);
 						sidebar.Item().Element(container =>
@@ -28,9 +32,8 @@ internal static class DarkSidebarAccentPdfTemplate
 								"#FFFFFF"));
 						sidebar.Item().Text(document.Labels.Contact.ToUpperInvariant()).FontSize(16).Bold().FontColor(Colors.White);
 						sidebar.Item().Text(CvExportPreviewContentBuilder.BuildContactLines(document)).FontColor(Colors.White);
-					});
-
-					row.RelativeItem(66).PaddingLeft(14).Column(content =>
+					},
+					content =>
 					{
 						content.Item().Background("#5B9BB0").Padding(16).Column(header =>
 						{
@@ -49,7 +52,6 @@ internal static class DarkSidebarAccentPdfTemplate
 								CvExportPreviewContentBuilder.BuildOnlineLines(document));
 						});
 					});
-				});
 			});
 		});
 	}

@@ -31,9 +31,13 @@ internal static class ThemedPdfTemplate
 	{
 		return Generate(document, page =>
 		{
-			page.Content().Row(row =>
-			{
-				row.RelativeItem(34).Background(theme.SidebarColor).Padding(14).Column(sidebar =>
+			CvPdfLayoutHelpers.ComposeFullHeightSidebarPage(
+				page,
+				34,
+				66,
+				theme.SidebarColor,
+				sidebarOnLeft: true,
+				sidebar =>
 				{
 					sidebar.Spacing(12);
 					sidebar.Item().Element(c =>
@@ -45,9 +49,8 @@ internal static class ThemedPdfTemplate
 						CvExportPreviewContentBuilder.BuildContactLines(document),
 						theme.AccentColor);
 					CvPdfExtendedHelpers.ComposeSidebarSections(sidebar, document);
-				});
-
-				row.RelativeItem(66).PaddingLeft(12).Column(main =>
+				},
+				main =>
 				{
 					main.Item().Background(theme.HeaderColor).Padding(10).Text(document.ProfessionalTitle)
 						.FontSize(13)
@@ -63,7 +66,6 @@ internal static class ThemedPdfTemplate
 							CvExportPreviewContentBuilder.BuildLinksLines(document));
 					});
 				});
-			});
 		});
 	}
 
@@ -71,9 +73,25 @@ internal static class ThemedPdfTemplate
 	{
 		return Generate(document, page =>
 		{
-			page.Content().Row(row =>
-			{
-				row.RelativeItem(66).PaddingRight(12).Column(main =>
+			CvPdfLayoutHelpers.ComposeFullHeightSidebarPage(
+				page,
+				34,
+				66,
+				theme.SidebarColor,
+				sidebarOnLeft: false,
+				sidebar =>
+				{
+					sidebar.Spacing(12);
+					sidebar.Item().Element(c =>
+						CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 72, theme.AccentColor, Colors.White));
+					CvPdfLayoutHelpers.ComposeSection(
+						sidebar,
+						document.Labels.Contact,
+						CvExportPreviewContentBuilder.BuildContactLines(document),
+						theme.AccentColor);
+					CvPdfExtendedHelpers.ComposeSidebarSections(sidebar, document);
+				},
+				main =>
 				{
 					main.Item().Text(document.FullName).FontSize(24).Bold().FontColor(theme.AccentColor);
 					main.Item().PaddingTop(4).Text(document.ProfessionalTitle).SemiBold().FontColor("#333333");
@@ -87,20 +105,6 @@ internal static class ThemedPdfTemplate
 							CvExportPreviewContentBuilder.BuildLinksLines(document));
 					});
 				});
-
-				row.RelativeItem(34).Background(theme.SidebarColor).Padding(14).Column(sidebar =>
-				{
-					sidebar.Spacing(12);
-					sidebar.Item().Element(c =>
-						CvPdfPhotoHelpers.ComposeSidebarPhotoOrInitials(c, document, 72, theme.AccentColor, Colors.White));
-					CvPdfLayoutHelpers.ComposeSection(
-						sidebar,
-						document.Labels.Contact,
-						CvExportPreviewContentBuilder.BuildContactLines(document),
-						theme.AccentColor);
-					CvPdfExtendedHelpers.ComposeSidebarSections(sidebar, document);
-				});
-			});
 		});
 	}
 
@@ -345,9 +349,13 @@ internal static class ThemedPdfTemplate
 	{
 		return Generate(document, page =>
 		{
-			page.Content().Row(row =>
-			{
-				row.RelativeItem(36).Background(theme.SidebarColor).Padding(14).Column(sidebar =>
+			CvPdfLayoutHelpers.ComposeFullHeightSidebarPage(
+				page,
+				36,
+				64,
+				theme.SidebarColor,
+				sidebarOnLeft: true,
+				sidebar =>
 				{
 					sidebar.Spacing(12);
 					sidebar.Item().Element(c =>
@@ -360,13 +368,11 @@ internal static class ThemedPdfTemplate
 						CvExportPreviewContentBuilder.BuildContactLines(document),
 						Colors.White);
 					CvPdfExtendedHelpers.ComposeSidebarSections(sidebar, document, uppercaseHeadings: true);
-				});
-
-				row.RelativeItem(64).PaddingLeft(12).Column(main =>
+				},
+				main =>
 				{
 					CvPdfExtendedHelpers.ComposeMainSections(main, document, document.Labels.Summary);
 				});
-			});
 		});
 	}
 
@@ -374,10 +380,18 @@ internal static class ThemedPdfTemplate
 	{
 		return Generate(document, page =>
 		{
+			// Full-height accent bar via page background so it reaches the bottom of every page.
+			page.Margin(0);
+			page.Background().Row(bg =>
+			{
+				bg.ConstantItem(8).Background(theme.AccentColor);
+				bg.RelativeItem();
+			});
+
 			page.Content().Row(row =>
 			{
-				row.ConstantItem(8).Background(theme.AccentColor);
-				row.RelativeItem().PaddingLeft(12).Column(content =>
+				row.ConstantItem(8);
+				row.RelativeItem().PaddingVertical(24).PaddingLeft(20).PaddingRight(24).Column(content =>
 				{
 					content.Spacing(10);
 					content.Item().Text(document.FullName).FontSize(24).Bold().FontColor(theme.AccentColor);

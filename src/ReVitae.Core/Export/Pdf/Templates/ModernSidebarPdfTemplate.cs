@@ -14,9 +14,13 @@ internal static class ModernSidebarPdfTemplate
 			{
 				CvPdfLayoutHelpers.ConfigureA4Page(page);
 
-				page.Content().Row(row =>
-				{
-					row.RelativeItem(34).Background("#D7D7D7").Padding(14).Column(sidebar =>
+				CvPdfLayoutHelpers.ComposeFullHeightSidebarPage(
+					page,
+					34,
+					66,
+					"#D7D7D7",
+					sidebarOnLeft: true,
+					sidebar =>
 					{
 						sidebar.Spacing(14);
 						sidebar.Item().Element(container =>
@@ -35,9 +39,8 @@ internal static class ModernSidebarPdfTemplate
 								document.Labels.Email, document.Email,
 								document.Labels.Location, document.Location,
 								document.Labels.LinkedInUrl, document.LinkedInUrl));
-					});
-
-					row.RelativeItem(66).PaddingLeft(14).Column(content =>
+					},
+					content =>
 					{
 						content.Item().Background("#4A4A4A").Padding(12).Text(document.FullName)
 							.FontSize(24)
@@ -54,7 +57,6 @@ internal static class ModernSidebarPdfTemplate
 								CvExportPreviewContentBuilder.BuildDigitalLines(document));
 						});
 					});
-				});
 			});
 		});
 	}

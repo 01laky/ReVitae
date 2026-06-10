@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Fixed
+
+- **Template sidebar bands now span the full page height on every page.** Previously a
+  coloured sidebar paired with longer main content left a blank gap below the band on
+  continuation pages. Added `CvPdfLayoutHelpers.ComposeFullHeightSidebarPage` (paints the
+  band via `page.Background()`, full-bleed, aligned to the content column) and applied it
+  to the themed **LeftSidebarLight / RightSidebarLight / FullSidebarDark / AccentBarLeft**
+  layouts (~20 templates) plus the base **ClassicSidebar, ModernSidebar, DarkSidebarAccent,
+  ExecutiveBlueSidebar** templates. Audited all 56 templates via a reusable preview
+  generator (`scripts/GenerateTemplatePreviews`).
+
 ## [0.2.12] - 2026-06-10
 
 ### Added
