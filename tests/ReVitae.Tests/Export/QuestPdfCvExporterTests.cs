@@ -34,13 +34,22 @@ public sealed class QuestPdfCvExporterTests
 
 		var pdfText = ExtractPdfText(_exporter.Export(document));
 
+		// PdfPig's text segmentation differs across platforms: a large centered/spaced name
+		// heading (e.g. MinimalCenter) is extracted with inter-letter whitespace on some
+		// runners. The property under test is "diacritics survive the export", not exact
+		// spacing — so compare against a whitespace-stripped copy.
+		var compact = RemoveWhitespace(pdfText);
+
 		Assert.True(
-			pdfText.Contains("Kostolný", StringComparison.Ordinal)
-				|| pdfText.Contains("KOSTOLNÝ", StringComparison.Ordinal),
+			compact.Contains("Kostolný", StringComparison.Ordinal)
+				|| compact.Contains("KOSTOLNÝ", StringComparison.Ordinal),
 			"Expected the exported PDF to contain the candidate name with preserved diacritics.");
-		Assert.Contains("Košice", pdfText, StringComparison.Ordinal);
-		Assert.Contains("súčasnosť", pdfText, StringComparison.Ordinal);
+		Assert.Contains("Košice", compact, StringComparison.Ordinal);
+		Assert.Contains("súčasnosť", compact, StringComparison.Ordinal);
 	}
+
+	private static string RemoveWhitespace(string text) =>
+		string.Concat(text.Where(character => !char.IsWhiteSpace(character)));
 
 	[Fact]
 	public void Export_LongContentProducesMultiplePages()
